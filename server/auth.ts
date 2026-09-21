@@ -94,7 +94,7 @@ export async function requireStaff(
     // Fail closed. An unconfigured gate must not become an open door.
     res
       .status(503)
-      .json({ error: "Staff access is not configured.", code: "auth_not_configured" });
+      .json({ error: "Admin access is not configured.", code: "auth_not_configured" });
     return;
   }
 

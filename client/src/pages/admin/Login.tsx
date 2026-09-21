@@ -77,9 +77,9 @@ export default function AdminLogin() {
     <div className="brand-band relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-16">
       <div className="page-hero-glow" aria-hidden />
       <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-[0_24px_50px_rgba(8,16,32,0.28)] sm:p-8">
-        <p className="section-label">Staff console</p>
+        <p className="section-label">Admin console</p>
         <h1 className="text-2xl font-bold tracking-tight text-navy md:text-3xl">
-          Staff sign in
+          Admin sign in
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           We&apos;ll email you a one-time link and a 6-digit code.

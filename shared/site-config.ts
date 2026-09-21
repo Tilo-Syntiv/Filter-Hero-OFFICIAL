@@ -14,7 +14,7 @@ export const DEFAULT_HERO_KICKER = "Exact-fit HVAC filters";
 export const DEFAULT_HERO_HEADLINE =
   "The first line of defense for your indoor air.";
 export const DEFAULT_HERO_LEDE =
-  "Filter Hero's Filter King filters are exact-fit replacements for Trane, Carrier, Rheem, and 30+ major HVAC brands. Measure Width, Length, and Depth — then shop MERV 8, 11, or 13.";
+  "Exact-fit replacements for Trane, Carrier, Rheem, and 30+ major HVAC brands. Measure Width, Length, and Depth — then shop MERV 8, 11, or 13.";
 export const DEFAULT_MAINTENANCE_MESSAGE =
   "We're updating the shop. Checkout will be back shortly.";
 

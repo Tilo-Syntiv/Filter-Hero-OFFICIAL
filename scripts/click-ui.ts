@@ -47,6 +47,17 @@ async function main() {
   await findMySize.click();
   await page.waitForURL(/\/sizes\//, { timeout: 15000 });
   await page.getByRole("button", { name: /add \d+ to cart/i }).first().waitFor();
+  await page.locator(".pdp-qty-ladder-head").waitFor();
+  await page.getByText("Most popular", { exact: true }).waitFor();
+  await page.getByText("Best value", { exact: true }).waitFor();
+  await page.getByRole("button", { name: /^1 filter$/i }).click();
+  await page.getByRole("button", { name: /increase pack quantity/i }).click();
+  await page.getByRole("button", { name: /increase pack quantity/i }).click();
+  const qty3 = (await page.locator(".pdp-stepper-count").textContent())?.trim();
+  if (qty3 !== "3") {
+    throw new Error(`stepper must allow qty 3 on the 2-filter rung, got ${qty3}`);
+  }
+  await page.getByRole("button", { name: /^6\+ filters$/i }).click();
   await record("size");
 
   await page.getByRole("button", { name: /add \d+ to cart/i }).first().click();
@@ -65,7 +76,7 @@ async function main() {
   await record("login");
 
   await page.goto(`${BASE}/admin`, { waitUntil: "domcontentloaded" });
-  await page.getByRole("heading", { name: /staff sign in/i }).waitFor({ timeout: 10000 });
+  await page.getByRole("heading", { name: /admin sign in/i }).waitFor({ timeout: 10000 });
   const adminCopy = (await page.locator("body").innerText()).toLowerCase();
   if (adminCopy.includes("vite_supabase_url")) {
     throw new Error("Admin is missing Vite Supabase env — restart after DOTENV_CONFIG_PATH");

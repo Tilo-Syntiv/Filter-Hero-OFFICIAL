@@ -134,8 +134,16 @@ async function main() {
   );
   assert(/createPortal/.test(toaster), "toaster portals onto document.body so drawers cannot hide it");
 
+  const adminNav = fs.readFileSync("client/src/pages/admin/nav.ts", "utf-8");
+  assert(/label: "Admin"/.test(adminNav), "users nav item is Admin, not Staff");
+
   const adminLogin = fs.readFileSync("client/src/pages/admin/Login.tsx", "utf-8");
-  assert(/I already have a code/.test(adminLogin), "staff can enter an OTP without sending again");
+  assert(/Admin sign in/.test(adminLogin), "admin login uses Admin sign in, not Staff");
+  assert(/I already have a code/.test(adminLogin), "admin can enter an OTP without sending again");
+
+  const adminShell = fs.readFileSync("client/src/pages/admin/AdminShell.tsx", "utf-8");
+  assert(/Admin console/.test(adminShell), "shell labels the console Admin");
+  assert(!/Staff console/.test(adminShell), "shell must not say Staff console");
 
   const viteConfig = fs.readFileSync("vite.config.ts", "utf-8");
   assert(

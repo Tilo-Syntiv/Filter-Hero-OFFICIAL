@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import {
   MERV_TYPES,
+  PACK_QTYS,
+  PACK_TIERS,
   findProductVariant,
   getFilterSize,
   mervTypesForSize,
@@ -24,7 +26,6 @@ import {
   unitPriceForQty,
   type Product,
 } from "@shared/products";
-import { filterKingPdpUrl } from "@shared/filterking";
 import {
   buildBreadcrumbSchema,
   buildFaqSchema,
@@ -73,11 +74,14 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
   const availableTypes = useMemo(() => mervTypesForSize(decoded), [decoded]);
   const mervOptions = sellableMervPhrase(decoded);
 
+  const qtyMin = PACK_QTYS[0];
+  const qtyMax = PACK_QTYS[PACK_QTYS.length - 1];
   const [mervKey, setMervKey] = useState<PreferredMerv>(
     () => (availableTypes[0]?.key as PreferredMerv) ?? "8",
   );
   const [qty, setQty] = useState(6);
   const [shot, setShot] = useState(0);
+  const pickQty = (n: number) => setQty(Math.min(qtyMax, Math.max(qtyMin, n)));
 
   useEffect(() => {
     const fromUrl = new URLSearchParams(window.location.search).get("merv");
@@ -89,7 +93,7 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
         : (availableTypes[0]?.key as PreferredMerv | undefined);
     if (next) setMervKey(next);
     const pack = getPowerPackQty();
-    if (pack) setQty(Math.min(12, Math.max(1, pack)));
+    if (pack) setQty(Math.min(qtyMax, Math.max(qtyMin, pack)));
   }, [availableTypes]);
 
   const pickMerv = (key: PreferredMerv) => {
@@ -123,6 +127,12 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
 
   const unitPrice = variant ? unitPriceForQty(variant.price, qty, variant) : 0;
   const total = variant ? packTotal(variant.price, qty, variant) : 0;
+  const savePct =
+    variant && variant.price > 0 ? Math.round((1 - unitPrice / variant.price) * 100) : 0;
+  const packRung = PACK_TIERS.reduce(
+    (current, next) => (qty >= next.minQty ? next.minQty : current),
+    PACK_TIERS[0].minQty,
+  );
   const saveVsSingle =
     variant && qty > 1
       ? Math.max(0, Math.round((variant.price * qty - total) * 100) / 100)
@@ -371,19 +381,6 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
                 <h1 className="text-2xl sm:text-3xl md:text-[2.65rem] font-bold tracking-tight break-words text-deep">
                   {decoded} Air Filters
                 </h1>
-                <p className="mt-2 text-sm">
-                  <a
-                    href={
-                      variant?.filterKingUrl ||
-                      filterKingPdpUrl(decoded, selectedType.merv, selectedType.isCarbon)
-                    }
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-semibold text-navy underline decoration-ice underline-offset-4 hover:text-hero"
-                  >
-                    Matching Filter King page
-                  </a>
-                </p>
                 <p className="seo-answer mt-3 mb-7 text-[0.95rem] leading-relaxed text-muted-foreground">
                   Buy {decoded} HVAC and furnace air filters from {BRAND_NAME}.
                   Choose {mervOptions} and replace every 30–90 days
@@ -447,30 +444,74 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
 
                 <div className="mb-7">
                   <h2 className="section-label !text-mesh">2 · Select quantity</h2>
-                  <div className="pdp-qty">
-                    <button
-                      type="button"
-                      className="pdp-qty-btn"
-                      aria-label="Decrease quantity"
-                      disabled={qty <= 1}
-                      onClick={() => setQty((n) => Math.max(1, n - 1))}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </button>
-                    <span className="pdp-qty-value">{qty}</span>
-                    <button
-                      type="button"
-                      className="pdp-qty-btn"
-                      aria-label="Increase quantity"
-                      disabled={qty >= 12}
-                      onClick={() => setQty((n) => Math.min(12, n + 1))}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
+                  <div className="pdp-qty-card">
+                    <div className="pdp-stepper">
+                      <div className="pdp-stepper-ctrl">
+                        <button
+                          type="button"
+                          aria-label="Decrease pack quantity"
+                          disabled={qty <= qtyMin}
+                          onClick={() => pickQty(qty - 1)}
+                        >
+                          <Minus className="h-4 w-4" strokeWidth={2.5} />
+                        </button>
+                        <span className="pdp-stepper-count" aria-live="polite">
+                          {qty}
+                        </span>
+                        <button
+                          type="button"
+                          aria-label="Increase pack quantity"
+                          disabled={qty >= qtyMax}
+                          onClick={() => pickQty(qty + 1)}
+                        >
+                          <Plus className="h-4 w-4" strokeWidth={2.5} />
+                        </button>
+                      </div>
+                      <div className="pdp-stepper-price-block">
+                        {savePct > 0 && <span className="pdp-save">−{savePct}%</span>}
+                        <p className="pdp-stepper-price">${unitPrice.toFixed(2)}</p>
+                        <p className="pdp-stepper-each">per filter</p>
+                      </div>
+                    </div>
+                    <div className="pdp-qty-ladder">
+                      <div className="pdp-qty-ladder-head" aria-hidden>
+                        <span>Qty</span>
+                        <span>Each</span>
+                        <span>Savings</span>
+                      </div>
+                      {PACK_TIERS.map((tier) => {
+                        if (!variant) return null;
+                        const price = unitPriceForQty(variant.price, tier.minQty, variant);
+                        const pct = Math.max(0, Math.round((1 - price / variant.price) * 100));
+                        const active = packRung === tier.minQty;
+                        const popular = tier.minQty === 6;
+                        const best = tier.minQty === 12;
+                        const label = `${tier.label} ${tier.minQty === 1 ? "filter" : "filters"}`;
+                        return (
+                          <button
+                            key={tier.minQty}
+                            type="button"
+                            onClick={() => pickQty(tier.minQty)}
+                            aria-label={label}
+                            aria-pressed={active}
+                            className={cn("pdp-qty-ladder-row", active && "pdp-qty-ladder-row-active")}
+                          >
+                            <span className="pdp-qty-ladder-qty">
+                              {tier.label}
+                              {popular && <span className="pdp-pack-tag">Most popular</span>}
+                              {best && (
+                                <span className="pdp-pack-tag pdp-pack-tag-hero">Best value</span>
+                              )}
+                            </span>
+                            <span>${price.toFixed(2)}</span>
+                            <span className={cn("pdp-qty-ladder-save", pct > 0 && "pdp-qty-ladder-save-on")}>
+                              {pct}%
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <p className="pdp-qty-hint">
-                    Any pack from 1 to 12. Six is the usual household run.
-                  </p>
                 </div>
 
                 <div className="pdp-checkout">

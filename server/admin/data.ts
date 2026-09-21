@@ -590,9 +590,9 @@ export function securitySnapshot() {
     ],
     rls: "deny-by-default — browser never queries Postgres",
     notes: [
-      "Staff access is STAFF_EMAILS plus a verified Supabase session.",
+      "Admin access is STAFF_EMAILS plus a verified Supabase session.",
       "The CRM never sends email and never writes Klaviyo.",
-      "Adding staff means editing STAFF_EMAILS and restarting the server.",
+      "Adding an admin inbox means editing STAFF_EMAILS and restarting the server.",
     ],
   };
 }
@@ -649,7 +649,7 @@ export function staffSnapshot() {
   return {
     source: "STAFF_EMAILS",
     emails,
-    note: "Staff is an env allowlist, not a database role. Add an inbox there and restart. The CRM never emails shoppers — staff write from their own mailbox.",
+    note: "Admin is an env allowlist, not a database role. Add an inbox there and restart. The CRM never emails shoppers — write from your own mailbox.",
   };
 }
 
@@ -669,10 +669,10 @@ export function trackingSnapshot() {
     trackPath: "/api/track",
     catalogFeed: "/api/klaviyo/catalog.json",
     channels: {
-      resend: "Branded transactional receipts and staff lead alerts",
+      resend: "Branded transactional receipts and admin lead alerts",
       klaviyo: "Marketing profiles, flows, and shopper events",
       stripe: "Payment receipts",
-      crm: "Staff pipeline only — never mail, never Klaviyo writes",
+      crm: "Admin pipeline only — never mail, never Klaviyo writes",
     },
   };
 }

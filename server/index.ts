@@ -295,7 +295,7 @@ Sitemap: ${absoluteUrl(siteUrl, "/sitemap.xml")}
 
   app.post("/api/contact", contactLimiter, async (req, res) => {
     try {
-      const result = await submitContact(req.body);
+      const result = await submitContact(req.body, req.ip);
       res.json(result);
     } catch (err) {
       if (err instanceof Error && err.message === "Could not verify that form.") {

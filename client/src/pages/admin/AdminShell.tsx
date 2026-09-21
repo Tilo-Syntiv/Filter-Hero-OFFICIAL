@@ -28,7 +28,7 @@ export default function AdminShell({
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    document.title = `${title} · Staff · Filter Hero`;
+    document.title = `${title} · Admin · Filter Hero`;
     const meta =
       document.querySelector<HTMLMetaElement>('meta[name="robots"]') ??
       document.head.appendChild(
@@ -146,13 +146,13 @@ function ConsoleFrame({
                 size="icon"
                 className="lg:hidden"
                 onClick={() => setOpen(true)}
-                aria-label="Open staff menu"
+                aria-label="Open admin menu"
               >
                 <Menu className="h-4 w-4" />
               </Button>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Staff console
+                  Admin console
                 </p>
                 <h1 className="text-lg font-bold text-navy">{title}</h1>
               </div>
@@ -178,7 +178,7 @@ function ConsoleFrame({
           className="w-72 border-slate-800 bg-slate-950 p-0 text-white [&>button]:text-white [&>button]:hover:bg-white/10"
         >
           <SheetHeader className="sr-only">
-            <SheetTitle>Staff navigation</SheetTitle>
+            <SheetTitle>Admin navigation</SheetTitle>
           </SheetHeader>
           <NavBrand />
           <nav className="px-3 py-4" onClick={() => setOpen(false)}>
@@ -198,7 +198,7 @@ function NavBrand() {
           Filter Hero
         </p>
         <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-slate-400">
-          Staff console
+          Admin console
         </p>
       </Link>
     </div>

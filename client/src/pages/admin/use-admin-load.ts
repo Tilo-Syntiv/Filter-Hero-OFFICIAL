@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError } from "@/lib/admin-api";
 
 /**
- * Loads staff API data. Search boxes debounce so a fast typer cannot burn
+ * Loads admin API data. Search boxes debounce so a fast typer cannot burn
  * the admin rate limit (two list calls per keystroke on Contacts).
  * A later response never overwrites a newer query.
  */

@@ -28,7 +28,7 @@ import {
 } from "./data";
 
 /**
- * Staff console API. Every route sits behind requireStaff.
+ * Admin console API. Every route sits behind requireStaff.
  *
  * This module reads orders.json, leads.json, site-config.json, and Postgres.
  * It does not send email and does not write Klaviyo — Resend and Klaviyo stay

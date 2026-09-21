@@ -27,7 +27,7 @@ function SecurityBody() {
             <StatusDot ok={data.auth.supabaseUrl} label="Supabase URL" />
             <StatusDot ok={data.auth.anonKey} label="Anon key" />
             <StatusDot ok={data.auth.serviceRole} label="Service role" />
-            <StatusDot ok={data.auth.staffAllowlist > 0} label="Staff allowlist" />
+            <StatusDot ok={data.auth.staffAllowlist > 0} label="Admin allowlist" />
             <p className="pt-2 text-sm text-muted-foreground">
               {data.auth.staffAllowlist} inbox{data.auth.staffAllowlist === 1 ? "" : "es"} on
               STAFF_EMAILS. Production: {data.production ? "yes" : "no"}.
@@ -68,7 +68,7 @@ function SecurityBody() {
         {!data.audit.enabled ? (
           <p className="text-sm text-muted-foreground">CRM audit log is unavailable.</p>
         ) : data.audit.rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No staff mutations recorded yet.</p>
+          <p className="text-sm text-muted-foreground">No admin mutations recorded yet.</p>
         ) : (
           <AdminTable headers={["When", "Who", "Action", "Entity"]}>
             {data.audit.rows.map((row) => (

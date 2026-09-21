@@ -233,12 +233,17 @@ export function filtreteBeatUnit(
 ): number | undefined {
   if (isCarbon) return undefined;
   if (qty <= 1) return undefined;
-  const key = qtyKeyFor(qty);
-  const want = `${normalizeSize(size)}|${merv}|${key}`;
-  const hit = FILTRETE_PACKS.find(
-    (row) => `${normalizeSize(row.size)}|${row.merv}|${row.key}` === want,
-  );
-  return hit?.unit;
+  const sizeKey = normalizeSize(size);
+  let unit: number | undefined;
+  for (const step of QTY_STEPS) {
+    if (qty < step.minQty || step.key === "q1") continue;
+    const hit = FILTRETE_PACKS.find(
+      (row) =>
+        `${normalizeSize(row.size)}|${row.merv}|${row.key}` === `${sizeKey}|${merv}|${step.key}`,
+    );
+    if (hit) unit = hit.unit;
+  }
+  return unit;
 }
 
 /** Confirmed FilterBuy unit, only on rungs they undercut us. */
@@ -268,9 +273,10 @@ export function liveListPrice(
 
 /**
  * Shopper unit. 1-inch qty 1 is FILTRETE_1INCH_QTY1. Multi-packs are
- * FILTRETE_PACKS only — missing rungs stay on the qty-1 ticket (no invented
- * pack price, no Filter King sale, no FilterBuy undercut). A confirmed pack
- * that costs more per filter than that single is ignored.
+ * FILTRETE_PACKS only — no invented pack price, no Filter King sale, no
+ * FilterBuy undercut. A confirmed pack that costs more per filter than that
+ * single is ignored. A missing higher rung keeps the last confirmed pack
+ * this qty already unlocked (qty 12 does not jump back to the single).
  */
 export function liveUnitPrice(product: Priceable, qty: number): number | undefined {
   const single = filtreteQty1(product.size, product.merv, product.isCarbon);

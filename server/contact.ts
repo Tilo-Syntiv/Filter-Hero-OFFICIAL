@@ -53,13 +53,13 @@ function appendLead(lead: StoredLead) {
   fs.writeFileSync(file, JSON.stringify(leads, null, 2), "utf-8");
 }
 
-export async function submitContact(raw: unknown) {
+export async function submitContact(raw: unknown, ip?: string) {
   const parsed = contactSchema.parse(raw);
   if (isHoneypotTripped(parsed.website)) {
     return { ok: true as const, id: "ignored", emailed: false as const };
   }
   if (shouldEnforceTurnstile(parsed.intent, parsed.turnstileToken || undefined)) {
-    const human = await verifyTurnstile(parsed.turnstileToken || undefined);
+    const human = await verifyTurnstile(parsed.turnstileToken || undefined, ip);
     if (!human.ok) {
       throw new Error("Could not verify that form.");
     }

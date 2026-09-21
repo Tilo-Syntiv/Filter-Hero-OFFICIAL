@@ -4,7 +4,7 @@ import { AdminError, AdminLoading, AdminPanel, MailLink } from "./ui";
 import { getAdminStaff } from "@/lib/admin-api";
 
 export default function AdminUsers() {
-  return <AdminShell title="Staff">{() => <UsersBody />}</AdminShell>;
+  return <AdminShell title="Admin">{() => <UsersBody />}</AdminShell>;
 }
 
 function UsersBody() {
@@ -23,7 +23,7 @@ function UsersBody() {
             {data.emails.map((email) => (
               <li key={email} className="flex items-center justify-between py-2 text-sm">
                 <MailLink email={email} />
-                <span className="text-xs uppercase tracking-wide text-muted-foreground">Staff</span>
+                <span className="text-xs uppercase tracking-wide text-muted-foreground">Admin</span>
               </li>
             ))}
           </ul>
@@ -33,7 +33,7 @@ function UsersBody() {
         <p className="text-sm leading-relaxed text-muted-foreground">{data.note}</p>
         <p className="mt-3 text-sm text-muted-foreground">
           Source: <code>{data.source}</code>. There is no RBAC table on purpose — a second
-          staff tier would still share the same mailbox reputation rules.
+          admin tier would still share the same mailbox reputation rules.
         </p>
       </AdminPanel>
     </div>

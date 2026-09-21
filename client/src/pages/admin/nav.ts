@@ -54,7 +54,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   {
     label: "System",
     items: [
-      { href: "/admin/users", label: "Staff", icon: Shield },
+      { href: "/admin/users", label: "Admin", icon: Shield },
       { href: "/admin/security", label: "Security", icon: Lock },
       { href: "/admin/settings", label: "Settings", icon: Settings },
       { href: "/admin/maintenance", label: "Maintenance", icon: Wrench },

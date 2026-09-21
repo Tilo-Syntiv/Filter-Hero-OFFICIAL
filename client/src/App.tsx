@@ -57,7 +57,7 @@ function BrandRoute() {
 
 function AdminLoginRoute() {
   return (
-    <AdminShell title="Staff sign in">
+    <AdminShell title="Admin sign in">
       {() => <Redirect to="/admin" />}
     </AdminShell>
   );

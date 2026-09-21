@@ -137,6 +137,14 @@ export const PACK_TIERS: PackTier[] = [
   { minQty: 12, label: "12+", multiplier: 0.21 },
 ];
 
+/** Size-page quantity picker. Volume breaks stay in PACK_TIERS / live ladders. */
+export const PACK_QTYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
+export type PackQty = (typeof PACK_QTYS)[number];
+
+export function isPackQty(n: number): n is PackQty {
+  return Number.isInteger(n) && n >= PACK_QTYS[0] && n <= PACK_QTYS[PACK_QTYS.length - 1];
+}
+
 function fallbackUnitPrice(listPrice: number, qty: number): number {
   let tier = PACK_TIERS[0];
   for (const t of PACK_TIERS) {

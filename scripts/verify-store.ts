@@ -11,6 +11,8 @@ import {
   MERV_TYPES,
   FULL_CATALOG,
   SELLABLE_ONLY,
+  PACK_QTYS,
+  PACK_TIERS,
   THICKNESSES,
   findProductVariant,
   firstSellableProduct,
@@ -31,7 +33,7 @@ import {
   liveListPrice,
   liveUnitPrice,
 } from "../shared/pricing/engine.ts";
-import { CHANGE_GUIDE_FAQS, SITE_FAQS, resolveDocumentSeo, sitemapPaths } from "../shared/seo.ts";
+import { CHANGE_GUIDE_FAQS, SITE_FAQS, buildLlmsTxt, resolveDocumentSeo, sitemapPaths } from "../shared/seo.ts";
 import {
   HVAC_CLOGGED_FILTER_FAQ_ANSWER,
   HVAC_OVERDUE_HEADLINE,
@@ -39,6 +41,7 @@ import {
   HVAC_REAL_REPAIRS,
 } from "../shared/hvac-overdue-costs.ts";
 import { MERV_CAPACITY_NOTE, MERV_PICK_FAQ_ANSWER } from "../shared/merv-capacity.ts";
+import { DEFAULT_HERO_LEDE } from "../shared/site-config.ts";
 
 function assert(cond: unknown, message: string): asserts cond {
   if (!cond) throw new Error(message);
@@ -138,6 +141,11 @@ assert(getFilterSize("20x25x4"), "20x25x4 is on the Model Pricing XLS and must b
 const popular = getFilterSize("20x25x1");
 assert(popular, "20x25x1 must exist");
 assert(popular.depth === 1 && popular.width === 20 && popular.length === 25, "20x25x1 dims");
+assert(PACK_QTYS.length === 12 && PACK_QTYS[0] === 1 && PACK_QTYS[11] === 12, "size page qty is 1–12");
+assert(
+  PACK_TIERS.map((t) => t.minQty).join(",") === "1,2,4,6,12",
+  "volume ladder rungs stay 1 / 2 / 4 / 6+ / 12+",
+);
 
 for (const type of mervTypesForSize("20x25x1")) {
   const variant = findProductVariant("20x25x1", type.merv, type.isCarbon);
@@ -171,13 +179,15 @@ for (const size of FILTER_SIZES) {
     assert(variant.filterKingUrl?.includes("filterking.com"), `${size.slug} needs a Filter King URL`);
     const list = variant.price;
     assert(list > 0, `${size.slug} ${type.name} list must be positive`);
+    let previous = list;
     for (const qty of [1, 2, 4, 6, 12]) {
       const unit = unitPriceForQty(list, qty, variant);
       assert(unit > 0, `missing unit for ${size.slug} ${type.name} qty ${qty}`);
       assert(
-        unit <= list,
-        `${size.slug} ${type.name} qty ${qty} unit $${unit} must not exceed qty-1 $${list}`,
+        unit <= previous,
+        `${size.slug} ${type.name} qty ${qty} unit $${unit} must not exceed the previous rung $${previous}`,
       );
+      previous = unit;
     }
   }
 }
@@ -242,6 +252,14 @@ assert(liveUnitPrice({ size: "20x25x1", merv: 13 }, 2) === 21, "20x25x1 MERV 13 
 assert(liveUnitPrice({ size: "20x20x1", merv: 8 }, 12) === 5.18, "20x20x1 MERV 8 qty 12 must match Filtrete Walmart $5.18");
 assert(liveUnitPrice({ size: "16x25x1", merv: 8 }, 12) === 5.83, "16x25x1 MERV 8 qty 12 must match Filtrete $5.83");
 assert(liveUnitPrice({ size: "20x25x1", merv: 8 }, 6) === 9.17, "20x25x1 MERV 8 qty 6 must match Filtrete $9.17");
+assert(
+  liveUnitPrice({ size: "20x25x1", merv: 8 }, 12) === 9.17,
+  "20x25x1 MERV 8 qty 12 keeps the $9.17 6-pack — no Filtrete 12-pack, do not jump back to $9.99",
+);
+assert(
+  liveUnitPrice({ size: "20x25x1", merv: 11 }, 6) === 11,
+  "20x25x1 MERV 11 qty 6 keeps the $11 2-pack when no Filtrete 6-pack exists",
+);
 assert(liveUnitPrice({ size: "16x25x1", merv: 8 }, 4) === 9.99, "16x25x1 MERV 8 qty 4 caps at the $9.99 single — Filtrete 4-pack $10.05 is worse");
 assert(liveUnitPrice({ size: "20x20x1", merv: 8 }, 4) === 9.99, "20x20x1 MERV 8 qty 4 caps at the $9.99 single — Filtrete 4-pack $11.50 is worse");
 assert(liveUnitPrice({ size: "20x30x1", merv: 8 }, 4) === 9.99, "20x30x1 MERV 8 qty 4 caps at the $9.99 single — Filtrete 4-pack $11.49 is worse");
@@ -359,7 +377,10 @@ assert(
   !sizeSrc.includes("HVAC_FILTER_VS_REPAIR"),
   "size PDP must not restore the iced-coil punch",
 );
-assert(sizeSrc.includes("Math.min(12"), "size qty is a 1–12 stepper");
+assert(sizeSrc.includes("pdp-qty-ladder"), "size qty shows Qty / Each / Savings ladder");
+assert(sizeSrc.includes("Increase pack quantity"), "pack stepper must not collide with cart ± labels");
+assert(sizeSrc.includes("Most popular"), "6+ stays Most popular");
+assert(sizeSrc.includes("Best value"), "12+ stays Best value");
 const overduePanelSrc = fs.readFileSync(
   path.join(srcRoot, "client/src/components/ProductOverduePanel.tsx"),
   "utf8",
@@ -369,6 +390,42 @@ assert(overduePanelSrc.includes("product-overdue"), "product overdue panel uses 
 assert(!overduePanelSrc.includes("pdp-overdue"), "product overdue panel must not restore the iced-coil rewrite");
 const sizeBrowseSrc = fs.readFileSync(path.join(srcRoot, "client/src/pages/SizeBrowse.tsx"), "utf8");
 assert(sizeBrowseSrc.includes("ProductOverduePanel"), "size catalog and thickness hubs carry the named-repair card");
+assert(!sizeSrc.includes("Filter King"), "PDP must not name Filter King");
+assert(!sizeSrc.includes("filterking.com"), "PDP must not link filterking.com");
+assert(!sizeSrc.includes("Matching Filter King"), "PDP must not restore the Filter King page link");
+assert(!sizeBrowseSrc.includes("Filter King"), "size catalog must not name Filter King");
+assert(!DEFAULT_HERO_LEDE.includes("Filter King"), "default hero lede must not name Filter King");
+{
+  const siteConfigJson = fs.readFileSync(
+    path.join(srcRoot, "server/data/site-config.json"),
+    "utf8",
+  );
+  assert(!siteConfigJson.includes("Filter King"), "saved hero copy must not name Filter King");
+  const llms = buildLlmsTxt("https://filterhero.net");
+  assert(!llms.includes("Filter King"), "/llms.txt must not name Filter King");
+  assert(
+    !SITE_FAQS.some((f) => /filter king/i.test(`${f.question} ${f.answer}`)),
+    "FAQs must not name Filter King",
+  );
+  const shopperRoot = path.join(srcRoot, "client/src");
+  const stack = [shopperRoot];
+  while (stack.length) {
+    const dir = stack.pop()!;
+    for (const name of fs.readdirSync(dir)) {
+      const full = path.join(dir, name);
+      if (fs.statSync(full).isDirectory()) {
+        stack.push(full);
+        continue;
+      }
+      if (!/\.(tsx?|jsx?)$/.test(name)) continue;
+      const text = fs.readFileSync(full, "utf8");
+      assert(
+        !/Filter King/i.test(text) && !/filterking\.com/i.test(text),
+        `${path.relative(srcRoot, full)} must not mention Filter King`,
+      );
+    }
+  }
+}
 const brandBrowseSrc = fs.readFileSync(path.join(srcRoot, "client/src/pages/BrandBrowse.tsx"), "utf8");
 assert(brandBrowseSrc.includes("ProductOverduePanel"), "brand product pages carry the named-repair card");
 const customSrc = fs.readFileSync(path.join(srcRoot, "client/src/pages/CustomAirFilters.tsx"), "utf8");

@@ -14,7 +14,73 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-337**
+Next id: **FH-342**
+
+---
+
+### FH-341 — 12-pack jumped back to the single after a cheaper 6-pack
+- **Status:** fixed
+- **Area:** pricing
+- **Symptom:** `/sizes/20x25x1` MERV 8 qty 6 was **$9.17**, qty 12 was **$9.99**. No Filtrete 12-pack exists for that size, so the engine fell back to the single. “Best value” charged more per filter than “Most popular.”
+- **Do NOT:** Invent a Filtrete 12-pack. Do not put Filter King sale or FilterBuy on the ladder. Do not let a higher qty cost more per filter than a lower qty.
+- **Do:** `filtreteBeatUnit` walks 2 / 4 / 6 / 12 and keeps the last confirmed Filtrete pack this qty already unlocked, then caps at the single. 20x25x1 MERV 8 qty 12 stays **$9.17**. 16x25x1 MERV 8 qty 12 stays the real Filtrete 12-pack **$5.83**.
+- **Files:** `shared/pricing/engine.ts`, `scripts/verify-store.ts`
+- **Verify:** `pnpm verify:store`. `/sizes/20x25x1` ladder 12+ is $9.17. `/sizes/16x25x1` 12+ is $5.83.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-340 — Admin console said Staff
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** `/admin` chrome, sign-in, nav, document title, Security, Tracking, and SEO called the console **Staff**.
+- **Do NOT:** Relabel the admin UI as Staff. Do not rename `STAFF_EMAILS`, `requireStaff`, or shopper `/login`.
+- **Do:** Shoppers see **Admin sign in** and **Admin console**. Nav allowlist is **Admin**. Signed-in titles are `… · Admin · Filter Hero`. `STAFF_EMAILS` stays the env allowlist.
+- **Files:** `client/src/pages/admin/AdminShell.tsx`, `client/src/pages/admin/Login.tsx`, `client/src/pages/admin/nav.ts`, `client/src/pages/admin/Users.tsx`, `client/src/pages/admin/Security.tsx`, `client/src/App.tsx`, `server/admin/data.ts`, `server/auth.ts`, `shared/seo.ts`, `scripts/verify-admin.ts`, `scripts/click-ui.ts`, `scripts/click-admin.ts`
+- **Verify:** `pnpm verify:admin`. Local `/admin` heading **Admin sign in**. Sidebar **Admin console**.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-339 — Shopper surfaces still named Filter King
+- **Status:** fixed
+- **Area:** seo
+- **Symptom:** Home hero lede said “Filter Hero's Filter King filters.” `/sizes` said “Browse every Filter King HVAC size.” Every PDP had **Matching Filter King page** → filterking.com. `/llms.txt` named the Filter King API.
+- **Do NOT:** Restore a Filter King word, lockup, or filterking.com link on the storefront, JSON-LD, `/llms.txt`, or site-config hero lede. Do not scrape filterking.com. Do not put Filter King sale as the shopper price.
+- **Do:** Shopper copy is Filter Hero only. Catalog identity may still store `filterKingUrl` / `parent_model` for sync; never render them. Hero lede, `/sizes`, PDP, and `buildLlmsTxt` stay brand-clean.
+- **Files:** `client/src/pages/SizeDetail.tsx`, `client/src/pages/SizeBrowse.tsx`, `shared/site-config.ts`, `server/data/site-config.json`, `shared/seo.ts`, `scripts/verify-store.ts`
+- **Verify:** `pnpm verify:store`. `/` hero has no Filter King. `/sizes` has no Filter King. `/sizes/20x25x1` has no Matching Filter King page. `/llms.txt` has no Filter King.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-338 — Turnstile siteverify omitted remoteip
+- **Status:** fixed
+- **Area:** contact
+- **Symptom:** Official `verifyTurnstile` posted only `secret` + `response` to Cloudflare `siteverify`. Production `POST /api/contact` never sent `remoteip`, so the check could not bind the token to the shopper behind Railway (`trust proxy` = 1). FILTER HERO and `docs/CLOUDFLARE-FULL-BUILD.md` already pass `req.ip`.
+- **Do NOT:** Parse `X-Forwarded-For[0]` for Turnstile or the limiter (FH-205). Do not call `siteverify` from the browser.
+- **Do:** `submitContact(req.body, req.ip)`. `verifyTurnstile(token, ip)` sets `remoteip` when `req.ip` is present. Clock `intent=reminder` still skips the widget.
+- **Files:** `server/security.ts`, `server/contact.ts`, `server/index.ts`, `scripts/verify-security.ts`
+- **Verify:** `pnpm verify:security`. Source contains `submitContact(req.body, req.ip)` and `body.set("remoteip"`. `/` still has no Turnstile script until `#contact` is near.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-337 — Size page dropped the Qty / Each / Savings ladder
+- **Status:** fixed
+- **Area:** catalog
+- **Symptom:** `/sizes/…` Select quantity was only − / 1–12 / +. Shoppers could not see pack unit prices or savings for 1, 2, 4, 6+, and 12+. Pack total still used live ladder rungs, but the table from FH-252 was gone.
+- **Do NOT:** Leave a stepper-only qty control. Do not replace the volume ladder with a 12-chip grid. Do not squeeze the old pack cards beside the stepper.
+- **Do:** One qty card: − / 1–12 / + on the left, Qty / Each / Savings ladder (1, 2, 4, 6+, 12+) on the right. Live ladder unit prices still apply (3 uses the 2-filter rung, 5 uses 4, 7–11 use 6, 12 uses 12). Default and “Most popular” stay 6; “Best value” stays 12. Pack stepper aria-labels are “Decrease/Increase pack quantity” so they do not collide with cart ±.
+- **Files:** `client/src/pages/SizeDetail.tsx`, `client/src/index.css`, `shared/products.ts`, `scripts/verify-store.ts`, `scripts/click-ui.ts`
+- **Verify:** `/sizes/20x25x1` — stepper 1–12 beside the 5-rung table. Pack total follows the matching rung. `pnpm verify:store`. `pnpm browse`.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+- **Supersedes:** FH-252
 
 ---
 

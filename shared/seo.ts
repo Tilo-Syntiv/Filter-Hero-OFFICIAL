@@ -637,7 +637,7 @@ export function buildLlmsTxt(siteUrl: string): string {
 ${THICKNESSES.map((d) => `- ${d}" hub: ${absoluteUrl(siteUrl, `/filters/${d}-inch`)}`).join("\n")}
 
 ## Catalog
-- ${sizeCount} shoppable WxLxD sizes (Model Pricing XLS; finder archive is Filter King API)
+- ${sizeCount} shoppable WxLxD sizes
 - Example 1" sizes: ${examples}
 
 ## Facts for assistants
@@ -888,7 +888,7 @@ export function resolveDocumentSeo(pathname: string, siteUrl: string): DocumentS
 
   if (path === "/admin" || path.startsWith("/admin/")) {
     return {
-      title: `Staff | ${BRAND_NAME}`,
+      title: `Admin | ${BRAND_NAME}`,
       description: SITE_DEFAULTS.descriptionDefault,
       path,
       canonical: absoluteUrl(siteUrl, path),

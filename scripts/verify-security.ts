@@ -315,6 +315,21 @@ async function main() {
     turnstileSrc.includes("resetSignal") && turnstileSrc.includes("error-callback"),
     "Turnstile must reset after send and handle error-callback (FH-247 / FH-330)",
   );
+  const turnstileServer = fs.readFileSync("server/security.ts", "utf-8");
+  assert(
+    turnstileServer.includes('body.set("remoteip"') || turnstileServer.includes("body.set('remoteip'"),
+    "siteverify must send remoteip from req.ip (FH-247 / FH-338)",
+  );
+  const contactRoute = fs.readFileSync("server/index.ts", "utf-8");
+  assert(
+    contactRoute.includes("submitContact(req.body, req.ip)"),
+    "POST /api/contact must pass req.ip into siteverify",
+  );
+  const csp = fs.readFileSync("shared/security-headers.ts", "utf-8");
+  assert(
+    csp.includes("https://challenges.cloudflare.com"),
+    "CSP must allow the Turnstile script and frame hosts",
+  );
 
   console.log("verify:security ok");
 }

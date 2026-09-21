@@ -23,7 +23,7 @@ const MODULES: { href: string; heading: string }[] = [
   { href: "/admin/content", heading: "Content" },
   { href: "/admin/analytics", heading: "Analytics" },
   { href: "/admin/tracking", heading: "Tracking" },
-  { href: "/admin/users", heading: "Staff" },
+  { href: "/admin/users", heading: "Admin" },
   { href: "/admin/security", heading: "Security" },
   { href: "/admin/settings", heading: "Settings" },
   { href: "/admin/maintenance", heading: "Maintenance" },
@@ -66,7 +66,7 @@ async function shot(page: Page, name: string) {
 function pageFailed(text: string): string | null {
   const lowered = text.toLowerCase();
   if (lowered.includes("vite_supabase_url")) return "missing Vite Supabase env";
-  if (lowered.includes("staff access is not configured")) return "auth not configured";
+  if (lowered.includes("admin access is not configured")) return "auth not configured";
   if (lowered.includes("not authorized")) return "forbidden";
   if (lowered.includes("sign in required")) return "signed out";
   if (lowered.includes("load failed")) return "load failed";
@@ -97,7 +97,7 @@ async function main() {
   };
 
   await page.goto(`${BASE}/admin`, { waitUntil: "domcontentloaded" });
-  await page.getByRole("heading", { name: /staff sign in/i }).waitFor({ timeout: 15000 });
+  await page.getByRole("heading", { name: /admin sign in/i }).waitFor({ timeout: 15000 });
   const loginCopy = (await page.locator("body").innerText()).toLowerCase();
   assert(!loginCopy.includes("vite_supabase_url"), "Admin is missing Vite Supabase env");
 
