@@ -14,7 +14,33 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-351**
+Next id: **FH-353**
+
+---
+
+### FH-352 — Overdue repair and wait-stage cards were too dark
+- **Status:** fixed
+- **Area:** photos
+- **Symptom:** Home `#overdue-costs` repair rows and “1–2 months late” cards sat on `#141e30` / `rgba(8, 14, 26)` glass. Copy looked black-on-navy and words ran together.
+- **Do NOT:** Put those chips back on `bg-deep`, `bg-navy/80`, or `rgba(8, 14, 26, 0.38)`. Do not use negative letter-spacing on the repair names.
+- **Do:** Rows and wait-stage cards stay on ice glass / `#3a66a3`–`#2a4d82` (FH-346 band). Same classes on the change-guide curve and the size-page named-repair list.
+- **Files:** `client/src/index.css`, `client/src/components/OverdueCostsBand.tsx`, `client/src/pages/FilterChangeGuide.tsx`
+- **Verify:** Home `#overdue-costs` and `/how-often-to-change-air-filter#wait` — chips read mid-blue, not near-black. `/sizes/20x25x1` list rows match.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-351 — Live shop was still FILTER-HERO without the qty ladder
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** `https://filterhero.net` ran `Tilo-Syntiv/FILTER-HERO@1895e06` (182 sizes, no Qty/Each/Savings card). Official local had the ladder and 153/293 catalog.
+- **Do NOT:** `railway up` a dirty Official tree. Do not add a second Railway service or region. Do not retarget back to `FILTER-HERO@main` unless rolling this deploy back.
+- **Do:** Production source is `Tilo-Syntiv/Filter-Hero-OFFICIAL@main`. Same FILTER-HERO service, `/data`, and `filterhero.net`. Push Official `main` to deploy. FH-304’s “deploy only from FILTER-HERO” is superseded.
+- **Files:** `.railway/config.json`
+- **Verify:** Railway latest SUCCESS `becad96a` is Official `24597f6`. `GET /api/products` is `sellableOnly: true`, `sizeCount: 153`. `/sizes/20x25x1` ladder is `$9.99 / $9.99 / $8.37 / $7.49 / $5.88`. Homepage `#merv` is from `$9.99 / $16.70 / $13.49 / $22.99`.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
 
 ---
 
@@ -628,11 +654,11 @@ Next id: **FH-351**
 ### FH-304 — GitHub autodeploy and `railway up` both own FILTER-HERO
 - **Status:** mitigated
 - **Area:** other
-- **Symptom:** Service source is `Tilo-Syntiv/FILTER-HERO`. An earlier SUCCESS (`53f7af54`) was a Cursor `railway up` with no commit SHA. Production is now GitHub `@main`.
-- **Do NOT:** `railway up` Filter-Hero-OFFICIAL or a dirty tree. Do not attach `www` on Railway. Do not scale a second region.
-- **Do:** Deploy production only from `Tilo-Syntiv/FILTER-HERO@main`. Variable-only changes use `--skip-deploys`.
+- **Symptom:** Service source was `Tilo-Syntiv/FILTER-HERO`. A Cursor `railway up` with no commit SHA (`53f7af54`) could be overwritten by GitHub `@main`.
+- **Do NOT:** `railway up` a dirty tree. Do not attach `www` on Railway. Do not scale a second region.
+- **Do:** Production source is now `Tilo-Syntiv/Filter-Hero-OFFICIAL@main` (FH-351). Variable-only changes use `--skip-deploys`.
 - **Files:** `.railway/config.json`
-- **Verify:** Latest SUCCESS `f793cf23` is branch `main`, commit `1895e06`. Source repo `Tilo-Syntiv/FILTER-HERO`.
+- **Verify:** Latest SUCCESS `becad96a` is Official `24597f6`. Source repo `Tilo-Syntiv/Filter-Hero-OFFICIAL`.
 - **Added:** 2026-09-20
 - **Fixed:** 2026-09-21
 

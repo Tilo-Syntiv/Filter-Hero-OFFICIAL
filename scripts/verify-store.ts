@@ -361,6 +361,12 @@ assert(
   "lockup mascot must not use the 16:9 fly plate",
 );
 const cssSrc = fs.readFileSync(path.join(srcRoot, "client/src/index.css"), "utf8");
+assert(cssSrc.includes(".overdue-stage-card"), "wait-stage cards have a brighter band fill");
+assert(
+  cssSrc.includes(".overdue-band-repairs li") && cssSrc.includes("rgba(214, 232, 248, 0.2)"),
+  "repair rows use ice glass, not deep navy",
+);
+assert(!cssSrc.includes("background: rgba(8, 14, 26, 0.38)"), "repair rows must not use the deep glass fill");
 assert(cssSrc.includes("translateY(0.09em)"), "lockup mascot sits another hair lower than the FILTER HERO cap line");
 assert(cssSrc.includes("--brand-band-fill"), "hero and Who you're protecting share one navy fill");
 assert(
@@ -462,6 +468,8 @@ const overdueBandSrc = fs.readFileSync(
   "utf8",
 );
 assert(overdueBandSrc.includes("HVAC_REAL_REPAIRS"), "home overdue band lists the five named repairs");
+assert(overdueBandSrc.includes("overdue-stage-card"), "home wait-stage cards use the brighter band fill");
+assert(!overdueBandSrc.includes("bg-deep"), "home overdue cards must not use the deep fill");
 assert(
   !overdueBandSrc.includes("The expensive filter is the late one"),
   "home overdue band must not restore the late-one kicker",
@@ -471,6 +479,7 @@ const guideSrc = fs.readFileSync(
   "utf8",
 );
 assert(guideSrc.includes("HVAC_WAIT_STAGES"), "change-guide overdue curve uses shared wait stages");
+assert(guideSrc.includes("overdue-stage-card"), "change-guide wait-stage cards use the brighter band fill");
 assert(!guideSrc.includes("$150–$500"), "change-guide must not restore iced-coil $150–$500");
 assert(
   !guideSrc.includes("Iced evaporator coils"),

@@ -91,12 +91,8 @@ export default function OverdueCostsBand() {
             <article
               key={stage.when}
               className={cn(
-                "rounded-2xl border border-white/15 px-4 py-4 text-white",
-                i === 3
-                  ? "bg-hero/90"
-                  : i === 2
-                    ? "bg-navy/80"
-                    : "bg-deep/70",
+                "overdue-stage-card px-4 py-4",
+                i === 3 ? "overdue-stage-card-late" : i === 2 ? "overdue-stage-card-mid" : undefined,
               )}
             >
               <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/70">

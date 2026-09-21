@@ -627,12 +627,12 @@ export default function FilterChangeGuidePage() {
               {HVAC_WAIT_STAGES.map((stage, i) => (
                 <article
                   key={stage.when}
-                  className={`rounded-2xl p-5 text-white ${
+                  className={`overdue-stage-card p-5 ${
                     i === 3
-                      ? "bg-hero"
+                      ? "overdue-stage-card-late"
                       : i === 2
-                        ? "bg-navy"
-                        : "bg-deep"
+                        ? "overdue-stage-card-mid"
+                        : ""
                   }`}
                 >
                   <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/70">
