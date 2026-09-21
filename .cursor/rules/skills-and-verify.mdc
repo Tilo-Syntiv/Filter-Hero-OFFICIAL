@@ -1,0 +1,24 @@
+---
+description: Which skills and verify scripts to use for Filter Hero work.
+alwaysApply: true
+---
+
+# Skills and verify
+
+Read the skill file before using the tool. Do not substitute a different model, host, or API.
+
+| When | Load |
+|---|---|
+| Stripe | Stripe skills + `user-stripe` MCP. Live FILTER HERO only. |
+| Klaviyo | `user-klaviyo` MCP. Account `VnVNmQ` only. |
+| Railway | Railway skill / CLI. One service. `DATA_DIR=/data`. |
+| Supabase | Supabase skill + hosted MCP. No `supabase start`. |
+| DNS / Turnstile | `docs/CLOUDFLARE-NAMESERVERS.md`. Not Hostinger. |
+| Higgsfield | Higgsfield skill + `user-higgsfield`. GPT Image 2 / Seedance 2.0. |
+| Storefront check | Playwright. Click the flow. |
+| Firecrawl / Tavily | Research only. Forbidden as Filter King catalog source. |
+| Apify | `apify` subagent first if named. Not the Filter King catalog path. |
+
+Verify: `pnpm verify:store` · `verify:crm` · `verify:account` · `verify:supabase` · `verify:security` · `verify:env` · `verify:klaviyo` · `verify:resend` · `verify:stripe-books` · `verify:intuit-oauth` · `pnpm smoke`.
+
+Secrets never go in `VITE_` vars except `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_TURNSTILE_SITE_KEY`, `VITE_SITE_URL`, `VITE_FULL_CATALOG`.

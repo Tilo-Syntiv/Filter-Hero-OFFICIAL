@@ -1,0 +1,1239 @@
+[
+  {
+    "slug": "air-bear",
+    "name": "Trion Air Bear",
+    "featured": true,
+    "sizes": [
+      "16x20x5",
+      "16x25x5",
+      "20x20x5",
+      "20x25x5"
+    ],
+    "models": [
+      {
+        "code": "435790-027",
+        "size": "20x25x5"
+      },
+      {
+        "code": "435790-048",
+        "size": "20x25x5"
+      },
+      {
+        "code": "447380-002",
+        "size": "20x25x5"
+      },
+      {
+        "code": "453000-001",
+        "size": "20x25x5"
+      },
+      {
+        "code": "455602-019",
+        "size": "20x25x5"
+      },
+      {
+        "code": "455602-025",
+        "size": "20x25x5"
+      },
+      {
+        "code": "455602-027",
+        "size": "20x25x5"
+      },
+      {
+        "code": "455602-119C",
+        "size": "16x25x5"
+      },
+      {
+        "code": "455602-125",
+        "size": "16x25x5"
+      },
+      {
+        "code": "455602-325",
+        "size": "16x20x5"
+      },
+      {
+        "code": "455602-327",
+        "size": "16x20x5"
+      },
+      {
+        "code": "455604-019",
+        "size": "20x20x5"
+      },
+      {
+        "code": "459202-001",
+        "size": "20x25x5"
+      },
+      {
+        "code": "Right Angle",
+        "size": "20x25x5"
+      },
+      {
+        "code": "Superme 1200",
+        "size": "16x20x5"
+      },
+      {
+        "code": "Superme 1400",
+        "size": "16x25x5"
+      },
+      {
+        "code": "Superme 2000",
+        "size": "20x25x5"
+      },
+      {
+        "code": "Superme 20x20",
+        "size": "20x20x5"
+      }
+    ],
+    "oemParts": [
+      {
+        "code": "000-0448-003",
+        "size": "20x20x5"
+      },
+      {
+        "code": "229990-002",
+        "size": "20x25x5"
+      },
+      {
+        "code": "229990-003",
+        "size": "20x20x5"
+      },
+      {
+        "code": "229990-102",
+        "size": "20x25x5"
+      },
+      {
+        "code": "229990-105",
+        "size": "16x25x5"
+      },
+      {
+        "code": "248713-102",
+        "size": "20x25x5"
+      },
+      {
+        "code": "255649-102",
+        "size": "20x25x5"
+      },
+      {
+        "code": "255649-103",
+        "size": "20x20x5"
+      },
+      {
+        "code": "255649-104",
+        "size": "16x20x5"
+      },
+      {
+        "code": "255649-105",
+        "size": "16x25x5"
+      },
+      {
+        "code": "259112-102",
+        "size": "20x25x5"
+      },
+      {
+        "code": "259112-103",
+        "size": "20x20x5"
+      },
+      {
+        "code": "259112-104",
+        "size": "16x20x5"
+      },
+      {
+        "code": "259112-105",
+        "size": "16x25x5"
+      },
+      {
+        "code": "266649-102",
+        "size": "20x25x5"
+      },
+      {
+        "code": "266649-103",
+        "size": "20x20x5"
+      },
+      {
+        "code": "266649-104",
+        "size": "16x20x5"
+      },
+      {
+        "code": "266649-105",
+        "size": "16x25x5"
+      }
+    ]
+  },
+  {
+    "slug": "amana",
+    "name": "Amana",
+    "featured": true,
+    "sizes": [
+      "15.5x21x1",
+      "19.5x21x1",
+      "22x23x1"
+    ],
+    "models": [
+      {
+        "code": "ADPF182416",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "ADPF304216",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ADPF486016",
+        "size": "22x23x1"
+      },
+      {
+        "code": "AEPF183016",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "AEPF303616",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "AEPF313716",
+        "size": "22x23x1"
+      },
+      {
+        "code": "AEPF426016",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARPF182416",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "ARPF193116",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ARPF303016",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ARPF363616",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ARPF364216",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARPF374316",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARPF486016",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARPF496116",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARUF172916",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "ARUF182416",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "ARUF193116",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ARUF303016",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ARUF363616",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ARUF364216",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARUF374316",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARUF486016",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARUF496116",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ASPF183016",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "ASPF183016 (medium)",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ASPF303616 (large)",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ASPF313716",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ASPF426016",
+        "size": "22x23x1"
+      },
+      {
+        "code": "BBA36",
+        "size": "15.5x21x1"
+      }
+    ],
+    "oemParts": [
+      {
+        "code": "FIL18-32",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "FIL36-42",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "FIL48-61",
+        "size": "22x23x1"
+      }
+    ]
+  },
+  {
+    "slug": "american-standard",
+    "name": "American Standard",
+    "featured": true,
+    "sizes": [
+      "16x20x1",
+      "16x25x1",
+      "18x25x1",
+      "20x20x1",
+      "20x25x1"
+    ],
+    "models": [
+      {
+        "code": "BWV036",
+        "size": "16x25x1"
+      },
+      {
+        "code": "TWE0030P",
+        "size": "20x20x1"
+      },
+      {
+        "code": "TWE0060P",
+        "size": "20x25x1"
+      },
+      {
+        "code": "TWE0063P",
+        "size": "20x25x1"
+      },
+      {
+        "code": "TWE030C",
+        "size": "20x20x1"
+      },
+      {
+        "code": "TWE031E",
+        "size": "20x20x1"
+      },
+      {
+        "code": "TWE036C",
+        "size": "20x20x1"
+      },
+      {
+        "code": "TWE040E",
+        "size": "20x25x1"
+      },
+      {
+        "code": "TWE042C",
+        "size": "20x20x1"
+      },
+      {
+        "code": "TWE048C",
+        "size": "20x20x1"
+      },
+      {
+        "code": "TWE048P",
+        "size": "20x25x1"
+      },
+      {
+        "code": "TWE065E",
+        "size": "20x25x1"
+      },
+      {
+        "code": "TWV018B",
+        "size": "16x20x1"
+      },
+      {
+        "code": "TWV024B",
+        "size": "16x20x1"
+      },
+      {
+        "code": "TWV025B",
+        "size": "16x20x1"
+      },
+      {
+        "code": "TWV030B",
+        "size": "16x25x1"
+      },
+      {
+        "code": "TWV036B",
+        "size": "18x25x1"
+      }
+    ],
+    "oemParts": []
+  },
+  {
+    "slug": "armstrong",
+    "name": "Armstrong",
+    "featured": true,
+    "sizes": [
+      "20x25x5"
+    ],
+    "models": [
+      {
+        "code": "ABS20-1",
+        "size": "20x25x5"
+      },
+      {
+        "code": "AE20A-1",
+        "size": "20x25x5"
+      },
+      {
+        "code": "AMC20A-1",
+        "size": "20x25x5"
+      }
+    ],
+    "oemParts": []
+  },
+  {
+    "slug": "bdp",
+    "name": "BDP",
+    "featured": true,
+    "sizes": [
+      "19x20x5"
+    ],
+    "models": [],
+    "oemParts": [
+      {
+        "code": "FILBBFNC0021",
+        "size": "19x20x5"
+      },
+      {
+        "code": "FILCCFNC0021",
+        "size": "19x20x5"
+      }
+    ]
+  },
+  {
+    "slug": "bryant",
+    "name": "Bryant",
+    "featured": true,
+    "sizes": [
+      "19x20x5"
+    ],
+    "models": [],
+    "oemParts": [
+      {
+        "code": "FILBBFNC0021",
+        "size": "19x20x5"
+      },
+      {
+        "code": "FILCCFNC0021",
+        "size": "19x20x5"
+      }
+    ]
+  },
+  {
+    "slug": "carrier",
+    "name": "Carrier",
+    "featured": true,
+    "sizes": [
+      "16x20x5",
+      "16x25x5",
+      "19x20x5",
+      "20x25x5"
+    ],
+    "models": [
+      {
+        "code": "EZXCAB0017",
+        "size": "16x20x5"
+      }
+    ],
+    "oemParts": [
+      {
+        "code": "EXPXXFIL0016",
+        "size": "16x25x5"
+      },
+      {
+        "code": "EXPXXFIL0020",
+        "size": "20x25x5"
+      },
+      {
+        "code": "EXPXXUNV0016",
+        "size": "16x25x5"
+      },
+      {
+        "code": "EXPXXUNV0020",
+        "size": "20x25x5"
+      },
+      {
+        "code": "FILBBFNC0017",
+        "size": "16x20x5"
+      },
+      {
+        "code": "FILBBFNC0021",
+        "size": "19x20x5"
+      },
+      {
+        "code": "FILCCFNC0017",
+        "size": "16x20x5"
+      },
+      {
+        "code": "FILCCFNC0021",
+        "size": "19x20x5"
+      },
+      {
+        "code": "FILXXCAR0020",
+        "size": "20x25x5"
+      }
+    ]
+  },
+  {
+    "slug": "day-and-night",
+    "name": "Day and Night",
+    "featured": true,
+    "sizes": [
+      "19x20x5"
+    ],
+    "models": [],
+    "oemParts": [
+      {
+        "code": "FILBBFNC0021",
+        "size": "19x20x5"
+      },
+      {
+        "code": "FILCCFNC0021",
+        "size": "19x20x5"
+      }
+    ]
+  },
+  {
+    "slug": "goodman",
+    "name": "Goodman",
+    "featured": true,
+    "sizes": [
+      "15.5x21x1",
+      "16x20x1",
+      "19.5x21x1",
+      "20x20x1",
+      "22x23x1"
+    ],
+    "models": [
+      {
+        "code": "A-24",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "A-36",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "A-42",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "A-48",
+        "size": "22x23x1"
+      },
+      {
+        "code": "A-49",
+        "size": "22x23x1"
+      },
+      {
+        "code": "A-60",
+        "size": "22x23x1"
+      },
+      {
+        "code": "A-61",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ADPF1824",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "ADPF3042",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ADPF4860",
+        "size": "22x23x1"
+      },
+      {
+        "code": "AEPF1830",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "AEPF3036",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "AEPF3137",
+        "size": "22x23x1"
+      },
+      {
+        "code": "AEPF4260",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARPF1824",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "ARPF1931",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ARPF3030",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ARPF3636",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ARPF3642",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARPF3743",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARPF4860",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARPF4961",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARUF1729",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "ARUF1824",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "ARUF1931",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ARUF25B14",
+        "size": "16x20x1"
+      },
+      {
+        "code": "ARUF29B14",
+        "size": "16x20x1"
+      },
+      {
+        "code": "ARUF3030",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ARUF31B14",
+        "size": "16x20x1"
+      },
+      {
+        "code": "ARUF3636",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "ARUF3642",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARUF3743",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARUF37C14",
+        "size": "20x20x1"
+      },
+      {
+        "code": "ARUF43C14",
+        "size": "20x20x1"
+      },
+      {
+        "code": "ARUF4860",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARUF4961",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ARUF49C14",
+        "size": "20x20x1"
+      },
+      {
+        "code": "ASPF1830",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "ASPF3036",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ASPF3137",
+        "size": "22x23x1"
+      },
+      {
+        "code": "ASPF4260",
+        "size": "22x23x1"
+      },
+      {
+        "code": "AVPTC25B14",
+        "size": "16x20x1"
+      },
+      {
+        "code": "AVPTC29B14",
+        "size": "16x20x1"
+      },
+      {
+        "code": "AVPTC3137",
+        "size": "22x23x1"
+      },
+      {
+        "code": "AVPTC31C14",
+        "size": "20x20x1"
+      },
+      {
+        "code": "AVPTC33C14",
+        "size": "20x20x1"
+      },
+      {
+        "code": "AVPTC35B14",
+        "size": "16x20x1"
+      },
+      {
+        "code": "AVPTC37B14",
+        "size": "16x20x1"
+      },
+      {
+        "code": "AVPTC37C14",
+        "size": "20x20x1"
+      },
+      {
+        "code": "AVPTC39C14",
+        "size": "20x20x1"
+      },
+      {
+        "code": "AVPTC4260",
+        "size": "22x23x1"
+      },
+      {
+        "code": "AVPTC49C14",
+        "size": "20x20x1"
+      },
+      {
+        "code": "AVPTC59C14",
+        "size": "20x20x1"
+      },
+      {
+        "code": "AW-30",
+        "size": "20x20x1"
+      },
+      {
+        "code": "BBA36",
+        "size": "15.5x21x1"
+      }
+    ],
+    "oemParts": [
+      {
+        "code": "ALFH16201E",
+        "size": "16x20x1"
+      },
+      {
+        "code": "ALFH1912201E",
+        "size": "20x20x1"
+      },
+      {
+        "code": "FIL18-32",
+        "size": "15.5x21x1"
+      },
+      {
+        "code": "FIL36-42",
+        "size": "19.5x21x1"
+      },
+      {
+        "code": "FIL48-61",
+        "size": "22x23x1"
+      }
+    ]
+  },
+  {
+    "slug": "honeywell",
+    "name": "Honeywell",
+    "featured": true,
+    "sizes": [
+      "16x25x5",
+      "20x20x5",
+      "20x25x5"
+    ],
+    "models": [
+      {
+        "code": "F100F1012",
+        "size": "16x25x5"
+      },
+      {
+        "code": "F100F1038",
+        "size": "20x25x5"
+      },
+      {
+        "code": "F100F1625",
+        "size": "16x25x5"
+      },
+      {
+        "code": "F100F2010",
+        "size": "20x25x5"
+      },
+      {
+        "code": "F100F2025",
+        "size": "20x25x5"
+      },
+      {
+        "code": "F100F2044",
+        "size": "20x25x5"
+      },
+      {
+        "code": "F100F2051",
+        "size": "20x25x5"
+      },
+      {
+        "code": "F150E1026",
+        "size": "16x25x5"
+      },
+      {
+        "code": "F150E1034",
+        "size": "20x25x5"
+      },
+      {
+        "code": "F25F1006",
+        "size": "16x25x5"
+      }
+    ],
+    "oemParts": [
+      {
+        "code": "FC100A1029",
+        "size": "16x25x5"
+      },
+      {
+        "code": "FC100A1037",
+        "size": "20x25x5"
+      }
+    ]
+  },
+  {
+    "slug": "lennox",
+    "name": "Lennox",
+    "featured": true,
+    "sizes": [
+      "16x20x5",
+      "16x25x5",
+      "20x25x5"
+    ],
+    "models": [
+      {
+        "code": "BMAC-12C",
+        "size": "16x20x5"
+      },
+      {
+        "code": "BMAC-14CE",
+        "size": "16x25x5"
+      },
+      {
+        "code": "BMAC-20C",
+        "size": "20x25x5"
+      },
+      {
+        "code": "EAC0-14",
+        "size": "16x20x5"
+      },
+      {
+        "code": "EAC012",
+        "size": "16x20x5"
+      },
+      {
+        "code": "HCC16-28",
+        "size": "16x25x5"
+      },
+      {
+        "code": "HCC20-28",
+        "size": "20x25x5"
+      },
+      {
+        "code": "HCF16-11",
+        "size": "16x25x5"
+      },
+      {
+        "code": "HCF16-16",
+        "size": "16x25x5"
+      },
+      {
+        "code": "HCF20-10",
+        "size": "20x25x5"
+      },
+      {
+        "code": "HCF20-11",
+        "size": "20x25x5"
+      },
+      {
+        "code": "HCF20-13",
+        "size": "20x25x5"
+      },
+      {
+        "code": "HCF20-16",
+        "size": "20x25x5"
+      },
+      {
+        "code": "HCXF16-15",
+        "size": "16x25x5"
+      },
+      {
+        "code": "HCXF20-15",
+        "size": "20x25x5"
+      }
+    ],
+    "oemParts": [
+      {
+        "code": "X0584",
+        "size": "16x20x5"
+      },
+      {
+        "code": "X0586",
+        "size": "20x25x5"
+      },
+      {
+        "code": "X6670",
+        "size": "16x25x5"
+      },
+      {
+        "code": "X6673",
+        "size": "20x25x5"
+      },
+      {
+        "code": "X6675",
+        "size": "20x25x5"
+      }
+    ]
+  },
+  {
+    "slug": "payne",
+    "name": "Payne",
+    "featured": true,
+    "sizes": [
+      "19x20x5"
+    ],
+    "models": [],
+    "oemParts": [
+      {
+        "code": "FILBBFNC0021",
+        "size": "19x20x5"
+      },
+      {
+        "code": "FILCCFNC0021",
+        "size": "19x20x5"
+      }
+    ]
+  },
+  {
+    "slug": "trane",
+    "name": "Trane",
+    "featured": true,
+    "sizes": [
+      "16x20x1",
+      "16x25x1",
+      "18x25x1",
+      "20x20x1",
+      "20x25x1"
+    ],
+    "models": [
+      {
+        "code": "BWV036",
+        "size": "16x25x1"
+      },
+      {
+        "code": "TWE0030P",
+        "size": "20x20x1"
+      },
+      {
+        "code": "TWE0060P",
+        "size": "20x25x1"
+      },
+      {
+        "code": "TWE0063P",
+        "size": "20x25x1"
+      },
+      {
+        "code": "TWE030C",
+        "size": "20x20x1"
+      },
+      {
+        "code": "TWE031E",
+        "size": "20x20x1"
+      },
+      {
+        "code": "TWE036C",
+        "size": "20x20x1"
+      },
+      {
+        "code": "TWE040E",
+        "size": "20x25x1"
+      },
+      {
+        "code": "TWE042C",
+        "size": "20x20x1"
+      },
+      {
+        "code": "TWE048C",
+        "size": "20x20x1"
+      },
+      {
+        "code": "TWE048P",
+        "size": "20x25x1"
+      },
+      {
+        "code": "TWE065E",
+        "size": "20x25x1"
+      },
+      {
+        "code": "TWV018B",
+        "size": "16x20x1"
+      },
+      {
+        "code": "TWV024B",
+        "size": "16x20x1"
+      },
+      {
+        "code": "TWV025B",
+        "size": "16x20x1"
+      },
+      {
+        "code": "TWV030B",
+        "size": "16x25x1"
+      },
+      {
+        "code": "TWV036B",
+        "size": "18x25x1"
+      }
+    ],
+    "oemParts": []
+  },
+  {
+    "slug": "accumulair",
+    "name": "Accumulair",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "air-kontrol",
+    "name": "Air Kontrol",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "coleman",
+    "name": "Coleman",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "comfort-plus",
+    "name": "Comfort Plus",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "electro-air",
+    "name": "Electro-Air",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "emerson",
+    "name": "Emerson",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "five-seasons",
+    "name": "Five Seasons",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "frigidaire",
+    "name": "Frigidaire",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "general",
+    "name": "General",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "general-aire",
+    "name": "GeneralAire",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "gibson",
+    "name": "Gibson",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "kelvinator",
+    "name": "Kelvinator",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "maytag",
+    "name": "Maytag",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "nordyne",
+    "name": "Nordyne",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "philco",
+    "name": "Philco",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "purolator",
+    "name": "Purolator",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "rheem",
+    "name": "Rheem",
+    "featured": true,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "ruud",
+    "name": "Ruud",
+    "featured": true,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "skuttle",
+    "name": "Skuttle",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "tappan",
+    "name": "Tappan",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "totaline",
+    "name": "Totaline",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "ultravation",
+    "name": "Ultravation",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "westinghouse",
+    "name": "Westinghouse",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "white-rodgers",
+    "name": "White-Rodgers",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  },
+  {
+    "slug": "york",
+    "name": "York",
+    "featured": false,
+    "sizes": [],
+    "models": [],
+    "oemParts": []
+  }
+]

@@ -1,0 +1,14 @@
+---
+description: GPT Image 2 stills, Seedance 2.0 video, minimum credits, batch 1.
+alwaysApply: true
+---
+
+# Higgsfield media
+
+- Images: GPT Image 2 (`gpt_image_2`) only. One still, 16:9, 1K, batch 1. Quality medium unless print.
+- Video: Seedance 2.0 only. 720p, 16:9, up to 15s. Audio only when the shot needs it.
+- One identity still, then one test clip. Stop if that clip fails.
+- Batch 1. No 4-up, no 1080p/4K, no Seedance 2.5, no Kling/Veo/Soul unless named.
+- One retry per failed request. Do not regenerate a clip that already passed.
+
+Read the Higgsfield skill before calling `user-higgsfield`. Pack shots are Filter Hero branded — no Filter King wordmark on the stack.

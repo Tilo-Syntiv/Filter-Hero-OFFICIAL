@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Filter Hero Brand Sheet</title>
+  <link rel="icon" href="assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,600;0,700;0,800;1,800&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --navy: #203868;
+      --hero: #7f2328;
+      --mesh: #3a66a3;
+      --ice: #8eb0d8;
+      --deep: #141e30;
+      --signal: #f24b52;
+      --page: #f6f7f9;
+      --card: #ffffff;
+      --sky: #d7eef8;
+      --soft: #e8edf4;
+      --muted: #5c6b80;
+      --header-a: #1b3258;
+      --header-b: #23406a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: #dce3ee;
+      color: var(--deep);
+      font-family: Manrope, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 1.25rem;
+    }
+
+    .sheet {
+      max-width: 1180px;
+      margin: 0 auto;
+      background: var(--page);
+      border: 1px solid #d0d8e4;
+      overflow: hidden;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    .toolbar {
+      max-width: 1180px;
+      margin: 0 auto 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .toolbar button {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.68rem;
+      background: var(--hero);
+      color: #fff;
+      border: 0;
+      clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+      padding: 0.7rem 1.2rem;
+      cursor: pointer;
+    }
+
+    .mast {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 1.15rem;
+      color: #fff;
+      background:
+        radial-gradient(ellipse 70% 120% at 0% 50%, rgba(58, 102, 163, 0.42), transparent 55%),
+        radial-gradient(ellipse 50% 100% at 100% 50%, rgba(127, 35, 40, 0.16), transparent 50%),
+        linear-gradient(180deg, var(--header-a) 0%, var(--header-b) 100%);
+      position: relative;
+    }
+
+    .mast::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 5%, var(--ice) 30%, var(--hero) 50%, var(--ice) 70%, transparent 95%);
+    }
+
+    .lockup {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .lockup img {
+      height: 42px;
+      width: auto;
+      filter:
+        drop-shadow(0 0 0.6px rgba(255, 255, 255, 0.95))
+        drop-shadow(0 0 8px rgba(196, 220, 245, 0.55));
+    }
+
+    .wordmark {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+
+    .wordmark .filter { color: #fff; }
+    .wordmark .hero {
+      color: var(--signal);
+      text-shadow: 0 1px 0 rgba(16, 24, 40, 0.35), 0 0 18px rgba(242, 75, 82, 0.45);
+    }
+
+    .mast-meta {
+      text-align: right;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--ice);
+    }
+
+    .mast-meta strong {
+      display: block;
+      color: #fff;
+      letter-spacing: 0.04em;
+      text-transform: none;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 0.92rem;
+      margin-bottom: 0.15rem;
+    }
+
+    .body {
+      padding: 1rem 1.15rem 1.2rem;
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .kicker {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--mesh);
+      margin-bottom: 0.45rem;
+    }
+
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.55rem;
+    }
+
+    .swatch {
+      background: var(--card);
+      border: 1px solid #d0d8e4;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .chip {
+      height: 72px;
+    }
+
+    .swatch dl {
+      padding: 0.55rem 0.65rem 0.65rem;
+    }
+
+    .swatch dt {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-weight: 800;
+      font-size: 0.82rem;
+      letter-spacing: -0.02em;
+    }
+
+    .swatch dd {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 0.18rem;
+      line-height: 1.45;
+    }
+
+    .hex {
+      color: var(--navy);
+      font-weight: 500;
+    }
+
+    .surfaces {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.55rem;
+    }
+
+    .surface {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      background: var(--card);
+      border: 1px solid #d0d8e4;
+      padding: 0.45rem 0.55rem;
+      cursor: pointer;
+    }
+
+    .surface i {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      border: 1px solid #d0d8e4;
+    }
+
+    .surface b {
+      display: block;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .surface span {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.64rem;
+      color: var(--muted);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 0.7rem;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid #d0d8e4;
+      padding: 0.8rem 0.9rem;
+    }
+
+    h2 {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      color: var(--navy);
+    }
+
+    .spec {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin: 0.35rem 0 0.7rem;
+    }
+
+    .type-row {
+      display: grid;
+      grid-template-columns: 7.5rem 1fr;
+      gap: 0.5rem;
+      align-items: baseline;
+      padding: 0.4rem 0;
+      border-top: 1px solid var(--soft);
+    }
+
+    .type-row b {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mesh);
+    }
+
+    .heading-ex { font-family: "Plus Jakarta Sans", sans-serif; font-weight: 800; letter-spacing: -0.04em; font-size: 1.15rem; }
+    .cta-ex {
+      display: inline-block;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-style: italic;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--hero);
+      color: #fff;
+      clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+      padding: 0.4rem 0.85rem;
+      font-size: 0.72rem;
+    }
+    .body-ex { font-size: 0.88rem; line-height: 1.45; }
+
+    .lockups {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .lock-card {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      min-height: 64px;
+      padding: 0.55rem 0.7rem;
+    }
+
+    .lock-card.on-navy {
+      background: linear-gradient(180deg, var(--header-a), var(--header-b));
+    }
+
+    .lock-card.on-light {
+      background: #fff;
+      border: 1px solid #d0d8e4;
+    }
+
+    .lock-card.on-light .wordmark .filter { color: var(--navy); }
+    .lock-card.on-light .wordmark .hero {
+      color: var(--hero);
+      text-shadow: none;
+    }
+
+    .lock-card img { height: 36px; }
+
+    .lock-note {
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .dos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.7rem;
+    }
+
+    .do, .dont {
+      padding: 0.8rem 0.9rem;
+      border: 1px solid #d0d8e4;
+      background: var(--card);
+    }
+
+    .do { border-top: 3px solid var(--mesh); }
+    .dont { border-top: 3px solid var(--hero); }
+
+    ul {
+      margin-top: 0.35rem;
+      padding-left: 1.05rem;
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+
+    li + li { margin-top: 0.22rem; }
+
+    .footer-row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.9fr 0.9fr;
+      gap: 0.7rem;
+    }
+
+    .quote {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      font-size: 1.05rem;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+
+    .canva {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.72rem;
+      line-height: 1.55;
+      color: var(--navy);
+      background: var(--soft);
+      padding: 0.55rem 0.65rem;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--deep);
+      color: #fff;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.55rem 0.9rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .toast.show { opacity: 1; }
+
+    @media print {
+      html, body { background: #fff; padding: 0; }
+      .toolbar, .toast { display: none !important; }
+      .sheet { border: 0; max-width: none; }
+      @page { size: landscape; margin: 0.35in; }
+    }
+
+    @media (max-width: 860px) {
+      .swatches, .surfaces, .split, .dos, .footer-row { grid-template-columns: 1fr; }
+      .mast { flex-direction: column; align-items: flex-start; }
+      .mast-meta { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <span>Open in Chrome → Print → Save as PDF. Click any swatch to copy its hex for Canva.</span>
+    <button type="button" onclick="window.print()">Print / Save PDF</button>
+  </div>
+
+  <article class="sheet">
+    <header class="mast">
+      <div class="lockup">
+        <img src="assets/logo.png" alt="Filter Hero emblem" />
+        <div class="wordmark"><span class="filter">Filter</span> <span class="hero">Hero</span></div>
+      </div>
+      <div class="mast-meta">
+        <strong>Brand sheet</strong>
+        One-page kit · August 2026 · filterhero.net
+      </div>
+    </header>
+
+    <div class="body">
+      <section>
+        <p class="kicker">Core palette — from the mascot artwork</p>
+        <div class="swatches">
+          <article class="swatch" data-hex="#203868">
+            <div class="chip" style="background:#203868"></div>
+            <dl>
+              <dt>Navy</dt>
+              <dd>
+                <span class="hex">#203868</span><br />
+                RGB 32 56 104<br />
+                CMYK 69 46 0 59<br />
+                FILTER, suit, headers
+              </dd>
+            </dl>
+          </article>
+          <article class="swatch" data-hex="#7F2328">
+            <div class="chip" style="background:#7F2328"></div>
+            <dl>
+              <dt>Hero burgundy</dt>
+              <dd>
+                <span class="hex">#7F2328</span><br />
+                RGB 127 35 40<br />
+                CMYK 0 72 69 50<br />
+                HERO, Shop Now, CTAs
+              </dd>
+            </dl>
+          </article>
+          <article class="swatch" data-hex="#3A66A3">
+            <div class="chip" style="background:#3A66A3"></div>
+            <dl>
+              <dt>Mesh</dt>
+              <dd>
+                <span class="hex">#3A66A3</span><br />
+                RGB 58 102 163<br />
+                CMYK 64 37 0 36<br />
+                Cape grid, labels, rings
+              </dd>
+            </dl>
+          </article>
+          <article class="swatch" data-hex="#8EB0D8">
+            <div class="chip" style="background:#8EB0D8"></div>
+            <dl>
+              <dt>Ice</dt>
+              <dd>
+                <span class="hex">#8EB0D8</span><br />
+                RGB 142 176 216<br />
+                CMYK 34 19 0 15<br />
+                Highlights, hairlines
+              </dd>
+            </dl>
+          </article>
+          <article class="swatch" data-hex="#141E30">
+            <div class="chip" style="background:#141E30"></div>
+            <dl>
+              <dt>Deep</dt>
+              <dd>
+                <span class="hex">#141E30</span><br />
+                RGB 20 30 48<br />
+                CMYK 58 37 0 81<br />
+                Body text, dark panels
+              </dd>
+            </dl>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <p class="kicker">Surfaces &amp; specials</p>
+        <div class="surfaces">
+          <div class="surface" data-hex="#F6F7F9"><i style="background:#F6F7F9"></i><div><b>Page</b><span>#F6F7F9</span></div></div>
+          <div class="surface" data-hex="#FFFFFF"><i style="background:#FFFFFF"></i><div><b>Card</b><span>#FFFFFF</span></div></div>
+          <div class="surface" data-hex="#D7EEF8"><i style="background:#D7EEF8"></i><div><b>Hero sky</b><span>#D7EEF8</span></div></div>
+          <div class="surface" data-hex="#F24B52"><i style="background:#F24B52"></i><div><b>Signal red</b><span>#F24B52 navy wordmark only</span></div></div>
+        </div>
+      </section>
+
+      <div class="split">
+        <section class="panel">
+          <p class="kicker">Typography</p>
+          <h2>Plus Jakarta Sans</h2>
+          <p class="spec">Headings, wordmark, buttons · 700–800 · tracking −0.04em. Canva: search “Plus Jakarta Sans”.</p>
+          <div class="type-row"><b>Display</b><span class="heading-ex">The First Line of Defense</span></div>
+          <div class="type-row"><b>CTA</b><span class="cta-ex">Shop now</span></div>
+          <div class="type-row">
+            <b>Body</b>
+            <span class="body-ex"><strong>Manrope</strong> 400–700. Measure Width × Length × Depth, then shop MERV 8, 11, 13, or carbon. Canva: search “Manrope”.</span>
+          </div>
+        </section>
+
+        <section class="panel">
+          <p class="kicker">Lockups</p>
+          <div class="lockups">
+            <div class="lock-card on-navy">
+              <img src="assets/logo.png" alt="" />
+              <div class="wordmark"><span class="filter">Filter</span> <span class="hero">Hero</span></div>
+            </div>
+            <div class="lock-card on-light">
+              <img src="assets/logo.png" alt="" />
+              <div class="wordmark"><span class="filter">Filter</span> <span class="hero">Hero</span></div>
+            </div>
+            <p class="lock-note">
+              Emblem + wordmark is the default. On navy: Filter white, Hero <b>#F24B52</b>.
+              On white/packaging: Filter navy, Hero <b>#7F2328</b>. Clear space = height of the H. Never outline, stretch, or recolor the cape mesh.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <div class="dos">
+        <section class="do">
+          <p class="kicker">Do</p>
+          <ul>
+            <li>Keep FILTER navy and HERO burgundy. Navy carries the brand; burgundy is for action only.</li>
+            <li>Use the angled parallelogram on Shop Now / primary ads — same clip as the site CTA.</li>
+            <li>Pair Ice + burgundy as a thin hairline, never as a 50/50 split.</li>
+            <li>On Ice chips, set type in Deep <b>#141E30</b> (white on Ice fails WCAG at 2.25:1).</li>
+            <li>Packaging: white carton, navy/burgundy wordmark, ice mesh window, Made in USA.</li>
+          </ul>
+        </section>
+        <section class="dont">
+          <p class="kicker">Don’t</p>
+          <ul>
+            <li>Don’t swap the colors, add a third brand hue, or use old ClearAir cyan <b>#06B6D4</b>.</li>
+            <li>Don’t put white type on Ice, or burgundy as a full-page background.</li>
+            <li>Don’t redraw, rotate, or drop-shadow the mascot. Don’t replace the cape grid with hexagons or smoke.</li>
+            <li>Don’t set body copy in Plus Jakarta Sans, or CTAs in rounded pills if matching the site.</li>
+            <li>Don’t use Signal red <b>#F24B52</b> on light backgrounds — that red is navy-header only.</li>
+          </ul>
+        </section>
+      </div>
+
+      <div class="footer-row">
+        <section class="panel">
+          <p class="kicker">Voice</p>
+          <p class="quote">Find your exact filter size in seconds.</p>
+          <p class="spec" style="margin-bottom:0">Precise, effortless, reliable. Lead with Width × Length × Depth. No hype, no “ultimate,” no sales-red shouting. Tagline on hero art: <i>The First Line of Defense for Your Indoor Air.</i></p>
+        </section>
+        <section class="panel">
+          <p class="kicker">Canva brand kit — paste these</p>
+          <div class="canva">
+            203868  Navy<br />
+            7F2328  Hero<br />
+            3A66A3  Mesh<br />
+            8EB0D8  Ice<br />
+            141E30  Deep<br />
+            F24B52  Signal (navy only)
+          </div>
+        </section>
+        <section class="panel">
+          <p class="kicker">Ratio</p>
+          <p class="spec" style="margin-bottom:0.35rem">Navy ~60% · Ice/Mesh ~25% · Burgundy ~10% · White/page the rest. Burgundy is the spark, not the field.</p>
+          <p class="spec" style="margin:0">Print: convert this page to PDF, then to CMYK in packaging files. Web/ads: use HEX/RGB as listed. Tokens live in <b>client/src/index.css</b>.</p>
+        </section>
+      </div>
+    </div>
+  </article>
+
+  <div class="toast" id="toast">Copied</div>
+  <script>
+    const toast = document.getElementById("toast");
+    function copyHex(hex) {
+      navigator.clipboard.writeText(hex).then(() => {
+        toast.textContent = "Copied " + hex;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 1200);
+      });
+    }
+    document.querySelectorAll("[data-hex]").forEach((el) => {
+      el.addEventListener("click", () => copyHex(el.getAttribute("data-hex")));
+    });
+  </script>
+</body>
+</html>

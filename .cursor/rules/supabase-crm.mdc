@@ -1,0 +1,16 @@
+---
+description: Hosted Supabase only. RLS on, zero policies. CRM never emails.
+alwaysApply: true
+---
+
+# Supabase, CRM, accounts
+
+Hosted project only. No `DATABASE_URL`, no `pg` pool, no `supabase start`. Browser never queries Postgres. Service-role Express only. Never put `SUPABASE_SERVICE_ROLE_KEY` in a `VITE_` var.
+
+RLS on, zero policies, FORCE RLS, grants revoked from `anon` / `authenticated` / `public`.
+
+Staff: magic link + OTP, `STAFF_EMAILS`. Shopper: email + password. Guest checkout still works.
+
+Quote → deal in `new`. Support → note, no deal. Reminder → nothing. Paid checkout → won.
+
+Contact saves `leads.json` first, then fail-soft CRM. CRM never emails. `CRM_DISABLE` must not kill accounts.

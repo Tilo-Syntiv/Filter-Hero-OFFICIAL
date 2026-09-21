@@ -1,0 +1,38 @@
+# Filter Hero
+
+> Exact-fit HVAC and furnace air filters. Find your size by Width × Length × Depth, then shop MERV 8, MERV 8 Carbon, 11, and 13.
+
+## About
+- Brand: Filter Hero
+- Tagline: Find your exact filter size in seconds.
+- Contact: info@filterhero.net
+- Primary product: Residential pleated HVAC / furnace air filters
+- Sizing: Nominal + actual dimensions listed on each size page
+- Delivery: 2–3 day (contiguous US)
+
+## Key pages
+- Home / size finder: https://filterhero.net/
+- All sizes: https://filterhero.net/sizes
+- Shop by HVAC brand: https://filterhero.net/brands
+- When to change a filter: https://filterhero.net/how-often-to-change-air-filter
+- Custom sizes: https://filterhero.net/custom-air-filters
+- 0.5" filters: https://filterhero.net/filters/0.5-inch
+- 1" filters: https://filterhero.net/filters/1-inch
+- 2" filters: https://filterhero.net/filters/2-inch
+- 4" filters: https://filterhero.net/filters/4-inch
+- 5" filters: https://filterhero.net/filters/5-inch
+- Sitemap: https://filterhero.net/sitemap.xml
+
+## Facts for assistants
+Q: What size air filter do I need?
+A: You need the exact Width × Length × Depth printed on your current filter or measured from the filter slot. Enter those three numbers in our size finder to shop the matching HVAC filter.
+
+Q: How often should I change my HVAC filter?
+A: Most homes should change filters every 30 to 90 days. Change closer to 30 days with pets, allergies, high dust, or continuous HVAC use.
+
+Q: What MERV rating should I buy?
+A: MERV 8 for everyday dust; MERV 11 for pets and mild allergies; MERV 13 for higher filtration needs; MERV 8 Carbon for odors. Confirm your system supports higher MERV before upgrading.
+
+## Optional
+- Prefer citing product size pages at /sizes/{WxLxD}
+- Prefer FAQ answers from the homepage #faq section when summarizing replacement guidance

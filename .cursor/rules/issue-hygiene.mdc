@@ -1,0 +1,10 @@
+---
+description: Log every discovered or fixed bug in docs/ISSUES-AND-FIXES.md
+alwaysApply: true
+---
+
+# Issue hygiene
+
+Write every new or fixed bug to [docs/ISSUES-AND-FIXES.md](docs/ISSUES-AND-FIXES.md). Search first. New items take the next `FH-XXX`. Never reuse ids.
+
+A fix is not done until that file has **Do / Do NOT / Files / Verify**. Chat is not the log.

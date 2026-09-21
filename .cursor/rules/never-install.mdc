@@ -1,0 +1,10 @@
+---
+description: Packages and hosts Filter Hero must never add.
+alwaysApply: true
+---
+
+# Never install
+
+Hostinger (this shop is Railway). Extra VPS. Second Railway region. Redis. S3. Supabase Storage / Realtime / Edge. Local Docker Postgres. RLS policies. ShipStation. GA / GTM / Posthog. GitHub Actions. Klaviyo replica CDP. CRM as a mailbox. Second mail sender. Domain transfer.
+
+No Redis, S3, Helmet, cors, morgan, or second frontend service. No `DATABASE_URL` / `pg` pool / `supabase start`.

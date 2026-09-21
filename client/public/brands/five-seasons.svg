@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 68" width="240" height="68" role="img" aria-label="Five Seasons">
+  <circle cx="88" cy="14" r="6" fill="#F4B400"/>
+  <circle cx="104" cy="14" r="6" fill="#0F9D58"/>
+  <circle cx="120" cy="14" r="6" fill="#DB4437"/>
+  <circle cx="136" cy="14" r="6" fill="#4285F4"/>
+  <circle cx="152" cy="14" r="6" fill="#AB47BC"/>
+  <text x="120" y="48" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="800" fill="#1F3A5F">Five Seasons</text>
+</svg>

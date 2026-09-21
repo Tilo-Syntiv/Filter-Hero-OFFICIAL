@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 56" width="260" height="56" role="img" aria-label="Emerson">
+  <path d="M8 44 L28 10 L48 44 L40.5 44 L28 22.5 L15.5 44 Z" fill="#00B5E2"/>
+  <path d="M20 44 L28 30 L36 44 Z" fill="#00313C"/>
+  <text x="62" y="38" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#00313C">Emerson</text>
+</svg>

@@ -1,0 +1,12 @@
+---
+description: One Express process, security headers, contact limits, error JSON.
+alwaysApply: true
+---
+
+# Express, security, DNS
+
+One Express 4 process serves API + production SPA. `trust proxy` = 1. Apex is DNS-only, so Express sets CSP / HSTS.
+
+Contact: 5 posts / 15 min, honeypot, Turnstile fail-closed in production except `intent=reminder`. Error JSON is a fixed string. Do not leak SQL, keys, or emails.
+
+`robots.txt` disallows `/checkout/`, `/admin`, `/login`, `/account`, `/api/`.
