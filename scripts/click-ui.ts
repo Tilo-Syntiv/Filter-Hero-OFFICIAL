@@ -65,7 +65,11 @@ async function main() {
   await record("login");
 
   await page.goto(`${BASE}/admin`, { waitUntil: "domcontentloaded" });
-  await page.getByText(/staff|quotes|sign in|work email/i).first().waitFor({ timeout: 10000 });
+  await page.getByRole("heading", { name: /staff sign in/i }).waitFor({ timeout: 10000 });
+  const adminCopy = (await page.locator("body").innerText()).toLowerCase();
+  if (adminCopy.includes("vite_supabase_url")) {
+    throw new Error("Admin is missing Vite Supabase env — restart after DOTENV_CONFIG_PATH");
+  }
   await record("admin");
 
   await page.goto(`${BASE}/brands/carrier`, { waitUntil: "domcontentloaded" });

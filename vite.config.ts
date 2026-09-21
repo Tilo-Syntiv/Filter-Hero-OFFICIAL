@@ -1,8 +1,18 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
+import dotenv from "dotenv";
 import path from "node:path";
 import { defineConfig } from "vite";
 import { securityHeaderMap } from "./shared/security-headers";
+
+/**
+ * Express already honors DOTENV_CONFIG_PATH (IMPORTANT PAPERS .env).
+ * Vite only reads envDir/.env unless we load that file first. Without it,
+ * /admin and /login render “set VITE_SUPABASE_*” even when the API is configured.
+ */
+if (process.env.DOTENV_CONFIG_PATH) {
+  dotenv.config({ path: process.env.DOTENV_CONFIG_PATH });
+}
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],

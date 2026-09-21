@@ -124,6 +124,12 @@ async function main() {
   const adminLogin = fs.readFileSync("client/src/pages/admin/Login.tsx", "utf-8");
   assert(/I already have a code/.test(adminLogin), "staff can enter an OTP without sending again");
 
+  const viteConfig = fs.readFileSync("vite.config.ts", "utf-8");
+  assert(
+    viteConfig.includes("DOTENV_CONFIG_PATH"),
+    "Vite must load DOTENV_CONFIG_PATH so /admin gets VITE_SUPABASE_*",
+  );
+
   console.log("verify:admin ok");
 }
 
