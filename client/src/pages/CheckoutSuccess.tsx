@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { CheckCircle, CircleAlert, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle, CircleAlert, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import CartDrawer from "@/components/CartDrawer";
+import SiteHeader from "@/components/SiteHeader";
 import { BRAND_NAME } from "@/const";
 import { useCart } from "@/contexts/CartContext";
 import { useSeo } from "@/hooks/useSeo";
@@ -96,42 +98,62 @@ export default function CheckoutSuccess() {
               body: "We could not confirm that payment. Your cart is still saved — try checkout again or request a quote.",
             };
 
+  const mark =
+    state === "checking" ? (
+      <Loader2 className="h-8 w-8 animate-spin text-navy" />
+    ) : state === "paid" ? (
+      <CheckCircle className="h-8 w-8 text-navy" />
+    ) : (
+      <CircleAlert className="h-8 w-8 text-hero" />
+    );
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="max-w-md w-full text-center">
-        <div className="flex justify-center mb-6">
-          {state === "checking" ? (
-            <Loader2 className="h-14 w-14 animate-spin text-primary" />
-          ) : state === "paid" ? (
-            <CheckCircle className="h-14 w-14 text-primary" />
-          ) : (
-            <CircleAlert className="h-14 w-14 text-muted-foreground" />
+    <div className="flex min-h-dvh flex-col">
+      <SiteHeader />
+      <main className="brand-band relative flex flex-1 items-start justify-center overflow-hidden px-4 py-8 sm:items-center sm:py-12">
+        <div className="page-hero-glow" aria-hidden />
+        <div className="relative w-full max-w-md rounded-3xl bg-white p-5 text-left shadow-[0_24px_50px_rgba(8,16,32,0.28)] sm:p-6">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <span className="section-label !mb-0">
+              {state === "paid" ? "Order" : "Checkout"}
+            </span>
+            {mark}
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-navy sm:text-3xl">{copy.title}</h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{copy.body}</p>
+          {state === "paid" && totals?.amountTotal != null && (
+            <div className="mt-5 rounded-2xl border border-border bg-[#f7f9fc] px-4 py-3">
+              {totals.amountSubtotal != null && (
+                <div className="flex justify-between gap-3 text-sm text-muted-foreground">
+                  <span>Subtotal</span>
+                  <span>{formatUsd(totals.amountSubtotal)}</span>
+                </div>
+              )}
+              {totals.amountTax != null && totals.amountTax > 0 && (
+                <div className="mt-1 flex justify-between gap-3 text-sm text-muted-foreground">
+                  <span>Tax</span>
+                  <span>{formatUsd(totals.amountTax)}</span>
+                </div>
+              )}
+              <div className="mt-2 flex items-end justify-between gap-3 border-t border-border pt-2">
+                <p className="cart-kicker">Total</p>
+                <p className="cart-total !text-2xl">{formatUsd(totals.amountTotal)}</p>
+              </div>
+            </div>
+          )}
+          {state !== "checking" && (
+            <Button
+              size="lg"
+              className="hero-shop-btn hero-shop-btn-glow mt-6 w-full text-white"
+              onClick={() => setLocation("/")}
+            >
+              Back to store
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           )}
         </div>
-        <img
-          src="/logo.png"
-          alt={BRAND_NAME}
-          className="h-12 w-auto mx-auto mb-6"
-        />
-        <h1 className="text-3xl font-bold mb-3">{copy.title}</h1>
-        <p className="text-muted-foreground mb-8">{copy.body}</p>
-        {state === "paid" && totals?.amountTotal != null && (
-          <div className="text-sm text-muted-foreground mb-8 space-y-1">
-            {totals.amountSubtotal != null && (
-              <p>Subtotal {formatUsd(totals.amountSubtotal)}</p>
-            )}
-            {totals.amountTax != null && totals.amountTax > 0 && (
-              <p>Tax {formatUsd(totals.amountTax)}</p>
-            )}
-            <p className="font-semibold text-foreground">Total {formatUsd(totals.amountTotal)}</p>
-          </div>
-        )}
-        {state !== "checking" && (
-          <Button size="lg" className="w-full sm:w-auto" onClick={() => setLocation("/")}>
-            Back to store
-          </Button>
-        )}
-      </div>
+      </main>
+      <CartDrawer onRequestQuote={() => { window.location.href = "/#contact"; }} />
     </div>
   );
 }

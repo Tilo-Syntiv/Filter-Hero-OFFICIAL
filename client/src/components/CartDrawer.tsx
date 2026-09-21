@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Minus, Plus, ShoppingBag, Trash2, FileText } from "lucide-react";
+import { ArrowRight, FileText, Minus, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,31 +81,34 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && closeCart()}>
+    <Drawer direction="right" open={isOpen} onOpenChange={(open) => !open && closeCart()}>
       <DrawerContent
-        className="max-h-[min(92dvh,40rem)]"
+        className="cart-drawer !h-dvh !w-full !max-w-none border-0 sm:!w-[28rem] sm:!max-w-[28rem]"
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           titleRef.current?.focus();
         }}
       >
-        <DrawerHeader className="text-left">
+        <DrawerHeader className="cart-drawer-band brand-band shrink-0 text-left">
+          <DrawerClose className="cart-drawer-close" aria-label="Close cart">
+            <X className="h-3.5 w-3.5" />
+          </DrawerClose>
           <DrawerTitle
             ref={titleRef}
             tabIndex={-1}
-            className="flex items-center gap-2 outline-none"
+            className="text-lg font-bold tracking-tight text-white outline-none"
           >
-            <ShoppingBag className="h-5 w-5 text-primary" />
-            Your cart ({itemCount})
+            Your cart
+            <span className="cart-count">{itemCount}</span>
           </DrawerTitle>
-          <DrawerDescription>
-            Review items, then checkout securely with Stripe or request a quote.
+          <DrawerDescription className="text-xs leading-snug text-white/70">
+            Checkout with Stripe, or request a quote.
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="overflow-y-auto px-4 pb-2 space-y-4 max-h-[50vh]">
+        <div className="cart-drawer-list min-h-0 flex-1 overflow-y-auto px-3.5 py-3">
           {items.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
+            <p className="cart-empty text-sm">
               Your cart is empty. Find your size and add a filter to get started.
             </p>
           ) : (
@@ -115,77 +118,72 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
                 ? packShotSrc(product.merv, Boolean(product.isCarbon))
                 : FILTER_PRODUCT_IMAGE;
               return (
-              <div
-                key={item.productId}
-                className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-4"
-              >
-                <img
-                  src={shot}
-                  alt={`${item.size} ${item.name}`}
-                  className="h-16 w-16 shrink-0 rounded-lg border border-border bg-white object-contain"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-foreground break-words">
-                    {item.size}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {item.name}
-                  </p>
-                  <p className="text-sm font-medium mt-1">
-                    ${item.price.toFixed(2)}
-                  </p>
+                <div key={item.productId} className="cart-line">
+                  <img
+                    src={shot}
+                    alt={`${item.size} ${item.name}`}
+                    className="cart-line-shot"
+                  />
+                  <div className="min-w-0">
+                    <p className="cart-line-size break-words">{item.size}</p>
+                    <p className="cart-line-name">{item.name}</p>
+                  </div>
+                  <div className="cart-line-meta">
+                    <p className="cart-line-price">
+                      ${item.price.toFixed(2)}
+                      {item.qty > 1 ? <span className="cart-line-each">each</span> : null}
+                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <div className="pdp-stepper-ctrl">
+                        <button
+                          type="button"
+                          onClick={() => setQty(item.productId, item.qty - 1)}
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus className="h-4 w-4" strokeWidth={2.5} />
+                        </button>
+                        <span className="pdp-stepper-count" aria-live="polite">
+                          {item.qty}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setQty(item.productId, item.qty + 1)}
+                          aria-label="Increase quantity"
+                        >
+                          <Plus className="h-4 w-4" strokeWidth={2.5} />
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        className="cart-line-remove"
+                        onClick={() => removeItem(item.productId)}
+                        aria-label="Remove item"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-11 w-11"
-                    onClick={() => setQty(item.productId, item.qty - 1)}
-                    aria-label="Decrease quantity"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </Button>
-                  <span className="w-6 text-center text-sm font-semibold">
-                    {item.qty}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-11 w-11"
-                    onClick={() => setQty(item.productId, item.qty + 1)}
-                    aria-label="Increase quantity"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-11 w-11 text-destructive"
-                    onClick={() => removeItem(item.productId)}
-                    aria-label="Remove item"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
               );
             })
           )}
         </div>
 
-        <DrawerFooter className="border-t border-border pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <div className="mb-2 space-y-1">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-bold text-lg">${subtotal.toFixed(2)}</span>
+        <DrawerFooter className="cart-drawer-foot shrink-0 gap-2 pb-[max(0.65rem,env(safe-area-inset-bottom))]">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="cart-kicker">Subtotal</p>
+              <p className="cart-total">${subtotal.toFixed(2)}</p>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Shipping</span>
-              <span className="font-semibold text-navy">At checkout</span>
+            <div className="pb-0.5 text-right">
+              <p className="cart-kicker">Shipping</p>
+              <p className="text-xs font-bold text-navy">At checkout</p>
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="cart-email">Email</Label>
+          <div className="space-y-1">
+            <Label htmlFor="cart-email" className="cart-field-label">
+              Email
+            </Label>
             <Input
               id="cart-email"
               type="email"
@@ -199,7 +197,7 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
                 }
               }}
               placeholder="you@email.com"
-              className="h-11"
+              className="h-9 rounded-lg border-border bg-white text-sm"
             />
             <MarketingOptIn
               id="cart-marketing"
@@ -212,16 +210,16 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
           ) : null}
           <Button
             size="lg"
-            className="hero-shop-btn w-full text-white"
+            className="hero-shop-btn hero-shop-btn-glow w-full text-white"
             disabled={items.length === 0 || checkingOut || maintenanceMode}
             onClick={handleCheckout}
           >
             {checkingOut ? "Redirecting…" : "Checkout with Stripe"}
+            {checkingOut ? null : <ArrowRight className="h-4 w-4" />}
           </Button>
           <Button
             size="lg"
-            variant="outline"
-            className="w-full"
+            className="cart-navy-btn w-full text-white"
             disabled={items.length === 0}
             onClick={() => {
               stashQuoteHandoff({ cart: cartSummaryText() });
@@ -229,11 +227,13 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
               onRequestQuote();
             }}
           >
-            <FileText className="h-4 w-4 mr-2" />
+            <FileText className="h-4 w-4" />
             Request a quote
           </Button>
           <DrawerClose asChild>
-            <Button variant="ghost">Continue shopping</Button>
+            <button type="button" className="section-link mx-auto">
+              Continue shopping
+            </button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

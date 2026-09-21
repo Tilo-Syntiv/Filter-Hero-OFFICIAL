@@ -179,6 +179,15 @@ assert(/Disallow: \/account/.test(robots.text), "robots must disallow /account")
 const llms = await get(`${API}/llms.txt`);
 assert(llms.res.ok && llms.text.toLowerCase().includes("filter hero"), "llms.txt");
 assert(/2–3 day|2-3 day/i.test(llms.text) && !/free shipping/i.test(llms.text), "llms.txt must say 2–3 day delivery, not free shipping");
+assert(!/filter king/i.test(llms.text), "llms.txt must not name Filter King");
+
+const siteConfig = await get(`${API}/api/site-config`);
+assert(siteConfig.res.ok, "site-config");
+const heroLede = String(
+  ((siteConfig.json as { data?: { heroLede?: string } })?.data?.heroLede) || "",
+);
+assert(heroLede.length > 0, "site-config hero lede");
+assert(!/filter king/i.test(heroLede), "site-config hero lede must not name Filter King");
 
 const pages = [
   "/",
@@ -282,6 +291,9 @@ const checkout = await post(`${API}/api/checkout`, {
 });
 if (checkout.res.status === 503) {
   console.warn("Checkout skipped — Stripe is not configured.");
+} else if (checkout.res.status === 429) {
+  const code = (checkout.json as { code?: string })?.code;
+  assert(code === "rate_limited_checkout", `checkout 429 should name the limiter, got ${checkout.text}`);
 } else {
   assert(checkout.res.ok, `checkout failed ${checkout.res.status} ${checkout.text}`);
   const url = (checkout.json as { url?: string }).url || "";
@@ -289,7 +301,12 @@ if (checkout.res.status === 503) {
 }
 
 const badCheckout = await post(`${API}/api/checkout`, { items: [] });
-assert(badCheckout.res.status === 400, `empty cart checkout should 400, got ${badCheckout.res.status}`);
+if (badCheckout.res.status === 429) {
+  const code = (badCheckout.json as { code?: string })?.code;
+  assert(code === "rate_limited_checkout", `checkout 429 should name the limiter, got ${badCheckout.text}`);
+} else {
+  assert(badCheckout.res.status === 400, `empty cart checkout should 400, got ${badCheckout.res.status}`);
+}
 
 const missingSession = await get(`${API}/api/checkout/session?session_id=not-a-session`);
 assert(missingSession.res.status === 400, `bad session should 400, got ${missingSession.res.status}`);

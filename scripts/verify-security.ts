@@ -302,6 +302,26 @@ async function main() {
   assert(!/^\s*create policy/im.test(crm), "CRM RLS stays deny-by-default");
   assert(!/^\s*create policy/im.test(accounts), "account RLS stays deny-by-default");
 
+  const catalogIdentity = fs.readFileSync(
+    "supabase/migrations/0006_catalog_skus_identity.sql",
+    "utf-8",
+  );
+  const catalogCreate =
+    catalogIdentity.match(/create table if not exists catalog_skus \(([\s\S]*?)\);/i)?.[1] || "";
+  assert(
+    /filter_hero_url text not null/i.test(catalogCreate),
+    "0006 must keep catalog_skus identity columns",
+  );
+  assert(
+    !/list_price|wholesale_sku|cost_dollars|unit_price/i.test(catalogCreate),
+    "0006 must not put price columns on catalog_skus",
+  );
+  assert(!/^\s*create policy/im.test(catalogIdentity), "0006 must not add a browser policy");
+  assert(
+    /revoke all on table catalog_skus from anon, authenticated, public/i.test(catalogIdentity),
+    "0006 must revoke catalog_skus from the browser roles",
+  );
+
   const envExample = fs.readFileSync(".env.example", "utf-8");
   assert(!/SERVICE_ROLE/.test(envExample) || !/^VITE_.*SERVICE_ROLE/m.test(envExample), "no VITE service role");
   assert(!/VITE_.*sk_live_/i.test(envExample), "no live Stripe secret in VITE_");

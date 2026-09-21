@@ -129,8 +129,27 @@ async function main() {
   const secret = process.env.STRIPE_WEBHOOK_SECRET as string;
   const header = stripe.webhooks.generateTestHeaderString({ payload, secret });
 
-  await handleStripeWebhook(Buffer.from(payload), header);
-  await handleStripeWebhook(Buffer.from(payload), header);
+  const prevResend = process.env.RESEND_API_KEY;
+  const prevKlaviyo = process.env.KLAVIYO_DISABLE;
+  const prevCrm = process.env.CRM_DISABLE;
+  const prevAccount = process.env.ACCOUNT_DISABLE;
+  delete process.env.RESEND_API_KEY;
+  process.env.KLAVIYO_DISABLE = "1";
+  process.env.CRM_DISABLE = "1";
+  process.env.ACCOUNT_DISABLE = "1";
+  try {
+    await handleStripeWebhook(Buffer.from(payload), header);
+    await handleStripeWebhook(Buffer.from(payload), header);
+  } finally {
+    if (prevResend) process.env.RESEND_API_KEY = prevResend;
+    else delete process.env.RESEND_API_KEY;
+    if (prevKlaviyo === undefined) delete process.env.KLAVIYO_DISABLE;
+    else process.env.KLAVIYO_DISABLE = prevKlaviyo;
+    if (prevCrm === undefined) delete process.env.CRM_DISABLE;
+    else process.env.CRM_DISABLE = prevCrm;
+    if (prevAccount === undefined) delete process.env.ACCOUNT_DISABLE;
+    else process.env.ACCOUNT_DISABLE = prevAccount;
+  }
   const orders = JSON.parse(fs.readFileSync(path.join(tmp, "orders.json"), "utf-8")) as Array<{
     sessionId: string;
     customerId: string;

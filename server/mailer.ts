@@ -240,9 +240,14 @@ export function buildOrderConfirmation(order: OrderMail): BuiltMail | null {
   });
   const text = [
     "Your Filter Hero order is confirmed.",
+    ...items.map(orderLineLabel),
+    `Subtotal: ${money(order.amountSubtotal)}`,
+    order.amountTax && order.amountTax > 0 ? `Tax: ${money(order.amountTax)}` : "",
     `Total: ${money(order.amountTotal)}`,
     "Stripe will send the payment receipt separately.",
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
   return {
     to: email,
     replyTo: BRAND_EMAIL,

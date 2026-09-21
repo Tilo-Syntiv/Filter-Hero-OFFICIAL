@@ -34,6 +34,9 @@ async function main() {
   if (homeCopy.includes("free shipping")) {
     throw new Error("Home must not promise free shipping");
   }
+  if (homeCopy.includes("filter king")) {
+    throw new Error("Home must not mention Filter King");
+  }
   await page.getByRole("heading", { name: /built to last/i }).waitFor({ timeout: 10000 });
   await page.getByText(/a dirty filter costs more than the filter/i).first().waitFor();
   await page.locator('img[src*="pack-merv11.png"]').first().waitFor();
@@ -58,6 +61,10 @@ async function main() {
     throw new Error(`stepper must allow qty 3 on the 2-filter rung, got ${qty3}`);
   }
   await page.getByRole("button", { name: /^6\+ filters$/i }).click();
+  const sizeCopy = (await page.locator("body").innerText()).toLowerCase();
+  if (sizeCopy.includes("filter king") || sizeCopy.includes("filterking.com")) {
+    throw new Error("Size page must not mention Filter King");
+  }
   await record("size");
 
   await page.getByRole("button", { name: /add \d+ to cart/i }).first().click();

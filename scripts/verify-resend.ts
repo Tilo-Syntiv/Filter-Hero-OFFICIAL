@@ -132,6 +132,7 @@ const zeroTax = buildOrderConfirmation({ ...orderBase, customerEmail: SAFE_INBOX
 assert(zeroTax, "order with an email builds");
 assert(!zeroTax.html.includes("Tax:"), "zero tax is omitted");
 assert(zeroTax.html.includes("2 × 20x25x1 MERV 8"), "confirmation names the size and MERV");
+assert(zeroTax.text.includes("2 × 20x25x1 MERV 8"), "plain-text confirmation names the size and MERV");
 assert(zeroTax.html.includes("merv-8-packshot"), "confirmation uses the MERV 8 pack shot");
 assert(!zeroTax.html.includes(`product ${merv8.id}`), "confirmation does not print raw product ids");
 

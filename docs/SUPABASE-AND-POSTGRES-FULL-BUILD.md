@@ -4,7 +4,7 @@
 
 Short ops sheets: [CRM.md](./CRM.md) (staff pipeline) and [CUSTOMER-ACCOUNTS.md](./CUSTOMER-ACCOUNTS.md) (shopper login). CRM pipeline install: [CRM FULL BUILD.md](./CRM%20FULL%20BUILD.md). Channel law lives in `shared/email-channels.ts`. The issue log is [ISSUES-AND-FIXES.md](./ISSUES-AND-FIXES.md). The in-house CDP spec at [KLAVIYO-REPLICA-PLAN.md](./KLAVIYO-REPLICA-PLAN.md) is **not** what the app runs.
 
-**Last aligned to the live tree:** 2026-09-20.
+**Last aligned to the live tree:** 2026-09-21.
 
 If this file and the code disagree, the code plus `pnpm verify:supabase` / `pnpm verify:crm` / `pnpm verify:account` win, then this file is updated.
 
@@ -24,7 +24,7 @@ There is **no** `DATABASE_URL`. There is **no** `pg` / `postgres.js` pool. There
 
 ### Installed
 
-A **live hosted Supabase project** named **filter-hero**, ref `mayxuwlygchatgeqyhyt`, URL `https://mayxuwlygchatgeqyhyt.supabase.co`. Auth (GoTrue) plus Postgres in the `public` schema. Five SQL migrations in `supabase/migrations/`. One service-role client in `server/db.ts`. One browser Auth client in `client/src/lib/admin-api.ts`. Staff console at `/admin`. Shopper accounts at `/login` + `/account`. Catalog mirror table `catalog_skus` (Model Pricing SKUs).
+A **live hosted Supabase project** named **filter-hero**, ref `mayxuwlygchatgeqyhyt`, URL `https://mayxuwlygchatgeqyhyt.supabase.co`. Auth (GoTrue) plus Postgres in the `public` schema. Six SQL migrations in `supabase/migrations/`. One service-role client in `server/db.ts`. One browser Auth client in `client/src/lib/admin-api.ts`. Staff console at `/admin`. Shopper accounts at `/login` + `/account`. Catalog mirror table `catalog_skus` (Model Pricing identity only).
 
 | Surface | Who | How |
 |---|---|---|
@@ -85,7 +85,8 @@ Anon / publishable keys are allowed in the browser. They prove nothing except �
 | `supabase/migrations/0002_customer_accounts.sql` | `customer_profiles`, `customer_saved_filters` |
 | `supabase/migrations/0003_crm_fk_indexes.sql` | `crm_deals(pipeline_id)`, `crm_deals(company_id)` |
 | `supabase/migrations/0004_lock_browser_grants.sql` | FORCE RLS + revoke `anon` / `authenticated` / `public` |
-| `supabase/migrations/0005_catalog_skus.sql` | Contractor SKU mirror. No wholesale cost column |
+| `supabase/migrations/0005_catalog_skus.sql` | Contractor SKU identity mirror. No wholesale cost or list_price |
+| `supabase/migrations/0006_catalog_skus_identity.sql` | Reshape hosted `catalog_skus` to identity; revoke leftover sequence/function grants |
 
 ### CRM (staff pipeline)
 
@@ -232,7 +233,7 @@ npx supabase link --project-ref mayxuwlygchatgeqyhyt
 npx supabase db push
 ```
 
-Order is the filename order. `0001` seeds the Quotes pipeline. `0004` FORCE RLS + revoke. `0005` creates `catalog_skus` empty — fill it with `pnpm sync:catalog`.
+Order is the filename order. `0001` seeds the Quotes pipeline. `0004` FORCE RLS + revoke. `0005` creates the identity `catalog_skus` table empty. Hosted `0005` originally used commerce columns; `0006` reshapes that live table. Fill with `pnpm sync:catalog`.
 
 Do not `CREATE POLICY` after this. Do not `GRANT SELECT ON crm_contacts TO anon`. `pnpm verify:supabase` inserts with the anon key and asserts that insert **fails**.
 
@@ -412,26 +413,24 @@ Then default privileges in `public` revoke tables/sequences/functions from those
 
 The migration header comment says “FH-201”. The issue that shipped this file is **FH-205**. Do not treat the comment as the id.
 
-### 8.5 `0005_catalog_skus.sql` (FH-223)
+### 8.5 `0005_catalog_skus.sql` (FH-223) and `0006_catalog_skus_identity.sql` (FH-343)
 
 ```sql
 create table if not exists catalog_skus (
-  product_id integer primary key,
+  id integer primary key,
   size text not null,
   merv integer not null,
   is_carbon boolean not null default false,
-  name text not null,
-  wholesale_sku text not null,
-  list_price numeric(10, 2) not null,
-  in_stock boolean not null default true,
-  stripe_product_id text,
-  klaviyo_external_id text not null,
-  updated_at timestamptz not null default now(),
-  constraint catalog_skus_merv_check check (merv in (8, 11, 13))
+  image_url text,
+  filter_hero_url text not null,
+  filter_king_url text,
+  parent_model text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 ```
 
-No `cost_dollars`. Stripe, Klaviyo, and this table never see dealer cost. FORCE RLS + revoke, same as the others. Fill with `pnpm sync:catalog`. `verify:supabase` asserts count `=== 293`.
+Identity only: id, size, MERV, image, Filter Hero URL, Filter King URL. No `cost_dollars`, `list_price`, or `wholesale_sku`. FORCE RLS + revoke, same as the others. Fill with `pnpm sync:catalog`. Hosted `0005` originally created commerce columns; `0006` reshapes that live table. `verify:supabase` asserts count matches `sellableSheetProducts()` and that forbidden price columns error.
 
 ---
 
@@ -552,7 +551,7 @@ Three copies of “what we sell.” They must stay in lockstep after a sheet reb
 
 Admin `/admin` catalog is `sellableSheetProducts()`, **not** a select from `catalog_skus`. The table exists so Postgres has the same 293 rows and so `/account` cannot pin an archived size (in-stock check still uses `shared/products.ts`).
 
-`syncSupabaseCatalog` maps each sheet product to a row (list price, Stripe id if mapped, Klaviyo external id), upserts on `product_id`, deletes extras. Missing service role → `{ skipped: true }`, not a thrown error, so Stripe/Klaviyo sync can still run.
+`syncSupabaseCatalog` maps each sheet product to identity columns (`id`, size, MERV, image, Filter Hero URL, Filter King URL, parent model), upserts on `id`, deletes extras. Missing service role → `{ skipped: true }`, not a thrown error, so Stripe/Klaviyo sync can still run.
 
 Never put wholesale cost on this table (FH-223).
 
@@ -622,7 +621,7 @@ Do these in this order. Skipping RLS (step 4) recreates FH-188 / FH-205.
 1. One hosted Supabase project. Pin the URL in `verify:env`. Do not run local `supabase start` unless you also change every script that hard-codes `mayxuwlygchatgeqyhyt`.
 2. Env: URL ×2 (`SUPABASE_` + `VITE_`), service role (server), anon ×2, `STAFF_EMAILS`. No `DATABASE_URL`.
 3. `createClient` service role in Express with `persistSession: false`. Browser client is Auth-only, PKCE.
-4. Migrations 0001–0005. RLS on, FORCE, zero policies, revoke browser grants.
+4. Migrations 0001–0006. RLS on, FORCE, zero policies, revoke browser grants.
 5. `requireStaff` / `requireCustomer` call `auth.getUser`. Unconfigured = 503.
 6. Shoppers: email + password on `/login`. Staff: OTP, magic link lands on `/login`, hop to `/admin` via `sessionStorage`.
 7. Auth allowlist: localhost + production `/login` `/account` `/admin` `/admin/login`. Site URL is the production origin.

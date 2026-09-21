@@ -154,9 +154,11 @@ function fallbackUnitPrice(listPrice: number, qty: number): number {
 }
 
 /**
- * Pack unit price. 1-inch uses Filtrete tickets (`FILTRETE_PACKS` / qty 1).
- * Other depths fall back to PACK_TIERS on listPrice. Never Filter King sale
- * or FilterBuy undercut.
+ * Pack unit price. When Filtrete and Filter King both list the same rung,
+ * match the cheaper one. Otherwise 1-inch qty 1 is Filtrete; other rungs
+ * are Filter King × 0.90, capped at the Filtrete single. Then match a
+ * confirmed FilterBuy ticket if that ticket is cheaper. No ladder:
+ * PACK_TIERS on listPrice.
  */
 export function unitPriceForQty(
   listPrice: number,
@@ -437,7 +439,21 @@ function listPriceFor(depth: number, merv: MervRating, isCarbon: boolean): numbe
 }
 
 function cardFromPrice(key: MervTypeKey, fallback: number): number {
-  return liveFromPrice(key) ?? fallback;
+  if (!SELLABLE_ONLY) return liveFromPrice(key) ?? fallback;
+  let min: number | undefined;
+  for (const row of SELLABLE_ROWS) {
+    const isCarbon = Boolean(row.isCarbon);
+    if (key === "carbon" ? !isCarbon : isCarbon || String(row.merv) !== key) continue;
+    const list =
+      liveListPrice(row.size, row.merv, isCarbon) ??
+      listPriceFor(depthFromSlug(row.size), row.merv, isCarbon);
+    const product = { size: row.size, merv: row.merv, isCarbon };
+    for (const qty of [1, 2, 4, 6, 12]) {
+      const unit = unitPriceForQty(list, qty, product);
+      if (min === undefined || unit < min) min = unit;
+    }
+  }
+  return min ?? fallback;
 }
 
 export const MERV_TYPES: MervTypeInfo[] = [
@@ -448,7 +464,7 @@ export const MERV_TYPES: MervTypeInfo[] = [
     name: "MERV 8",
     shortLabel: "Standard",
     description: "Everyday dust and pollen for typical homes",
-    fromPrice: cardFromPrice("8", FILTRETE_1INCH_QTY1["8"]),
+    fromPrice: cardFromPrice("8", 11.99),
     badgeColor: "#3a66a3",
   },
   {
@@ -458,7 +474,7 @@ export const MERV_TYPES: MervTypeInfo[] = [
     name: "MERV 11",
     shortLabel: "Advanced",
     description: "Enhanced protection for pets and mild allergies",
-    fromPrice: cardFromPrice("11", FILTRETE_1INCH_QTY1["11"]),
+    fromPrice: cardFromPrice("11", 15.99),
     badgeColor: "#d21b22",
   },
   {
@@ -468,7 +484,7 @@ export const MERV_TYPES: MervTypeInfo[] = [
     name: "MERV 13",
     shortLabel: "Ultimate",
     description: "Superior filtration for asthma and sensitivities",
-    fromPrice: cardFromPrice("13", FILTRETE_1INCH_QTY1["13"]),
+    fromPrice: cardFromPrice("13", 16.99),
     badgeColor: "#ee9e10",
   },
   {
@@ -478,7 +494,7 @@ export const MERV_TYPES: MervTypeInfo[] = [
     name: "MERV 8 Carbon",
     shortLabel: "Odor Eliminator",
     description: "Everyday filtration plus activated carbon for odors",
-    fromPrice: cardFromPrice("carbon", FILTRETE_1INCH_QTY1.carbon),
+    fromPrice: cardFromPrice("carbon", 19.99),
     badgeColor: "#111111",
   },
 ];

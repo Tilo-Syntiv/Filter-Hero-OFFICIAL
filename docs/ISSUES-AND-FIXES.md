@@ -14,7 +14,46 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-342**
+Next id: **FH-345**
+
+---
+
+### FH-344 — Cart header and checkout block hid the filters
+- **Status:** fixed
+- **Area:** cart
+- **Symptom:** The navy cart header and the email / button footer were tall enough that a shopper with several lines could barely see the filters they were buying.
+- **Do NOT:** Restore the Checkout kicker, the two-line header sentence, the 1.85rem subtotal, or the full-height slanted buttons inside the cart footer.
+- **Do:** Header is title, count, and one short line. Footer keeps subtotal, shipping, email, opt-in, Stripe, and quote, in a shorter stack. The filter list is what grows.
+- **Files:** `client/src/components/CartDrawer.tsx`, `client/src/index.css`
+- **Verify:** Open the cart with several lines. Header and footer are short. More than one filter card is visible above the subtotal.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-343 — Cart and checkout pages looked like a generic sheet
+- **Status:** fixed
+- **Area:** cart
+- **Symptom:** The cart was a light bottom sheet with circular qty buttons, and `/checkout/success` and `/checkout/cancel` were plain centered pages. They did not use the navy band, white cards, pack stepper, or slanted shop buttons.
+- **Do NOT:** Put the cart back on a bottom sheet. Do not restyle checkout result pages as a logo-and-paragraph on the gray canvas. Do not promise free shipping in the drawer.
+- **Do:** Cart opens from the right with a navy header band, white line cards, the size-page qty stepper, and burgundy / navy slanted actions. Success and cancel use the same band and white card as sign-in, with the site header so the saved cart is still reachable.
+- **Files:** `client/src/components/CartDrawer.tsx`, `client/src/pages/CheckoutSuccess.tsx`, `client/src/pages/CheckoutCancel.tsx`, `client/src/index.css`
+- **Verify:** Open the cart from a size page. Qty stepper, email, Checkout with Stripe, and Request a quote all fit. `/checkout/cancel` shows the navy band and the header cart.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-342 — Official shopper tickets drifted from FILTER HERO
+- **Status:** fixed
+- **Area:** pricing
+- **Symptom:** Official `liveUnitPrice` was Filtrete-only. FILTER HERO charges the cheaper of Filtrete and Filter King × 0.90, then a confirmed FilterBuy ticket if that is cheaper. `/sizes/20x25x1` MERV 8 qty 6 was **$9.17** here and **$7.49** on FILTER HERO.
+- **Do NOT:** Drop Filter King undercut or FilterBuy match from the shopper formula. Do not invent pack prices. Do not use API `unit_price` or Excel Sale Price as the ticket.
+- **Do:** Same `liveUnitPrice` as FILTER HERO. Qty 1 stays Filtrete when that is cheaper (`$9.99` / `$13.49` / `$22.99` / `$16.70`). Pack rungs match the cheaper listing. Thick sizes use FilterBuy when that listing undercuts.
+- **Files:** `shared/pricing/engine.ts`, `shared/products.ts`, `scripts/verify-store.ts`
+- **Verify:** `pnpm verify:store`. `/sizes/20x25x1` MERV 8 qty 6 is **$7.49**. Qty 1 is **$9.99**. `/sizes/16x25x1` MERV 8 qty 12 is **$5.83**. `/sizes/20x25x4` MERV 8 qty 1 is **$30.59**.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
 
 ---
 
@@ -49,8 +88,8 @@ Next id: **FH-342**
 - **Area:** seo
 - **Symptom:** Home hero lede said “Filter Hero's Filter King filters.” `/sizes` said “Browse every Filter King HVAC size.” Every PDP had **Matching Filter King page** → filterking.com. `/llms.txt` named the Filter King API.
 - **Do NOT:** Restore a Filter King word, lockup, or filterking.com link on the storefront, JSON-LD, `/llms.txt`, or site-config hero lede. Do not scrape filterking.com. Do not put Filter King sale as the shopper price.
-- **Do:** Shopper copy is Filter Hero only. Catalog identity may still store `filterKingUrl` / `parent_model` for sync; never render them. Hero lede, `/sizes`, PDP, and `buildLlmsTxt` stay brand-clean.
-- **Files:** `client/src/pages/SizeDetail.tsx`, `client/src/pages/SizeBrowse.tsx`, `shared/site-config.ts`, `server/data/site-config.json`, `shared/seo.ts`, `scripts/verify-store.ts`
+- **Do:** Shopper copy is Filter Hero only. Keep Filter King API, `filterKingUrl`, `parent_model`, and catalog sync. Never render those on the storefront, JSON-LD, `/llms.txt`, or hero lede.
+- **Files:** `client/src/pages/SizeDetail.tsx`, `client/src/pages/SizeBrowse.tsx`, `shared/site-config.ts`, `server/data/site-config.json`, `shared/seo.ts`, `scripts/verify-store.ts`, `scripts/click-ui.ts`, `scripts/smoke-site.ts`
 - **Verify:** `pnpm verify:store`. `/` hero has no Filter King. `/sizes` has no Filter King. `/sizes/20x25x1` has no Matching Filter King page. `/llms.txt` has no Filter King.
 - **Added:** 2026-09-21
 - **Fixed:** 2026-09-21

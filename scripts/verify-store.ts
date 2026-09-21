@@ -19,7 +19,6 @@ import {
   getArchivedFilterSize,
   getFilterSize,
   getSizesByThickness,
-  isMervKeyOnSale,
   mervTypesForSize,
   packShotSrc,
   packTotal,
@@ -28,7 +27,6 @@ import {
   unitPriceForQty,
 } from "../shared/products.ts";
 import {
-  liveFromPrice,
   liveLadderCount,
   liveListPrice,
   liveUnitPrice,
@@ -171,6 +169,7 @@ assert(
 );
 
 let sellableCount = 0;
+const cheapest: Record<string, number> = {};
 for (const size of FILTER_SIZES) {
   for (const type of mervTypesForSize(size.slug)) {
     const variant = findProductVariant(size.slug, type.merv, type.isCarbon);
@@ -179,28 +178,28 @@ for (const size of FILTER_SIZES) {
     assert(variant.filterKingUrl?.includes("filterking.com"), `${size.slug} needs a Filter King URL`);
     const list = variant.price;
     assert(list > 0, `${size.slug} ${type.name} list must be positive`);
-    let previous = list;
     for (const qty of [1, 2, 4, 6, 12]) {
+      const live = liveUnitPrice(
+        { size: size.slug, merv: type.merv, isCarbon: type.isCarbon },
+        qty,
+      );
       const unit = unitPriceForQty(list, qty, variant);
       assert(unit > 0, `missing unit for ${size.slug} ${type.name} qty ${qty}`);
-      assert(
-        unit <= previous,
-        `${size.slug} ${type.name} qty ${qty} unit $${unit} must not exceed the previous rung $${previous}`,
-      );
-      previous = unit;
+      if (typeof live === "number") {
+        assert(
+          unit === live,
+          `${size.slug} ${type.name} qty ${qty} shows $${unit} but live is $${live}`,
+        );
+      }
+      const prev = cheapest[type.key];
+      if (prev === undefined || unit < prev) cheapest[type.key] = unit;
     }
   }
 }
-assert(liveFromPrice("8") === 9.99, "MERV 8 card must be Filtrete qty-1 $9.99");
-assert(liveFromPrice("11") === 13.49, "MERV 11 card must be Filtrete qty-1 $13.49");
-assert(liveFromPrice("13") === 22.99, "MERV 13 card must be Filtrete qty-1 $22.99");
-assert(liveFromPrice("carbon") === 16.7, "Carbon card must be Filtrete odor qty-1 $16.70");
 for (const type of MERV_TYPES) {
-  if (!isMervKeyOnSale(type.key)) continue;
-  const live = liveFromPrice(type.key);
   assert(
-    type.fromPrice === live,
-    `${type.shortLabel} card from $${type.fromPrice.toFixed(2)} must match Filtrete liveFromPrice $${live?.toFixed(2)}`,
+    type.fromPrice === cheapest[type.key],
+    `${type.shortLabel} card from $${type.fromPrice.toFixed(2)} must match cheapest live unit $${cheapest[type.key]?.toFixed(2)}`,
   );
 }
 assert(sellableCount > 200, `XLS sellable SKUs too small: ${sellableCount}`);
@@ -248,28 +247,47 @@ assert(typeof live2 === "number" && live2 <= 9.99, `20x20x1 MERV 8 qty 2 must no
 assert(liveUnitPrice({ size: "20x20x1", merv: 11 }, 2) === 11, "20x20x1 MERV 11 qty 2 must match Filtrete $11.00");
 assert(liveUnitPrice({ size: "16x25x1", merv: 11 }, 2) === 11, "16x25x1 MERV 11 qty 2 must match Filtrete $11.00");
 assert(liveUnitPrice({ size: "16x25x1", merv: 13 }, 2) === 15, "16x25x1 MERV 13 qty 2 must match Filtrete $15.00");
-assert(liveUnitPrice({ size: "20x25x1", merv: 13 }, 2) === 21, "20x25x1 MERV 13 qty 2 must match Filtrete $21.00");
+assert(liveUnitPrice({ size: "20x25x1", merv: 13 }, 2) === 17.76, "20x25x1 MERV 13 qty 2 must match cheaper Filter King $17.76");
 assert(liveUnitPrice({ size: "20x20x1", merv: 8 }, 12) === 5.18, "20x20x1 MERV 8 qty 12 must match Filtrete Walmart $5.18");
-assert(liveUnitPrice({ size: "16x25x1", merv: 8 }, 12) === 5.83, "16x25x1 MERV 8 qty 12 must match Filtrete $5.83");
-assert(liveUnitPrice({ size: "20x25x1", merv: 8 }, 6) === 9.17, "20x25x1 MERV 8 qty 6 must match Filtrete $9.17");
+assert(liveUnitPrice({ size: "16x25x1", merv: 8 }, 12) === 5.83, "16x25x1 MERV 8 qty 12 must match cheaper Filtrete $5.83");
+assert(liveUnitPrice({ size: "20x25x1", merv: 8 }, 6) === 7.49, "20x25x1 MERV 8 qty 6 must match cheaper Filter King $7.49");
 assert(
-  liveUnitPrice({ size: "20x25x1", merv: 8 }, 12) === 9.17,
-  "20x25x1 MERV 8 qty 12 keeps the $9.17 6-pack — no Filtrete 12-pack, do not jump back to $9.99",
+  PACK_QTYS.length === 12 && PACK_QTYS[0] === 1 && PACK_QTYS[11] === 12,
+  "size page pack picker must offer 1 through 12",
 );
 assert(
-  liveUnitPrice({ size: "20x25x1", merv: 11 }, 6) === 11,
-  "20x25x1 MERV 11 qty 6 keeps the $11 2-pack when no Filtrete 6-pack exists",
+  liveUnitPrice({ size: "20x25x1", merv: 8 }, 3) === liveUnitPrice({ size: "20x25x1", merv: 8 }, 2),
+  "qty 3 must use the 2-filter price rung",
 );
-assert(liveUnitPrice({ size: "16x25x1", merv: 8 }, 4) === 9.99, "16x25x1 MERV 8 qty 4 caps at the $9.99 single — Filtrete 4-pack $10.05 is worse");
-assert(liveUnitPrice({ size: "20x20x1", merv: 8 }, 4) === 9.99, "20x20x1 MERV 8 qty 4 caps at the $9.99 single — Filtrete 4-pack $11.50 is worse");
-assert(liveUnitPrice({ size: "20x30x1", merv: 8 }, 4) === 9.99, "20x30x1 MERV 8 qty 4 caps at the $9.99 single — Filtrete 4-pack $11.49 is worse");
-assert(liveUnitPrice({ size: "16x25x1", merv: 11 }, 6) === 11, "16x25x1 MERV 11 qty 6 must match Filtrete $11.00");
-assert(liveUnitPrice({ size: "14x25x1", merv: 11 }, 2) === 13.49, "14x25x1 MERV 11 qty 2 stays at the Filtrete single — no invented 2-pack");
+assert(
+  liveUnitPrice({ size: "20x25x1", merv: 8 }, 7) === liveUnitPrice({ size: "20x25x1", merv: 8 }, 6),
+  "qty 7 must use the 6-filter price rung",
+);
+for (let qty = 1; qty <= 12; qty++) {
+  const rung = qty >= 12 ? 12 : qty >= 6 ? 6 : qty >= 4 ? 4 : qty >= 2 ? 2 : 1;
+  assert(
+    liveUnitPrice({ size: "20x25x1", merv: 8 }, qty) ===
+      liveUnitPrice({ size: "20x25x1", merv: 8 }, rung),
+    `qty ${qty} must use the ${rung}-filter price rung`,
+  );
+}
+assert(liveUnitPrice({ size: "16x25x1", merv: 8 }, 4) === 8.57, "16x25x1 MERV 8 qty 4 must match cheaper Filter King $8.57");
+assert(liveUnitPrice({ size: "20x20x1", merv: 8 }, 4) === 7.34, "20x20x1 MERV 8 qty 4 must match cheaper Filter King $7.34");
+assert(liveUnitPrice({ size: "16x25x1", merv: 11 }, 6) === 7.55, "16x25x1 MERV 11 qty 6 must match cheaper Filter King $7.55");
+assert(liveUnitPrice({ size: "14x25x1", merv: 11 }, 2) === 13.49, "14x25x1 MERV 11 qty 2 stays at the Filtrete single — no 2-pack scrape");
 const live6 = liveUnitPrice({ size: "20x25x1", merv: 8 }, 6);
 assert(typeof live6 === "number" && live6 <= (live as number), "live 6-pack should undercut or match list");
-assert(liveListPrice("20x25x4", 8) === undefined, "thick sizes have no Filtrete ticket — depth fallback is products.ts");
-const thick = findProductVariant("16x25x4", 11);
-assert(thick && thick.price > 22.99, `4-inch qty 1 is still above the 1-inch Filtrete 13 ticket, got ${thick?.price}`);
+assert(liveListPrice("20x25x4", 8) === 30.59, "20x25x4 MERV 8 qty 1 must match cheaper FilterBuy $30.59");
+assert(liveListPrice("20x25x2", 8) === 24.29, "20x25x2 MERV 8 qty 1 must match cheaper FilterBuy $24.29");
+assert(liveListPrice("16x25x4", 8) === 30.59, "16x25x4 MERV 8 qty 1 must match cheaper FilterBuy $30.59");
+assert(liveListPrice("16x25x2", 8) === 28.79, "16x25x2 MERV 8 qty 1 must match cheaper FilterBuy $28.79");
+assert(liveListPrice("16x25x4", 11) === 34.19, "16x25x4 MERV 11 qty 1 must match cheaper FilterBuy $34.19");
+assert(liveUnitPrice({ size: "16x25x4", merv: 8 }, 6) === 14.39, "16x25x4 MERV 8 qty 6 must match cheaper FilterBuy $14.39");
+assert(liveUnitPrice({ size: "20x25x4", merv: 8 }, 6) === 14.91, "20x25x4 MERV 8 qty 6 stays on cheaper Filter King — FilterBuy $14.99");
+assert(liveUnitPrice({ size: "20x25x2", merv: 8 }, 6) === 8.9, "20x25x2 MERV 8 qty 6 stays on cheaper Filter King — FilterBuy $9.75");
+assert(liveListPrice("20x25x4", 13) === 39.95, "20x25x4 MERV 13 qty 1 stays on cheaper Filter King — FilterBuy $42.29");
+const thick = liveListPrice("16x25x4", 11);
+assert(typeof thick === "number" && thick > 22.99, `4-inch qty 1 is still above the 1-inch Filtrete 13 ticket, got ${thick}`);
 
 const inch = getSizesByThickness(1);
 assert(inch.length > 20, `1" catalog too small: ${inch.length}`);

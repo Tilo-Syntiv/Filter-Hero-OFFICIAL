@@ -1,4 +1,4 @@
--- FH-330: hosted catalog_skus still had the first-cut commerce columns
+-- FH-343: hosted catalog_skus still had the first-cut commerce columns
 -- (product_id, name, wholesale_sku, list_price, stripe/klaviyo ids).
 -- The repo sync writes identity only. Recreate if the old PK is present.
 -- Also finish FH-205: revoke leftover sequence + function EXECUTE from
