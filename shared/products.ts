@@ -440,7 +440,7 @@ export const MERV_TYPES: MervTypeInfo[] = [
     name: "MERV 8",
     shortLabel: "Standard",
     description: "Everyday dust and pollen for typical homes",
-    fromPrice: cardFromPrice("8", 11.99),
+    fromPrice: cardFromPrice("8", FILTRETE_1INCH_QTY1["8"]),
     badgeColor: "#3a66a3",
   },
   {
@@ -450,7 +450,7 @@ export const MERV_TYPES: MervTypeInfo[] = [
     name: "MERV 11",
     shortLabel: "Advanced",
     description: "Enhanced protection for pets and mild allergies",
-    fromPrice: cardFromPrice("11", 15.99),
+    fromPrice: cardFromPrice("11", FILTRETE_1INCH_QTY1["11"]),
     badgeColor: "#d21b22",
   },
   {
@@ -460,7 +460,7 @@ export const MERV_TYPES: MervTypeInfo[] = [
     name: "MERV 13",
     shortLabel: "Ultimate",
     description: "Superior filtration for asthma and sensitivities",
-    fromPrice: cardFromPrice("13", 16.99),
+    fromPrice: cardFromPrice("13", FILTRETE_1INCH_QTY1["13"]),
     badgeColor: "#ee9e10",
   },
   {
@@ -470,7 +470,7 @@ export const MERV_TYPES: MervTypeInfo[] = [
     name: "MERV 8 Carbon",
     shortLabel: "Odor Eliminator",
     description: "Everyday filtration plus activated carbon for odors",
-    fromPrice: cardFromPrice("carbon", 19.99),
+    fromPrice: cardFromPrice("carbon", FILTRETE_1INCH_QTY1.carbon),
     badgeColor: "#111111",
   },
 ];

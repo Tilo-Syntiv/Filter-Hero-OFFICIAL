@@ -22,10 +22,12 @@ import { requireStaff } from "./auth";
 import { crmRouter } from "./crm/routes";
 import { accountHealth, crmHealth, logCrmBoot } from "./db";
 import {
+  apiNotFound,
   applySecurityHeaders,
   checkoutLimiter,
   contactLimiter,
   identifyLimiter,
+  isApiPath,
   jsonBodyError,
   publicError,
   sanitizeEventProperties,
@@ -113,10 +115,15 @@ async function startServer() {
         );
         res.json(result);
       } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        const expectedReject =
+          /missing stripe-signature|no stripe-signature header|no signatures found/i.test(
+            message,
+          );
         const { status, body } = publicError(
           err,
           { code: "webhook_failed", message: "Webhook rejected." },
-          "[stripe webhook]",
+          expectedReject ? undefined : "[stripe webhook]",
         );
         res.status(status).json(body);
       }
@@ -366,6 +373,7 @@ Sitemap: ${absoluteUrl(siteUrl, "/sitemap.xml")}
   app.use("/api/account", accountRouter());
   app.use("/api/admin", adminRouter());
   app.use("/api/intuit", intuitRouter());
+  app.use("/api", apiNotFound);
 
   const sendDocument = (req: express.Request, res: express.Response, indexPath: string) => {
     const html = fs.readFileSync(indexPath, "utf8");
@@ -376,13 +384,14 @@ Sitemap: ${absoluteUrl(siteUrl, "/sitemap.xml")}
   if (isProd) {
     const staticPath = path.resolve(__dirname, "public");
     app.use(express.static(staticPath, { index: false }));
-    app.get("*", (req, res) => {
+    app.get("*", (req, res, next) => {
+      if (isApiPath(req.path)) return next();
       sendDocument(req, res, path.join(staticPath, "index.html"));
     });
   } else {
     const indexPath = path.resolve(__dirname, "../client/index.html");
     app.get("*", (req, res, next) => {
-      if (req.path.startsWith("/api")) return next();
+      if (isApiPath(req.path)) return next();
       if (!fs.existsSync(indexPath)) return next();
       sendDocument(req, res, indexPath);
     });

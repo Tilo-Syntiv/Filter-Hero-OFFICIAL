@@ -4,6 +4,7 @@ import path from "node:path";
 import fs from "node:fs";
 import express from "express";
 import { requireStaff } from "../server/auth.ts";
+import { catalogSnapshot } from "../server/admin/data.ts";
 import { publicSiteConfig, saveSiteConfig } from "../server/admin/config.ts";
 import {
   DEFAULT_SITE_CONFIG,
@@ -36,6 +37,18 @@ async function main() {
   const noToken = await fetch(`http://127.0.0.1:${server.port}/api/admin/overview`);
   assert(noToken.status === 401, `admin without a token must be 401, got ${noToken.status}`);
   server.close();
+
+  const catalog = catalogSnapshot();
+  assert(catalog.skuCount > 0, "admin catalog has sellable SKUs");
+  assert(
+    catalog.products.length === catalog.skuCount,
+    `admin catalog must list every sellable SKU, got ${catalog.products.length} of ${catalog.skuCount}`,
+  );
+  const skuNeedle = catalog.products.find((row) => row.wholesaleSku)?.wholesaleSku;
+  if (skuNeedle) {
+    const skuHits = catalogSnapshot({ q: skuNeedle });
+    assert(skuHits.matched >= 1, "admin catalog search must match a wholesale SKU");
+  }
 
   const publicConfig = publicSiteConfig();
   const blob = JSON.stringify(publicConfig);
@@ -128,6 +141,11 @@ async function main() {
   assert(
     viteConfig.includes("DOTENV_CONFIG_PATH"),
     "Vite must load DOTENV_CONFIG_PATH so /admin gets VITE_SUPABASE_*",
+  );
+  assert(/allow:\s*\[/.test(viteConfig), "Vite fs.allow must include the repo root for @shared");
+  assert(
+    viteConfig.includes('code: "internal_error"'),
+    "Vite /api proxy must return the fixed Express error JSON when the API is down",
   );
 
   console.log("verify:admin ok");

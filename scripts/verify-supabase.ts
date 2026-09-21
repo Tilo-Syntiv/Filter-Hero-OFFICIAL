@@ -8,6 +8,7 @@ import {
   crmHealth,
   resetDbClient,
 } from "../server/db.ts";
+import { sellableSheetProducts } from "../shared/products.ts";
 
 const PROJECT_REF = "mayxuwlygchatgeqyhyt";
 const EXPECTED_URL = `https://${PROJECT_REF}.supabase.co`;
@@ -22,7 +23,9 @@ const TABLES = [
   "crm_audit_log",
   "customer_profiles",
   "customer_saved_filters",
+  "catalog_skus",
 ];
+const FORBIDDEN_CATALOG_COLUMNS = ["cost_dollars", "list_price", "wholesale_sku", "unit_price"];
 
 function assert(cond: unknown, message: string): asserts cond {
   if (!cond) throw new Error(message);
@@ -86,12 +89,26 @@ async function main() {
     assert(!error, `${table} is not readable with the service role: ${error?.message}`);
   }
 
-  for (const table of ["crm_pipelines", "crm_stages"] as const) {
+  for (const table of ["crm_pipelines", "crm_stages", "catalog_skus"] as const) {
     const { data, error } = await browser.from(table).select("*");
     assert(
       (data?.length ?? 0) === 0,
       `${table} must hide every row from the anon key (got ${data?.length ?? 0}${error ? `, ${error.message}` : ""})`,
     );
+  }
+
+  const { count: skuCount, error: skuError } = await admin
+    .from("catalog_skus")
+    .select("id", { count: "exact", head: true });
+  assert(!skuError, `catalog_skus count failed: ${skuError?.message}`);
+  const expectedSkus = sellableSheetProducts().length;
+  assert(
+    skuCount === expectedSkus,
+    `catalog_skus must have ${expectedSkus} Model Pricing rows, got ${skuCount ?? 0}`,
+  );
+  for (const column of FORBIDDEN_CATALOG_COLUMNS) {
+    const { error: forbidden } = await admin.from("catalog_skus").select(column).limit(1);
+    assert(forbidden, `catalog_skus must not have column ${column}`);
   }
 
   const { error: anonWrite } = await browser.from("customer_profiles").insert({
@@ -158,6 +175,7 @@ async function main() {
   console.log(`  project  ${PROJECT_REF}`);
   console.log(`  crm      ${crm.stages} stages reachable`);
   console.log("  account  customer_profiles reachable");
+  console.log(`  catalog  ${skuCount} identity SKUs (no cost / list_price)`);
   console.log("  rls      seeded tables hidden from anon; anon writes denied");
   console.log("  write    service-role insert/delete ok");
   console.log("  intake   quote → New → Won on pay, then cleaned up");

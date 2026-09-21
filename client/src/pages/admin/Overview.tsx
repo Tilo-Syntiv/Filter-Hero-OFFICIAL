@@ -137,16 +137,21 @@ function OverviewBody() {
           ) : (
             <ul className="divide-y">
               {data.recentOrders.map((order) => (
-                <li key={order.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                  <div>
-                    <p className="font-medium text-navy">
-                      {order.customerEmail || "Guest"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{formatDate(order.paidAt)}</p>
-                  </div>
-                  <span className="font-semibold text-navy">
-                    {formatCents(order.amountTotal, order.currency ?? "usd")}
-                  </span>
+                <li key={order.id}>
+                  <Link
+                    href="/admin/orders"
+                    className="flex items-center justify-between gap-3 py-2 text-sm hover:text-primary"
+                  >
+                    <div>
+                      <p className="font-medium text-navy">
+                        {order.customerEmail || "Guest"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{formatDate(order.paidAt)}</p>
+                    </div>
+                    <span className="font-semibold text-navy">
+                      {formatCents(order.amountTotal, order.currency ?? "usd")}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>

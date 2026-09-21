@@ -430,18 +430,23 @@ export type AdminAudit = {
 };
 
 export function catalogSnapshot(opts: { q?: string; limit?: number } = {}) {
-  const products = sellableSheetProducts();
+  const products = sellableSheetProducts().map((product) => {
+    const wholesaleSku =
+      wholesaleSkuFor(product.size, product.merv, Boolean(product.isCarbon)) || null;
+    return { product, wholesaleSku };
+  });
   const needle = (opts.q ?? "").trim().toLowerCase();
   const matched = needle
     ? products.filter(
-        (product) =>
+        ({ product, wholesaleSku }) =>
           product.size.toLowerCase().includes(needle) ||
           product.name.toLowerCase().includes(needle) ||
           String(product.merv) === needle ||
-          String(product.id) === needle,
+          String(product.id) === needle ||
+          (wholesaleSku != null && wholesaleSku.toLowerCase().includes(needle)),
       )
     : products;
-  const limit = opts.limit ?? 80;
+  const limit = opts.limit ?? matched.length;
   return {
     sellableOnly: SELLABLE_ONLY,
     sizeCount: FILTER_SIZES.length,
@@ -453,8 +458,8 @@ export function catalogSnapshot(opts: { q?: string; limit?: number } = {}) {
       label: type.name,
     })),
     featuredSizes: loadSiteConfig().featuredSizeSlugs,
-    defaultFeaturedSizes: popularSizeSlugs(12),
-    products: matched.slice(0, limit).map((product) => ({
+    defaultFeaturedSizes: popularSizeSlugs(8),
+    products: matched.slice(0, limit).map(({ product, wholesaleSku }) => ({
       id: product.id,
       size: product.size,
       merv: product.merv,
@@ -462,7 +467,7 @@ export function catalogSnapshot(opts: { q?: string; limit?: number } = {}) {
       price: product.price,
       inStock: product.inStock,
       name: product.name,
-      wholesaleSku: wholesaleSkuFor(product.size, product.merv, Boolean(product.isCarbon)) || null,
+      wholesaleSku,
       stripeProductId:
         mappedStripeProductId(product.id, stripeKeyIsLive()) ||
         catalogStripeProductId(product.id),

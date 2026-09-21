@@ -189,6 +189,15 @@ export function unexpectedError(
   res.status(500).json({ error: "Something went wrong.", code: "internal_error" });
 }
 
+export function isApiPath(pathname: string): boolean {
+  return pathname === "/api" || pathname.startsWith("/api/");
+}
+
+/** Unmatched /api routes must stay JSON. Do not fall through to the SPA or Express HTML. */
+export function apiNotFound(_req: Request, res: Response) {
+  res.status(404).json({ error: "Not found.", code: "not_found" });
+}
+
 function clientIp(req: Request): string {
   // req.ip honors `trust proxy`. Do not read X-Forwarded-For[0] ourselves —
   // a client can put a random IP first and skip the limiter.

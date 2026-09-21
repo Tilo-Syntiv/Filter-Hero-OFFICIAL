@@ -12,7 +12,7 @@ import { MERV_TYPES, mervTypesForDisplay } from "@shared/products";
 import { parseSizeSlug } from "@/lib/filter-size";
 import MarketingOptIn from "@/components/MarketingOptIn";
 import { identifyShopper } from "@/lib/klaviyo";
-import TurnstileField from "@/components/TurnstileField";
+import TurnstileField, { readTurnstileToken, turnstileSiteKey } from "@/components/TurnstileField";
 
 const dimField = (label: string) =>
   z
@@ -68,6 +68,7 @@ export default function CustomQuoteForm({
   defaultSize = "",
 }: CustomQuoteFormProps) {
   const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileReset, setTurnstileReset] = useState(0);
   const {
     register,
     handleSubmit,
@@ -113,6 +114,12 @@ export default function CustomQuoteForm({
       .filter(Boolean)
       .join("\n");
 
+    const token = turnstileToken.trim() || readTurnstileToken();
+    if (turnstileSiteKey() && !token) {
+      toast.error("Complete the security check first.");
+      return;
+    }
+
     try {
       identifyShopper({ email: values.email, firstName: values.name.split(/\s+/)[0] });
       const res = await fetch("/api/contact", {
@@ -127,7 +134,7 @@ export default function CustomQuoteForm({
           intent: "quote",
           marketingConsent: values.marketingConsent,
           cartSummary: cartSummary || undefined,
-          turnstileToken: turnstileToken || undefined,
+          turnstileToken: token || undefined,
           website: values.website || undefined,
         }),
       });
@@ -140,7 +147,7 @@ export default function CustomQuoteForm({
       if (!res.ok || !data.ok) {
         throw new Error(data.error || "Failed to send");
       }
-      toast.success("Quote request sent — we'll follow up with pricing and lead time.");
+      toast.success("Quote request sent — check your inbox for a Filter Hero confirmation.");
       reset({
         ...sizeDefaults(""),
         merv: "unsure",
@@ -153,6 +160,7 @@ export default function CustomQuoteForm({
         website: "",
       });
       setTurnstileToken("");
+      setTurnstileReset((n) => n + 1);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to send");
     }
@@ -312,7 +320,7 @@ export default function CustomQuoteForm({
           {...register("website")}
         />
       </div>
-      <TurnstileField onToken={setTurnstileToken} />
+      <TurnstileField action="quote" resetSignal={turnstileReset} onToken={setTurnstileToken} />
 
       <Button type="submit" size="lg" disabled={isSubmitting} className="hero-shop-btn text-white w-full sm:w-auto">
         {isSubmitting ? "Sending…" : "Request custom quote"}

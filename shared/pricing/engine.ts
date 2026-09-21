@@ -241,16 +241,6 @@ export function filtreteBeatUnit(
   return hit?.unit;
 }
 
-function filtreteUnitFor(
-  size: string,
-  merv: 8 | 11 | 13,
-  qty: number,
-  isCarbon?: boolean,
-): number | undefined {
-  if (qty <= 1) return filtreteQty1(size, merv, isCarbon);
-  return filtreteBeatUnit(size, merv, qty, isCarbon);
-}
-
 /** Confirmed FilterBuy unit, only on rungs they undercut us. */
 export function filterbuyUnit(
   size: string,
@@ -279,40 +269,22 @@ export function liveListPrice(
 /**
  * Shopper unit. 1-inch qty 1 is FILTRETE_1INCH_QTY1. Multi-packs are
  * FILTRETE_PACKS only — missing rungs stay on the qty-1 ticket (no invented
- * pack price, no Filter King sale, no FilterBuy undercut).
+ * pack price, no Filter King sale, no FilterBuy undercut). A confirmed pack
+ * that costs more per filter than that single is ignored.
  */
 export function liveUnitPrice(product: Priceable, qty: number): number | undefined {
-  const filtrete = filtreteUnitFor(product.size, product.merv, qty, product.isCarbon);
-  if (filtrete != null) return money(filtrete);
-  if (qty > 1) {
-    const single = filtreteQty1(product.size, product.merv, product.isCarbon);
-    if (single != null) return money(single);
-  }
+  const single = filtreteQty1(product.size, product.merv, product.isCarbon);
+  if (qty <= 1) return single != null ? money(single) : undefined;
+  const pack = filtreteBeatUnit(product.size, product.merv, qty, product.isCarbon);
+  if (pack != null && single != null) return money(Math.min(pack, single));
+  if (pack != null) return money(pack);
+  if (single != null) return money(single);
   return undefined;
 }
 
-function sizesForFromPrice(key: MervPriceKey): Set<string> {
-  const sizes = new Set<string>(["20x25x1"]);
-  if (key === "carbon") return sizes;
-  for (const row of FILTRETE_PACKS) {
-    if (row.merv === key) sizes.add(normalizeSize(row.size));
-  }
-  return sizes;
-}
-
-/** Cheapest live unit a shopper can pay — same ticket as the size page. */
+/** Qty-1 Filtrete ticket for this rating — same number as `/sizes/20x25x1`. */
 export function liveFromPrice(key: MervPriceKey): number | undefined {
-  const merv = key === "carbon" ? 8 : (Number(key) as 8 | 11 | 13);
-  const isCarbon = key === "carbon";
-  let min: number | undefined;
-  for (const size of Array.from(sizesForFromPrice(key))) {
-    for (const step of QTY_STEPS) {
-      const unit = liveUnitPrice({ size, merv, isCarbon }, step.minQty);
-      if (typeof unit !== "number") continue;
-      if (min === undefined || unit < min) min = unit;
-    }
-  }
-  return min;
+  return FILTRETE_1INCH_QTY1[key];
 }
 
 export function liveLadderCount(): number {

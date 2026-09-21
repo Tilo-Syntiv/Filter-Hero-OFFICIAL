@@ -102,6 +102,14 @@ async function main() {
   const data = overview.body.data as { catalog?: { skus?: number }; pipeline?: { enabled?: boolean } };
   assert((data.catalog?.skus ?? 0) > 0, "overview catalog has SKUs");
 
+  const catalog = await call(token, "/api/admin/catalog");
+  const cat = catalog.body.data as { skuCount?: number; products?: unknown[]; matched?: number };
+  assert((cat.skuCount ?? 0) > 0, "catalog has SKUs");
+  assert(
+    (cat.products?.length ?? 0) === cat.skuCount,
+    `catalog must list every sellable SKU, got ${cat.products?.length} of ${cat.skuCount}`,
+  );
+
   const stages = await call(token, "/api/crm/stages");
   const stageRows = stages.body.data as { id: string }[];
   assert(Array.isArray(stageRows) && stageRows.length === 6, "quotes pipeline still has six stages");

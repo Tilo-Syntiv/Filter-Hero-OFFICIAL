@@ -14,7 +14,110 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-330**
+Next id: **FH-337**
+
+---
+
+### FH-336 — catalog_skus emptied after identity recreate
+- **Status:** fixed
+- **Area:** catalog
+- **Symptom:** Hosted `catalog_skus` had 0 rows after migration `catalog_skus_identity` (`20260921164548`) dropped the first-cut commerce columns and recreated the table. `pnpm verify:supabase` failed: `catalog_skus must have 293 Model Pricing rows, got 0`. Shopper catalog still came from `sellable-skus.json`; staff SQL / account in-stock mirror was empty.
+- **Do NOT:** Apply `0006_catalog_skus_identity.sql` and leave the table empty. Do not put wholesale cost, `list_price`, or API `unit_price` back on `catalog_skus`.
+- **Do:** After that recreate, `syncSupabaseCatalog()` upserts identity only (id, size, MERV, image, Filter Hero URL, Filter King URL, parent_model). Count must match `sellableSheetProducts()`.
+- **Files:** `supabase/migrations/0006_catalog_skus_identity.sql`, `scripts/lib/catalog-sync.ts`, `scripts/verify-supabase.ts`
+- **Verify:** `pnpm verify:supabase`. Hosted `catalog_skus` count is 293. Anon still reads 0 rows.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-335 — Vite /api proxy dumped ECONNREFUSED while Express restarted
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** Local Vite (`http://localhost:3000`) proxied `/api/site-config`, `/api/klaviyo/config`, and `/api/track` at Express. While `tsx watch` restarted, the proxy logged `connect ECONNREFUSED 127.0.0.1:3001` and the browser saw a raw 500. Site config stayed on defaults until a full reload. Stale tabs from `FILTER HERO` also requested `/@fs/` paths outside this repo’s allow list.
+- **Do NOT:** Allow `C:\Users\lazar\Downloads\Github\FILTER HERO` on `server.fs`. Do not put service-role keys in `VITE_` vars. Do not skip the fixed error JSON.
+- **Do:** `server.fs.allow` is this repo root so `@shared` serves. `/api` (and sitemap/robots/llms) proxy errors return `{ error: "Something went wrong.", code: "internal_error" }`. `SiteConfigProvider` retries `/api/site-config` the same way `bootKlaviyo` retries config. Keep `DOTENV_CONFIG_PATH` in `vite.config.ts` (FH-329).
+- **Files:** `vite.config.ts`, `client/src/contexts/SiteConfigContext.tsx`, `scripts/verify-admin.ts`
+- **Verify:** `pnpm verify:admin`. `pnpm check`. Local `/` — Find my size → add to cart. `/login` is Sign in, not “not configured”. `/admin` is Staff sign in, not the VITE_ message. Pack shots and `/life/*.jpg` 200.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-334 — Admin Products table truncated the contractor sheet
+- **Status:** fixed
+- **Area:** catalog
+- **Symptom:** Staff `/admin/catalog` advertised 293 sellable SKUs, then rendered the first 80. Searching a wholesale SKU returned nothing. Featured-size fallback used a 12-slug list that matches neither the header (8) nor the carousel (16).
+- **Do NOT:** Default the admin catalog snapshot to 80 rows. Do not search only size/name/id. Do not invent a third featured-size default of 12.
+- **Do:** `/api/admin/catalog` returns every sellable-sheet SKU. Search matches size, name, MERV, id, and wholesale SKU. Empty featured sizes use `popularSizeSlugs(8)`, same as the header.
+- **Files:** `server/admin/data.ts`, `client/src/pages/admin/Catalog.tsx`, `client/src/pages/admin/Overview.tsx`, `scripts/verify-admin.ts`, `scripts/smoke-admin.ts`, `scripts/click-admin.ts`
+- **Verify:** `pnpm verify:admin`. `pnpm smoke:admin`. `pnpm browse:admin`. Products footer is `Showing 293 of 293` (or current sheet count), not 80 of 293.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-333 — MERV cards used cheapest pack, not that rating’s Filtrete 1-pack
+- **Status:** fixed
+- **Area:** pricing
+- **Symptom:** Homepage “What should your filter catch?” advertised Standard **from $5.18** (20x20x1 12-pack), MERV 11 **from $11.00**, MERV 13 **from $15.00**, Carbon **from $16.70**. Hero packs link to `/sizes/20x25x1`, where qty 1 is $9.99 / $13.49 / $22.99 / $16.70. Three Filtrete 4-packs ($10.05 / $11.50 / $11.49) also cost more per filter than the $9.99 single.
+- **Do NOT:** Set `MERV_TYPES.fromPrice` to the cheapest `FILTRETE_PACKS` rung across sizes. Do not charge a pack unit above that rating’s Filtrete qty-1 ticket. Do not use Filter King sale or FilterBuy as the card or pack price.
+- **Do:** `liveFromPrice` is `FILTRETE_1INCH_QTY1` for that rating. Cards, `/sizes/20x25x1` qty 1, cart, Stripe `price_data`, JSON-LD, and Klaviyo item price share that ticket. Confirmed packs that beat the single stay; packs that cost more per filter cap at the single.
+- **Files:** `shared/pricing/engine.ts`, `shared/products.ts`, `client/src/pages/SizeDetail.tsx`, `scripts/verify-store.ts`
+- **Verify:** `pnpm verify:store`. Homepage MERV cards are **from $9.99 / $13.49 / $22.99 / $16.70**. `/sizes/20x25x1` qty 1 matches those. `/sizes/16x25x1` MERV 8 qty 4 is $9.99, not $10.05.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-332 — Unknown /api routes returned Express HTML (live GET was SPA 200)
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** `GET /api/does-not-exist` on `https://filterhero.net` returned the shop HTML with **200** because production `app.get("*")` served `index.html` for every unmatched GET, including `/api/*`. `POST /api/does-not-exist` (local and live) returned Express’s default `<pre>Cannot POST /api/does-not-exist</pre>`. Unsigned Stripe webhooks still stack-dumped `Missing stripe-signature header` on every smoke/probe.
+- **Do NOT:** Let unmatched `/api` fall through to the SPA or Express HTML. Do not log expected missing/invalid Stripe signatures as `[stripe webhook]` errors.
+- **Do:** After CRM/account/admin/Intuit routers, `apiNotFound` answers JSON `{ code: "not_found" }` 404. Production and dev document catch-alls skip `isApiPath`. Expected webhook rejects stay 400 `webhook_failed` without a stack.
+- **Files:** `server/index.ts`, `server/security.ts`, `scripts/verify-security.ts`, `scripts/smoke-site.ts`
+- **Verify:** `pnpm verify:security`. `pnpm smoke`. Local `GET`/`POST /api/does-not-exist` is 404 JSON `not_found`, not HTML. After deploy, live GET `/api/does-not-exist` matches.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-331 — Live PDP has no Filter King link; speakable URL is still home
+- **Status:** open
+- **Area:** catalog | seo
+- **Symptom:** Official local `/sizes/20x25x1` shows **Matching Filter King page** → `https://filterking.com/air-filter-sizes-20x25x1-merv-8` and `#jsonld-page` WebPage.url is `https://filterhero.net/sizes/20x25x1`. Live `https://filterhero.net/sizes/20x25x1` has `$9.99` and Add to cart but no filterking.com anchor; SPA speakable URL is `https://filterhero.net/`. Railway still serves `Tilo-Syntiv/FILTER-HERO@1895e06`.
+- **Do NOT:** Scrape filterking.com. Do not `railway up` this Official tree while GitHub watches FILTER-HERO (FH-304).
+- **Do:** Merge/deploy Official SizeDetail (Filter King link + `{ path: seo.path }` speakable) onto the live FILTER-HERO main build. Until then constructed PDP URLs only exist locally.
+- **Files:** `client/src/pages/SizeDetail.tsx`, `shared/filterking.ts`
+- **Verify:** Live `/sizes/20x25x1` has the Filter King link. `#jsonld-page` WebPage.url is `https://filterhero.net/sizes/20x25x1`.
+- **Added:** 2026-09-21
+
+---
+
+### FH-330 — Turnstile loaded on every homepage view again
+- **Status:** fixed
+- **Area:** contact
+- **Symptom:** Official `TurnstileField` called `turnstile.render` as soon as the contact/custom-quote forms mounted, so `/` logged hidden `challenges.cloudflare.com` `NaN` errors before the shopper reached `#contact`. A successful send did not reset the widget, so the next submit could reuse a spent token. Site-key forms also posted without reading `turnstile.getResponse()`.
+- **Do NOT:** Call `render` before the field is near the viewport. Do not omit `error-callback`. Do not skip `readTurnstileToken()` / a client-side empty-token block when `VITE_TURNSTILE_SITE_KEY` is set.
+- **Do:** Mount the explicit widget only when the host is within ~200px of the viewport. Always-visible flexible light widget, expire/timeout reset, handled `error-callback`. Reset via `resetSignal` after a successful send. Client blocks send without a token when the site key is set.
+- **Files:** `client/src/components/TurnstileField.tsx`, `client/src/components/ContactForm.tsx`, `client/src/components/CustomQuoteForm.tsx`, `scripts/verify-security.ts`
+- **Verify:** `/` — no Turnstile script until `#contact` is near. `/#contact` and `/custom-air-filters` show the widget. `pnpm verify:security`. Homepage console has no `challenges.cloudflare.com` `NaN` before scrolling to contact.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-329 — Local /admin asked to set VITE_SUPABASE even with CRM on
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** `http://localhost:3000/admin` rendered “Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, then restart the dev server.” Express had CRM on (`DOTENV_CONFIG_PATH` → IMPORTANT PAPERS `.env`). Vite `envDir` only reads the repo `.env`, which this workspace does not have, so `isAdminConfigured()` was false. `/login` would say customer login is not configured.
+- **Do NOT:** Put `SUPABASE_SERVICE_ROLE_KEY` in a `VITE_` var. Do not commit `.env`. Do not add `/admin` to the shop header.
+- **Do:** `vite.config.ts` loads `DOTENV_CONFIG_PATH` before the client bake so the same file Express uses supplies `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Staff sign-in is magic link + OTP.
+- **Files:** `vite.config.ts`, `scripts/verify-admin.ts`, `scripts/click-ui.ts`
+- **Verify:** `pnpm verify:admin`. Local `/admin` heading **Staff sign in**, not the VITE_ message. `pnpm smoke`.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
 
 ---
 
@@ -359,14 +462,15 @@ Next id: **FH-330**
 ---
 
 ### FH-303 — Railway FULL_CATALOG=true conflicts with the contractor shop
-- **Status:** open
+- **Status:** mitigated
 - **Area:** catalog
-- **Symptom:** Local `.env` and `.env.example` are `FULL_CATALOG=false` / `VITE_FULL_CATALOG=false` (293 contractor SKUs). Railway has both set to `true` (archived size universe). Live `GET /api/klaviyo/catalog.json` is still 299 because the 2026-09-17 CLI image baked the old allowlist. The next rebuild with current Railway vars would sell every archived size × MERV (FH-216 / FH-300).
-- **Do NOT:** Leave Railway `VITE_FULL_CATALOG=true`. Do not `railway up` to “fix” the feed while this branch is dirty.
-- **Do:** `railway variable set FULL_CATALOG=false VITE_FULL_CATALOG=false --service FILTER-HERO --skip-deploys`, then rebuild from `main` so Vite bakes `false`.
+- **Symptom:** Local `.env` and `.env.example` are `FULL_CATALOG=false` / `VITE_FULL_CATALOG=false` (293 contractor SKUs). Railway had both set to `true`. After 2026-09-20 flags were set `false` and the service rebuilt: live `GET /api/products` is `sellableOnly: true` but `sizeCount` is still **182** (older sellable list). Live Klaviyo JSON is still **299** (FH-300).
+- **Do NOT:** Set Railway `VITE_FULL_CATALOG=true`. Do not `railway up` Official to “fix” the feed while this branch is dirty.
+- **Do:** Keep both flags `false`. Deploy Official `sellable-skus.json` (293 / 153) so live sizeCount and catalog.json match local.
 - **Files:** `.env.example`, `docs/WHOLESALE-PRICE-LISTS.md`
-- **Verify:** `railway variable list --service FILTER-HERO` shows both flags `false`. After rebuild, live catalog.json is the contractor allowlist (293 once FH-300 ships), not the archive.
+- **Verify:** `GET https://filterhero.net/api/products` → `sellableOnly: true`. After Official deploys, `sizeCount` is 153 and `/api/klaviyo/catalog.json` is 293.
 - **Added:** 2026-09-20
+- **Fixed:** 2026-09-21
 
 ---
 

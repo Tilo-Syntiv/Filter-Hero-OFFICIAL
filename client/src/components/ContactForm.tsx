@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import TurnstileField from "@/components/TurnstileField";
+import TurnstileField, { readTurnstileToken, turnstileSiteKey } from "@/components/TurnstileField";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required").max(120),
@@ -45,6 +45,7 @@ export default function ContactForm({
   cartSummary = "",
   intent = "quote",
 }: ContactFormProps) {
+  const [turnstileReset, setTurnstileReset] = useState(0);
   const {
     register,
     handleSubmit,
@@ -80,6 +81,11 @@ export default function ContactForm({
   }, [intent, setValue]);
 
   const onSubmit = async (values: FormValues) => {
+    const token = values.turnstileToken?.trim() || readTurnstileToken();
+    if (turnstileSiteKey() && !token) {
+      toast.error("Complete the security check first.");
+      return;
+    }
     try {
       identifyShopper({ email: values.email, firstName: values.name.split(/\s+/)[0] });
       const res = await fetch("/api/contact", {
@@ -89,14 +95,14 @@ export default function ContactForm({
           ...values,
           cartSummary: cartSummary || undefined,
           website: values.website || undefined,
-          turnstileToken: values.turnstileToken || undefined,
+          turnstileToken: token || undefined,
         }),
       });
       const data = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok || !data.ok) {
         throw new Error(data.error || "Failed to send");
       }
-      toast.success("Message sent — we'll get back to you shortly.");
+      toast.success("Message sent — check your inbox for a Filter Hero confirmation.");
       reset({
         name: "",
         email: "",
@@ -108,6 +114,7 @@ export default function ContactForm({
         website: "",
         turnstileToken: "",
       });
+      setTurnstileReset((n) => n + 1);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to send");
     }
@@ -202,7 +209,11 @@ export default function ContactForm({
           {...register("website")}
         />
       </div>
-      <TurnstileField onToken={(token) => setValue("turnstileToken", token)} />
+      <TurnstileField
+        action="contact"
+        resetSignal={turnstileReset}
+        onToken={(token) => setValue("turnstileToken", token)}
+      />
 
       <Button type="submit" size="lg" disabled={isSubmitting} className="hero-shop-btn text-white w-full sm:w-auto">
         {isSubmitting ? "Sending…" : "Send message"}

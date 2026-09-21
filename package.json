@@ -17,6 +17,7 @@
     "verify:crm": "tsx scripts/verify-crm.ts",
     "verify:admin": "tsx scripts/verify-admin.ts",
     "smoke:admin": "tsx scripts/smoke-admin.ts",
+    "browse:admin": "tsx scripts/click-admin.ts",
     "verify:security": "tsx scripts/verify-security.ts",
     "setup:crm": "tsx scripts/setup-crm.ts",
     "verify:supabase": "tsx scripts/verify-supabase.ts",

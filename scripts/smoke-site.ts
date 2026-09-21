@@ -118,6 +118,21 @@ assert(
   "API must send CSP",
 );
 
+const unknownApiGet = await get(`${API}/api/does-not-exist`);
+assert(unknownApiGet.res.status === 404, `unknown API GET should 404, got ${unknownApiGet.res.status}`);
+assert(
+  (unknownApiGet.json as { code?: string })?.code === "not_found",
+  "unknown API GET must name not_found",
+);
+assert(!/cannot get|<!doctype html/i.test(unknownApiGet.text), "unknown API GET must not be HTML");
+const unknownApiPost = await post(`${API}/api/does-not-exist`, {});
+assert(unknownApiPost.res.status === 404, `unknown API POST should 404, got ${unknownApiPost.res.status}`);
+assert(
+  (unknownApiPost.json as { code?: string })?.code === "not_found",
+  "unknown API POST must name not_found",
+);
+assert(!/cannot post|<!doctype html/i.test(unknownApiPost.text), "unknown API POST must not be HTML");
+
 const products = await get(`${API}/api/products`);
 assert(products.res.ok, `products ${products.res.status}`);
 const meta = products.json as { sizeCount?: number };

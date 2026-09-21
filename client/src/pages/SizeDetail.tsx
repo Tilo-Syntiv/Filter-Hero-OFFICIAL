@@ -469,7 +469,7 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
                     </button>
                   </div>
                   <p className="pdp-qty-hint">
-                    Any pack from 1 to 12. Six is the usual household run; twelve is the best unit price.
+                    Any pack from 1 to 12. Six is the usual household run.
                   </p>
                 </div>
 

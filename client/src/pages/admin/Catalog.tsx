@@ -56,7 +56,7 @@ function CatalogBody() {
           <AdminSearch
             value={query}
             onChange={setQuery}
-            placeholder="Search size, MERV, or name"
+            placeholder="Search size, MERV, SKU, or name"
           />
         </div>
         {data.products.length === 0 ? (

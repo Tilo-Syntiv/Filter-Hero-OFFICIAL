@@ -4,9 +4,11 @@ import express from "express";
 import { z } from "zod";
 import { requireStaff } from "../server/auth.ts";
 import {
+  apiNotFound,
   applySecurityHeaders,
   checkoutLimiter,
   identifyLimiter,
+  isApiPath,
   jsonBodyError,
   publicError,
   sanitizeEventProperties,
@@ -89,6 +91,47 @@ async function main() {
   assert(ping.headers.get("x-frame-options") === "DENY", "live deny framing");
   assert(ping.headers.get("content-security-policy")?.includes("default-src 'self'"), "live CSP");
   headedServer.close();
+
+  // --- Unmatched /api stays JSON, never SPA HTML or Express "Cannot GET" ----
+
+  assert(isApiPath("/api"), "/api is an API path");
+  assert(isApiPath("/api/does-not-exist"), "nested /api paths are API paths");
+  assert(!isApiPath("/apitest"), "/apitest is not an API path");
+  assert(!isApiPath("/admin"), "/admin is the staff SPA, not the API");
+
+  const apiApp = express();
+  apiApp.disable("x-powered-by");
+  apiApp.use(applySecurityHeaders);
+  apiApp.get("/api/health", (_req, res) => res.json({ ok: true, brand: "Filter Hero" }));
+  apiApp.use("/api", apiNotFound);
+  apiApp.get("*", (_req, res) => {
+    res.type("html").send('<!doctype html><div id="root"></div>');
+  });
+  const apiServer = serve(apiApp);
+  const apiHealth = await fetch(`http://127.0.0.1:${apiServer.port}/api/health`);
+  assert(apiHealth.ok, "known /api/health still answers");
+  const missGet = await fetch(`http://127.0.0.1:${apiServer.port}/api/does-not-exist`);
+  const missGetText = await missGet.text();
+  assert(missGet.status === 404, `unknown API GET should 404, got ${missGet.status}`);
+  assert(!/cannot get|doctype html/i.test(missGetText), "unknown API GET must not be HTML");
+  const missGetBody = JSON.parse(missGetText) as { code?: string };
+  assert(missGetBody.code === "not_found", "unknown API GET names not_found");
+  const missPost = await fetch(`http://127.0.0.1:${apiServer.port}/api/does-not-exist`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  });
+  const missPostText = await missPost.text();
+  assert(missPost.status === 404, `unknown API POST should 404, got ${missPost.status}`);
+  assert(!/cannot post|doctype html/i.test(missPostText), "unknown API POST must not be HTML");
+  assert(
+    (JSON.parse(missPostText) as { code?: string }).code === "not_found",
+    "unknown API POST names not_found",
+  );
+  const spa = await fetch(`http://127.0.0.1:${apiServer.port}/sizes/20x25x1`);
+  assert(spa.ok, "non-API GET still serves the document");
+  assert((await spa.text()).includes('id="root"'), "non-API GET is the SPA shell");
+  apiServer.close();
 
   // --- JSON body errors must not dump a stack -------------------------------
 
@@ -262,6 +305,16 @@ async function main() {
   const envExample = fs.readFileSync(".env.example", "utf-8");
   assert(!/SERVICE_ROLE/.test(envExample) || !/^VITE_.*SERVICE_ROLE/m.test(envExample), "no VITE service role");
   assert(!/VITE_.*sk_live_/i.test(envExample), "no live Stripe secret in VITE_");
+
+  const turnstileSrc = fs.readFileSync("client/src/components/TurnstileField.tsx", "utf-8");
+  assert(
+    turnstileSrc.includes("IntersectionObserver"),
+    "Turnstile must wait until the field is near the viewport (FH-247 / FH-330)",
+  );
+  assert(
+    turnstileSrc.includes("resetSignal") && turnstileSrc.includes("error-callback"),
+    "Turnstile must reset after send and handle error-callback (FH-247 / FH-330)",
+  );
 
   console.log("verify:security ok");
 }

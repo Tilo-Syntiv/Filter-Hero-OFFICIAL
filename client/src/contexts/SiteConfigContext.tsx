@@ -29,18 +29,23 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    void fetch("/api/site-config")
-      .then((res) => res.json())
-      .then((payload: { ok?: boolean; data?: PublicSiteConfig }) => {
-        if (cancelled || !payload?.data) return;
-        setConfig({ ...defaults, ...payload.data });
-      })
-      .catch(() => {
-        /* keep defaults — the shop still renders */
-      })
-      .finally(() => {
-        if (!cancelled) setReady(true);
-      });
+    const load = async () => {
+      for (let attempt = 0; attempt < 6; attempt++) {
+        try {
+          const res = await fetch("/api/site-config");
+          if (!res.ok) throw new Error(String(res.status));
+          const payload = (await res.json()) as { ok?: boolean; data?: PublicSiteConfig };
+          if (cancelled) return;
+          if (payload?.data) setConfig({ ...defaults, ...payload.data });
+          break;
+        } catch {
+          if (attempt === 5) break;
+          await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
+        }
+      }
+      if (!cancelled) setReady(true);
+    };
+    void load();
     return () => {
       cancelled = true;
     };

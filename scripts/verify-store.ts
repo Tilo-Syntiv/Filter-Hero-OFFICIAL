@@ -174,9 +174,17 @@ for (const size of FILTER_SIZES) {
     for (const qty of [1, 2, 4, 6, 12]) {
       const unit = unitPriceForQty(list, qty, variant);
       assert(unit > 0, `missing unit for ${size.slug} ${type.name} qty ${qty}`);
+      assert(
+        unit <= list,
+        `${size.slug} ${type.name} qty ${qty} unit $${unit} must not exceed qty-1 $${list}`,
+      );
     }
   }
 }
+assert(liveFromPrice("8") === 9.99, "MERV 8 card must be Filtrete qty-1 $9.99");
+assert(liveFromPrice("11") === 13.49, "MERV 11 card must be Filtrete qty-1 $13.49");
+assert(liveFromPrice("13") === 22.99, "MERV 13 card must be Filtrete qty-1 $22.99");
+assert(liveFromPrice("carbon") === 16.7, "Carbon card must be Filtrete odor qty-1 $16.70");
 for (const type of MERV_TYPES) {
   if (!isMervKeyOnSale(type.key)) continue;
   const live = liveFromPrice(type.key);
@@ -234,8 +242,9 @@ assert(liveUnitPrice({ size: "20x25x1", merv: 13 }, 2) === 21, "20x25x1 MERV 13 
 assert(liveUnitPrice({ size: "20x20x1", merv: 8 }, 12) === 5.18, "20x20x1 MERV 8 qty 12 must match Filtrete Walmart $5.18");
 assert(liveUnitPrice({ size: "16x25x1", merv: 8 }, 12) === 5.83, "16x25x1 MERV 8 qty 12 must match Filtrete $5.83");
 assert(liveUnitPrice({ size: "20x25x1", merv: 8 }, 6) === 9.17, "20x25x1 MERV 8 qty 6 must match Filtrete $9.17");
-assert(liveUnitPrice({ size: "16x25x1", merv: 8 }, 4) === 10.05, "16x25x1 MERV 8 qty 4 must match Filtrete $10.05");
-assert(liveUnitPrice({ size: "20x20x1", merv: 8 }, 4) === 11.5, "20x20x1 MERV 8 qty 4 must match Filtrete $11.50");
+assert(liveUnitPrice({ size: "16x25x1", merv: 8 }, 4) === 9.99, "16x25x1 MERV 8 qty 4 caps at the $9.99 single — Filtrete 4-pack $10.05 is worse");
+assert(liveUnitPrice({ size: "20x20x1", merv: 8 }, 4) === 9.99, "20x20x1 MERV 8 qty 4 caps at the $9.99 single — Filtrete 4-pack $11.50 is worse");
+assert(liveUnitPrice({ size: "20x30x1", merv: 8 }, 4) === 9.99, "20x30x1 MERV 8 qty 4 caps at the $9.99 single — Filtrete 4-pack $11.49 is worse");
 assert(liveUnitPrice({ size: "16x25x1", merv: 11 }, 6) === 11, "16x25x1 MERV 11 qty 6 must match Filtrete $11.00");
 assert(liveUnitPrice({ size: "14x25x1", merv: 11 }, 2) === 13.49, "14x25x1 MERV 11 qty 2 stays at the Filtrete single — no invented 2-pack");
 const live6 = liveUnitPrice({ size: "20x25x1", merv: 8 }, 6);
