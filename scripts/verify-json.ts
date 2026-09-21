@@ -182,8 +182,8 @@ record(
 const scrapedHalf = liveUnitPrice({ size: "10x30x0.5", merv: 11 }, 1);
 record(
   "prices:n-alias-scraped",
-  scrapedHalf === undefined,
-  `0.5-inch has no Filtrete ticket, got ${scrapedHalf}`,
+  scrapedHalf === 49.48,
+  `10x30x0.5 MERV 11 must use scraped n-ladder $49.48, got ${scrapedHalf}`,
 );
 
 const leads = readJson("server/data/leads.json") as unknown[];

@@ -27,6 +27,7 @@ import {
   unitPriceForQty,
 } from "../shared/products.ts";
 import {
+  liveFromPrice,
   liveLadderCount,
   liveListPrice,
   liveUnitPrice,
@@ -169,7 +170,6 @@ assert(
 );
 
 let sellableCount = 0;
-const cheapest: Record<string, number> = {};
 for (const size of FILTER_SIZES) {
   for (const type of mervTypesForSize(size.slug)) {
     const variant = findProductVariant(size.slug, type.merv, type.isCarbon);
@@ -191,15 +191,24 @@ for (const size of FILTER_SIZES) {
           `${size.slug} ${type.name} qty ${qty} shows $${unit} but live is $${live}`,
         );
       }
-      const prev = cheapest[type.key];
-      if (prev === undefined || unit < prev) cheapest[type.key] = unit;
     }
   }
 }
+const FLAGSHIP_FROM: Record<string, number> = {
+  "8": 9.99,
+  "11": 13.49,
+  "13": 22.99,
+  carbon: 16.7,
+};
 for (const type of MERV_TYPES) {
+  const flagship = FLAGSHIP_FROM[type.key];
   assert(
-    type.fromPrice === cheapest[type.key],
-    `${type.shortLabel} card from $${type.fromPrice.toFixed(2)} must match cheapest live unit $${cheapest[type.key]?.toFixed(2)}`,
+    type.fromPrice === flagship,
+    `${type.shortLabel} card from $${type.fromPrice.toFixed(2)} must be 20x25x1 qty 1 $${flagship.toFixed(2)}`,
+  );
+  assert(
+    liveFromPrice(type.key) === flagship,
+    `${type.shortLabel} liveFromPrice $${liveFromPrice(type.key)} must be 20x25x1 qty 1 $${flagship.toFixed(2)}`,
   );
 }
 assert(sellableCount > 200, `XLS sellable SKUs too small: ${sellableCount}`);

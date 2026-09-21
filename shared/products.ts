@@ -439,21 +439,7 @@ function listPriceFor(depth: number, merv: MervRating, isCarbon: boolean): numbe
 }
 
 function cardFromPrice(key: MervTypeKey, fallback: number): number {
-  if (!SELLABLE_ONLY) return liveFromPrice(key) ?? fallback;
-  let min: number | undefined;
-  for (const row of SELLABLE_ROWS) {
-    const isCarbon = Boolean(row.isCarbon);
-    if (key === "carbon" ? !isCarbon : isCarbon || String(row.merv) !== key) continue;
-    const list =
-      liveListPrice(row.size, row.merv, isCarbon) ??
-      listPriceFor(depthFromSlug(row.size), row.merv, isCarbon);
-    const product = { size: row.size, merv: row.merv, isCarbon };
-    for (const qty of [1, 2, 4, 6, 12]) {
-      const unit = unitPriceForQty(list, qty, product);
-      if (min === undefined || unit < min) min = unit;
-    }
-  }
-  return min ?? fallback;
+  return liveFromPrice(key) ?? fallback;
 }
 
 export const MERV_TYPES: MervTypeInfo[] = [

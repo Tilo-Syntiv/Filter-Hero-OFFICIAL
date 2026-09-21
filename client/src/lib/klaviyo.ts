@@ -1,5 +1,5 @@
 import { getSiteUrl } from "@/hooks/useSeo";
-import { getProductById, packShotSrc, type Product } from "@shared/products";
+import { getProductById, packShotSrc, unitPriceForQty, type Product } from "@shared/products";
 import { BRAND_NAME } from "@/const";
 
 type CartLike = {
@@ -312,7 +312,7 @@ export function trackAddedToCart(product: Product, qty: number, cart: CartLike[]
       AddedItemCategories: productCategories(product),
       AddedItemImageURL: productImage(product),
       AddedItemURL: productPageUrl(product),
-      AddedItemPrice: product.price,
+      AddedItemPrice: unitPriceForQty(product.price, qty, product),
       AddedItemQuantity: qty,
       ItemNames: lines.map((line) => line.ProductName),
       Items: lines,

@@ -206,6 +206,9 @@ export default function Hero() {
                           <span className="hero-pack-ticket-copy">
                             <span className="hero-pack-ticket-kicker">{item.kicker}</span>
                             <span className="hero-pack-ticket-use">{item.use}</span>
+                            <span className="hero-pack-ticket-price">
+                              ${type.fromPrice.toFixed(2)}
+                            </span>
                           </span>
                         </span>
                       </Link>

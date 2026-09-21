@@ -14,7 +14,79 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-345**
+Next id: **FH-351**
+
+---
+
+### FH-350 — Size page card hung below the Add to Cart button
+- **Status:** mitigated
+- **Area:** photos
+- **Symptom:** On `/sizes/…` the pack photo plus the overdue panel ran past the buy column, so a white band sat under the red Add to Cart button.
+- **Do NOT:** Put `.product-shot` back to `28rem` or give `.product-shot-wrap` a 16rem min-height. Do not leave `.product-overdue-hero` unstyled — an unstyled comparison stacks and pushes the card down again.
+- **Do:** Pack photo stays `min(100%, 22rem)`. The comparison stays one row. The card bottom sits with the Add to Cart button (card padding only).
+- **Files:** `client/src/index.css`
+- **Verify:** `/sizes/20x25x1` at 1280px — space under Add to Cart is about the buy-column padding, not a tall empty band.
+- **Added:** 2026-09-21
+
+### FH-349 — Cart restore put the bottom drawer back
+- **Status:** fixed
+- **Area:** cart
+- **Symptom:** After the side panel was reported as changed, the cart was restored as the bottom drawer. The shopper drawer is the right-hand panel.
+- **Do NOT:** Put the bottom drawer back. FH-348 is superseded.
+- **Do:** Cart opens from the right. Navy header, white line cards, size-page quantity stepper, burgundy Checkout, navy Request a quote. Header and footer stay short so the filters stay visible.
+- **Files:** `client/src/components/CartDrawer.tsx`, `client/src/index.css`
+- **Verify:** Open the cart. It is a right-hand panel, not a sheet from the bottom.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-348 — Right-hand cart restyle replaced the shopper drawer
+- **Status:** fixed
+- **Area:** cart
+- **Symptom:** The cart became a full-height navy side panel. Shoppers lost the bottom drawer: bag icon, line rows, round quantity buttons, and the outline quote button.
+- **Do NOT:** Turn the cart into a right-hand drawer again. Do not replace the quantity buttons with the size-page stepper.
+- **Do:** Cart stays the bottom drawer. Title is `Your cart (count)`. Checkout is the burgundy shop button. Quote stays an outline button. Shipping still says At checkout.
+- **Files:** `client/src/components/CartDrawer.tsx`
+- **Verify:** Open the cart. It rises from the bottom. Quantity buttons are the round outline pair.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-347 — verify:json expected no 0.5-inch ticket after Filter King ladders returned
+- **Status:** fixed
+- **Area:** pricing
+- **Symptom:** After FH-342 restored Filter King undercut, `pnpm verify:json` failed `prices:n-alias-scraped`. The check still wanted `liveUnitPrice(10x30x0.5 MERV 11 qty 1)` to be `undefined` (Filtrete-only). The scraped `10x30x0.5n` ladder is **$49.48**.
+- **Do NOT:** Treat a 0.5-inch Filter King scrape as a Filtrete ticket. Do not drop trailing `n` from catalog slugs (FH-195).
+- **Do:** `prices:n-alias-scraped` is **$49.48**. 1-inch qty 1 stays Filtrete when cheaper.
+- **Files:** `scripts/verify-json.ts`
+- **Verify:** `pnpm verify:json`. `prices:n-alias-scraped` is $49.48.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-346 — Product overdue card was a dark box, not the page-hero band
+- **Status:** mitigated
+- **Area:** photos
+- **Symptom:** Size PDPs, thickness hubs, brand pages, and custom quote showed “Skip a change?” as a small dark-navy inset. The original page uses the brand-band blue, a large white headline, and a white subtitle.
+- **Do NOT:** Put `.product-overdue` back on a deep `#141e30` fill, shrink the headline under 2rem, or paint the subtitle ice. Do not drop the five `HVAC_REAL_REPAIRS` rows, the DOE line, the filter-vs-repair punch, or the change-guide link.
+- **Do:** Keep `.product-overdue` on the brighter brand-band blue (`#2a4d82` → `#3a66a3`) with the page-hero glow, ice kicker, large white headline, and `rgba(255,255,255,0.7)` subtitle. Dollar amounts stay `#f7c9cb`.
+- **Files:** `client/src/components/ProductOverduePanel.tsx`, `client/src/index.css`
+- **Verify:** `/sizes/20x25x1` theater card and `/sizes` sheet card — headline scale and blue match the home overdue band header.
+- **Added:** 2026-09-21
+
+### FH-345 — Homepage cards advertised a 12x12x1 12-pack
+- **Status:** fixed
+- **Area:** pricing
+- **Symptom:** After FH-342, “What should your filter catch?” and `liveFromPrice` scanned every sellable SKU × pack qty. Standard showed **from $4.96** (12x12x1 ×12 Filter King). Hero packs still open `/sizes/20x25x1`, where qty 1 is **$9.99 / $13.49 / $22.99 / $16.70**. Added to Cart sent `AddedItemPrice` as the qty-1 ticket even when the shopper added a 6-pack.
+- **Do NOT:** Scan every XLS SKU with `unitPriceForQty` to set `MERV_TYPES.fromPrice`. Do not advertise a 12-pack of a different size as the MERV card price. Do not send Klaviyo `AddedItemPrice` as `product.price` when qty > 1.
+- **Do:** Cards, hero pack tickets, and `liveFromPrice` are 20x25x1 qty 1 (`$9.99` / `$13.49` / `$22.99` / `$16.70`). Size-page ladders, cart, Stripe, and JSON-LD stay on `liveUnitPrice` (cheaper of Filtrete / Filter King / FilterBuy). Klaviyo Added to Cart uses `unitPriceForQty`. “Best value” is the cheapest ladder row, not hardcoded qty 12.
+- **Files:** `shared/pricing/engine.ts`, `shared/products.ts`, `client/src/components/Hero.tsx`, `client/src/pages/SizeDetail.tsx`, `client/src/lib/klaviyo.ts`, `scripts/verify-store.ts`
+- **Verify:** `pnpm verify:store`. Homepage `#merv` is **from $9.99 / $13.49 / $22.99 / $16.70**. Hero tickets match. `/sizes/20x25x1` MERV 8 qty 1 is **$9.99**, qty 6 is **$7.49**. Cart line matches the pack unit.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
 
 ---
 

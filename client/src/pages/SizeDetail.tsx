@@ -137,6 +137,15 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
     variant && qty > 1
       ? Math.max(0, Math.round((variant.price * qty - total) * 100) / 100)
       : 0;
+  const bestValueQty = variant
+    ? PACK_TIERS.reduce((best, tier) => {
+        const price = unitPriceForQty(variant.price, tier.minQty, variant);
+        const bestPrice = unitPriceForQty(variant.price, best, variant);
+        if (price < bestPrice) return tier.minQty;
+        if (price === bestPrice && tier.minQty > best) return tier.minQty;
+        return best;
+      }, PACK_TIERS[0].minQty)
+    : PACK_TIERS[PACK_TIERS.length - 1].minQty;
 
   const handleAdd = () => {
     if (!variant || !variant.inStock) return;
@@ -485,7 +494,7 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
                         const pct = Math.max(0, Math.round((1 - price / variant.price) * 100));
                         const active = packRung === tier.minQty;
                         const popular = tier.minQty === 6;
-                        const best = tier.minQty === 12;
+                        const best = tier.minQty === bestValueQty;
                         const label = `${tier.label} ${tier.minQty === 1 ? "filter" : "filters"}`;
                         return (
                           <button

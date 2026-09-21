@@ -304,34 +304,16 @@ export function liveUnitPrice(product: Priceable, qty: number): number | undefin
   return hero;
 }
 
-function sizesForFromPrice(key: MervPriceKey): Set<string> {
-  const sizes = new Set<string>();
-  for (const row of Array.from(LADDERS.values())) {
-    if (row.merv === key) sizes.add(row.size);
-  }
-  if (key === "carbon") return sizes;
-  for (const row of FILTRETE_PACKS) {
-    if (row.merv === key) sizes.add(normalizeSize(row.size));
-  }
-  for (const row of FILTERBUY_PACKS) {
-    if (row.merv === key) sizes.add(normalizeSize(row.size));
-  }
-  return sizes;
-}
-
-/** Cheapest live unit a shopper can pay — same ticket as the size page. */
+/**
+ * Homepage / hero “from $” ticket. Always the flagship 20x25x1 qty-1 price
+ * for that rating — same number as clicking the pack shot. Pack ladders on
+ * a size page still use liveUnitPrice (cheaper of Filtrete / Filter King /
+ * FilterBuy).
+ */
 export function liveFromPrice(key: MervPriceKey): number | undefined {
   const merv = key === "carbon" ? 8 : (Number(key) as 8 | 11 | 13);
   const isCarbon = key === "carbon";
-  let min: number | undefined;
-  for (const size of Array.from(sizesForFromPrice(key))) {
-    for (const step of QTY_STEPS) {
-      const unit = liveUnitPrice({ size, merv, isCarbon }, step.minQty);
-      if (typeof unit !== "number") continue;
-      if (min === undefined || unit < min) min = unit;
-    }
-  }
-  return min;
+  return liveListPrice("20x25x1", merv, isCarbon) ?? FILTRETE_1INCH_QTY1[key];
 }
 
 export function liveLadderCount(): number {
