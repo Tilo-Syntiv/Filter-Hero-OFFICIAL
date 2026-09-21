@@ -14,7 +14,7 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-329**
+Next id: **FH-330**
 
 ---
 
@@ -308,26 +308,28 @@ Next id: **FH-329**
 ---
 
 ### FH-307 — SPA JSON-LD speakable URL falls back to the homepage
-- **Status:** open
+- **Status:** fixed
 - **Area:** seo
 - **Symptom:** Crawler HTML from `resolveDocumentSeo` sets speakable `WebPage.url` to the current size, custom, brand, or change-guide path (FH-194). After client navigation, `useSeo` removes `#jsonld-ssr` and replaces it with page JSON-LD that calls `buildSpeakableSchema(siteUrl, selectors)` with no `{ path, name }`, so the speakable page is `https://filterhero.net/` again.
 - **Do NOT:** Point speakable `WebPage.url` at `/` on inner routes. Do not keep two JSON-LD graphs (SSR vs SPA) that disagree on `url`.
-- **Do:** Pass `{ path, name }` into every `buildSpeakableSchema` call the same way `resolveDocumentSeo` does. Home may omit it only because the default path is `/`.
-- **Files:** `client/src/pages/SizeDetail.tsx`, `client/src/pages/CustomAirFilters.tsx`, `client/src/pages/FilterChangeGuide.tsx`, `client/src/pages/BrandBrowse.tsx`, `shared/seo.ts`
-- **Verify:** Open `/sizes/20x25x1`, then client-navigate from Home. Document `#jsonld-page` speakable URL is `https://filterhero.net/sizes/20x25x1`, not the homepage. `pnpm verify:json` still covers SSR.
+- **Do:** Pass `{ path, name }` into every SPA `buildSpeakableSchema` call the same way `resolveDocumentSeo` does. Home uses `{ path: "/", name: BRAND_NAME }`.
+- **Files:** `client/src/pages/SizeDetail.tsx`, `client/src/pages/CustomAirFilters.tsx`, `client/src/pages/FilterChangeGuide.tsx`, `client/src/pages/BrandBrowse.tsx`, `client/src/pages/Home.tsx`, `scripts/verify-json.ts`
+- **Verify:** `pnpm verify:json`. Open `/sizes/20x25x1`, then client-navigate from Home. Document `#jsonld-page` speakable URL is `https://filterhero.net/sizes/20x25x1`.
 - **Added:** 2026-09-20
+- **Fixed:** 2026-09-21
 
 ---
 
-### FH-306 — Railway has no HTTP healthcheck
-- **Status:** open
+### FH-306 — Railway had no HTTP healthcheck
+- **Status:** fixed
 - **Area:** other
-- **Symptom:** FILTER-HERO is Online and `/api/health` returns 200, but `deploy.healthcheckPath` is unset. Railway will mark a deploy SUCCESS before Express is listening.
+- **Symptom:** FILTER-HERO is Online and `/api/health` returns 200, but `deploy.healthcheckPath` was unset. Railway could mark a deploy SUCCESS before Express was listening.
 - **Do NOT:** Add a second region to attach healthchecks (FH-182). Do not healthcheck `/`.
 - **Do:** `deploy.healthcheckPath=/api/health` and `healthcheckTimeout=30` on FILTER-HERO. Keep one replica in `us-east4-eqdc4a`.
 - **Files:** `.railway/config.json`
-- **Verify:** `railway environment config --json` shows healthcheckPath `/api/health`. After the next deploy, `railway deployment list --limit 1 --json` is SUCCESS and `https://filterhero.net/api/health` is `{"ok":true,"brand":"Filter Hero"}`.
+- **Verify:** Railway service config `healthcheckPath=/api/health`, timeout 30. Latest SUCCESS `f793cf23` from `main` `1895e06`. `https://filterhero.net/api/health` is `{"ok":true,"brand":"Filter Hero"}`.
 - **Added:** 2026-09-20
+- **Fixed:** 2026-09-21
 
 ---
 
@@ -344,14 +346,15 @@ Next id: **FH-329**
 ---
 
 ### FH-304 — GitHub autodeploy and `railway up` both own FILTER-HERO
-- **Status:** open
+- **Status:** mitigated
 - **Area:** other
-- **Symptom:** Service source is `Tilo-Syntiv/FILTER-HERO` with **no** `source.branch`. Latest SUCCESS (`53f7af54`, 2026-09-17 03:29 UTC) is a Cursor `railway up` with no commit SHA. GitHub deploys of `main` `20c53e8` were REMOVED. `origin/main` is `1895e06` (Intuit + staff catalog helpers) and has not autodeployed since. A later push to any connected branch, or a variable change, can replace the CLI snapshot. Local `design/family-section-blue` is 10 commits ahead of origin with uncommitted scrape/video files — `railway up` of this tree would ship that and then get rolled back by `main`.
-- **Do NOT:** `railway up` this branch while GitHub watches the repo. Do not attach `www` on Railway. Do not scale a second region.
-- **Do:** Pin `source.branch=main`. Deploy production only from `main` (`railway redeploy --from-source` or a merge to `main`). Feature work stays on the branch until merge.
+- **Symptom:** Service source is `Tilo-Syntiv/FILTER-HERO`. An earlier SUCCESS (`53f7af54`) was a Cursor `railway up` with no commit SHA. Production is now GitHub `@main`.
+- **Do NOT:** `railway up` Filter-Hero-OFFICIAL or a dirty tree. Do not attach `www` on Railway. Do not scale a second region.
+- **Do:** Deploy production only from `Tilo-Syntiv/FILTER-HERO@main`. Variable-only changes use `--skip-deploys`.
 - **Files:** `.railway/config.json`
-- **Verify:** `railway environment config --json` `source.branch` is `main`. Latest SUCCESS deploy has `meta.branch=main` and a `commitHash`.
+- **Verify:** Latest SUCCESS `f793cf23` is branch `main`, commit `1895e06`. Source repo `Tilo-Syntiv/FILTER-HERO`.
 - **Added:** 2026-09-20
+- **Fixed:** 2026-09-21
 
 ---
 
@@ -368,14 +371,15 @@ Next id: **FH-329**
 ---
 
 ### FH-302 — Add to cart leaves focus on a button Radix then marks aria-hidden
-- **Status:** open
+- **Status:** fixed
 - **Area:** cart
-- **Symptom:** Clicking **Add 6 to cart** on `/sizes/20x25x1` opens the cart dialog while the CTA still has focus. Chromium warns that `.pdp-checkout` (ancestor) is `aria-hidden` with a focused descendant. Cart still opens and Klaviyo **Added to Cart** still fires.
+- **Symptom:** Clicking **Add 6 to cart** on `/sizes/20x25x1` opened the cart dialog while the CTA still had focus. Chromium warned that `.pdp-checkout` (ancestor) is `aria-hidden` with a focused descendant.
 - **Do NOT:** Remove `aria-hidden` from the dialog overlay or disable the Radix cart drawer.
-- **Do:** Move focus into the cart dialog (or blur the CTA) before the rest of the page is `aria-hidden`.
-- **Files:** `client/src/pages/SizeDetail.tsx`, cart drawer
+- **Do:** Blur the CTA in `handleAdd` before `addItem`. Cart drawer blurs the active element and focuses `Your cart` on open (`onOpenAutoFocus` + `titleRef`).
+- **Files:** `client/src/pages/SizeDetail.tsx`, `client/src/components/CartDrawer.tsx`
 - **Verify:** `/sizes/20x25x1` → Add 6 to cart → no `aria-hidden` console warning; heading `Your cart`.
 - **Added:** 2026-09-20
+- **Fixed:** 2026-09-21
 
 ### FH-301 — Smoke treated a rate-limited contact post as a Turnstile miss
 - **Status:** fixed

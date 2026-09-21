@@ -200,7 +200,7 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
         ".seo-answer",
         ".seo-speakable-q",
         ".seo-speakable-a",
-      ]),
+      ], { path: seo.path, name: seo.title }),
     ];
     if (sizeMeta && variant) {
       schemas.push(
@@ -213,7 +213,7 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
       );
     }
     return schemas;
-  }, [siteUrl, sizeMeta, decoded, sizeFaqs, variant, selectedType, packShot]);
+  }, [siteUrl, seo.path, seo.title, sizeMeta, decoded, sizeFaqs, variant, selectedType, packShot]);
 
   useSeo({
     ...seo,

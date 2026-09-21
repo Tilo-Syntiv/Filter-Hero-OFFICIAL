@@ -279,6 +279,21 @@ for (const route of routes) {
   }
 }
 
+for (const rel of [
+  "client/src/pages/SizeDetail.tsx",
+  "client/src/pages/CustomAirFilters.tsx",
+  "client/src/pages/FilterChangeGuide.tsx",
+  "client/src/pages/BrandBrowse.tsx",
+  "client/src/pages/Home.tsx",
+]) {
+  const src = fs.readFileSync(path.join(ROOT, rel), "utf8");
+  record(
+    `jsonld:spa-speakable-path:${rel}`,
+    /buildSpeakableSchema\([\s\S]{0,500}path:\s/.test(src),
+    "SPA speakable must pass page.path",
+  );
+}
+
 const faqBlob = JSON.stringify([...SITE_FAQS, ...CUSTOM_FAQS]);
 record("faqs:no-50-minimum", !/\$50/.test(faqBlob) && /contiguous|2–3 day|2-3 day/i.test(faqBlob), "copy");
 

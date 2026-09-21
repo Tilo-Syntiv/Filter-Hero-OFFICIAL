@@ -71,7 +71,7 @@ export default function Home() {
         ".seo-speakable-q",
         ".seo-speakable-a",
         "#faq-heading",
-      ]),
+      ], { path: "/", name: BRAND_NAME }),
       buildBreadcrumbSchema(siteUrl, [{ name: "Home", path: "/" }]),
     ],
     [siteUrl, faqsForStore],

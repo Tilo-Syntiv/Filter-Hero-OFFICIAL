@@ -114,10 +114,13 @@ export function BrandDetailPage({ slug }: { slug: string }) {
               { name: brand.name, path: `/brands/${brand.slug}` },
             ]),
             buildFaqSchema(faqs),
-            buildSpeakableSchema(siteUrl, [".seo-answer"]),
+            buildSpeakableSchema(siteUrl, [".seo-answer"], {
+              path: seo.path,
+              name: seo.title,
+            }),
           ]
         : [],
-    [siteUrl, brand, faqs],
+    [siteUrl, brand, faqs, seo.path, seo.title],
   );
   useSeo({
     ...seo,

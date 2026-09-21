@@ -288,7 +288,7 @@ export default function FilterChangeGuidePage() {
         ".seo-answer",
         ".seo-speakable-q",
         ".seo-speakable-a",
-      ]),
+      ], { path: seo.path, name: seo.title }),
     ],
   });
 
