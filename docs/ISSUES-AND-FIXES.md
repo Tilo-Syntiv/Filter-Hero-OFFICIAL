@@ -14,7 +14,20 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-351**
+Next id: **FH-352**
+
+---
+
+### FH-351 — Production dependency vulnerabilities in nanoid, qs, body-parser, and path-to-regexp
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** `pnpm audit --prod` flagged 8 vulnerabilities (3 high, 3 moderate, 2 low) in production dependencies, including path-to-regexp ReDoS, nanoid integer overflow / loop vulnerability, and qs denial-of-service issues; clean environments also failed verify:json if leads.json was uninitialized.
+- **Do NOT:** Downgrade nanoid or leave Express 4 subdependencies unpatched. Do not throw uncaught ENOENT in verify-json when leads.json is uninitialized.
+- **Do:** Pin nanoid to `^5.1.16` and apply pnpm overrides for `path-to-regexp@0.1.13`, `qs@6.16.0`, and `body-parser@1.20.6`. Gracefully handle missing uncommitted leads.json in verify-json.
+- **Files:** `package.json`, `pnpm-lock.yaml`, `scripts/verify-json.ts`
+- **Verify:** `pnpm audit --prod` reports 0 vulnerabilities and `pnpm verify:security` + `pnpm verify:json` pass.
+- **Added:** 2026-09-22
+- **Fixed:** 2026-09-22
 
 ---
 
