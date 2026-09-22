@@ -38,6 +38,9 @@ function record(id: string, ok: boolean, detail?: string) {
 
 function readJson(rel: string): unknown {
   const file = path.join(ROOT, rel);
+  if (!fs.existsSync(file) && rel === "server/data/leads.json") {
+    return [];
+  }
   const raw = fs.readFileSync(file, "utf8");
   try {
     return JSON.parse(raw);
