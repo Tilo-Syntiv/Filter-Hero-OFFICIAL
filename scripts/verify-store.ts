@@ -31,7 +31,10 @@ import {
   liveLadderCount,
   liveListPrice,
   liveUnitPrice,
+  MIN_GROSS_MARGIN,
+  wholesaleCostFor,
 } from "../shared/pricing/engine.ts";
+import SELLABLE from "../shared/sellable-skus.json";
 import { CHANGE_GUIDE_FAQS, SITE_FAQS, buildLlmsTxt, resolveDocumentSeo, sitemapPaths } from "../shared/seo.ts";
 import {
   HVAC_CLOGGED_FILTER_FAQ_ANSWER,
@@ -41,12 +44,35 @@ import {
 } from "../shared/hvac-overdue-costs.ts";
 import { MERV_CAPACITY_NOTE, MERV_PICK_FAQ_ANSWER } from "../shared/merv-capacity.ts";
 import { DEFAULT_HERO_LEDE } from "../shared/site-config.ts";
+import {
+  STRIPE_CHECKOUT_LOGO_PATH,
+  STRIPE_CHECKOUT_THEME,
+  STRIPE_CHECKOUT_WORDMARK_PATH,
+  stripeCheckoutBrandingSettings,
+  stripeCheckoutLogoUrl,
+} from "../shared/stripe-checkout-brand.ts";
 
 function assert(cond: unknown, message: string): asserts cond {
   if (!cond) throw new Error(message);
 }
 
 assert(BRAND_EMAIL === "info@filterhero.net", `brand email should be info@, got ${BRAND_EMAIL}`);
+assert(STRIPE_CHECKOUT_THEME.backgroundColor === "#f6f7f9", "Checkout canvas matches the shop");
+assert(STRIPE_CHECKOUT_THEME.buttonColor === "#7F2328", "Checkout Pay is burgundy");
+assert(STRIPE_CHECKOUT_THEME.primaryColor === "#203868", "Checkout primary is navy");
+assert(STRIPE_CHECKOUT_THEME.fontFamily === "nunito", "Checkout font is Nunito (closest Stripe face to Plus Jakarta)");
+assert(STRIPE_CHECKOUT_LOGO_PATH === "/hero/lockup-mascot.png", "Checkout logo is the transparent header flyer");
+assert(
+  fs.existsSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "client/public", STRIPE_CHECKOUT_WORDMARK_PATH.slice(1))),
+  "logo-checkout.png knockout lockup is in public",
+);
+{
+  const brand = stripeCheckoutBrandingSettings();
+  assert(brand.display_name === "Filter Hero", "Checkout display name is Filter Hero");
+  assert(brand.logo.type === "url" && brand.logo.url === stripeCheckoutLogoUrl(), "Checkout logo is a public PNG URL");
+  assert(brand.logo.url.startsWith("https://filterhero.net/"), "Stripe fetches the live origin, not localhost");
+  assert(!brand.logo.url.includes("logo.png"), "Checkout does not use the opaque boxed logo.png");
+}
 const shippingFaq = SITE_FAQS.find((f) => f.question.toLowerCase().includes("how fast"));
 assert(shippingFaq, "homepage FAQ must ask how fast filters ship");
 assert(
@@ -198,7 +224,7 @@ const FLAGSHIP_FROM: Record<string, number> = {
   "8": 9.99,
   "11": 13.49,
   "13": 22.99,
-  carbon: 16.7,
+  carbon: 23.64,
 };
 for (const type of MERV_TYPES) {
   const flagship = FLAGSHIP_FROM[type.key];
@@ -242,14 +268,17 @@ assert(liveListPrice("16x25x1", 8) === 9.99, "16x25x1 MERV 8 qty 1 must match Fi
 assert(liveListPrice("20x20x1", 11) === 13.49, "20x20x1 MERV 11 qty 1 must match Filtrete $13.49");
 assert(liveListPrice("20x25x1", 13) === 22.99, "20x25x1 MERV 13 qty 1 must match Filtrete $22.99");
 assert(
-  liveListPrice("20x25x1", 8, true) === 16.7,
-  `20x25x1 MERV 8 Carbon qty 1 must match Filtrete odor $16.70, got ${liveListPrice("20x25x1", 8, true)}`,
+  liveListPrice("20x25x1", 8, true) === 23.64,
+  `20x25x1 MERV 8 Carbon qty 1 clears 35% margin floor ($23.64) — Filtrete odor $16.70 is under cost, got ${liveListPrice("20x25x1", 8, true)}`,
 );
-assert(liveListPrice("20x20x1", 8, true) === 16.7, "20x20x1 carbon qty 1 must match Filtrete odor $16.70");
+assert(
+  liveListPrice("20x20x1", 8, true) === 17.44,
+  "20x20x1 carbon qty 1 clears 35% margin floor ($17.44)",
+);
 assert(
   typeof liveUnitPrice({ size: "20x25x1", merv: 8, isCarbon: true }, 6) === "number" &&
-    (liveUnitPrice({ size: "20x25x1", merv: 8, isCarbon: true }, 6) as number) <= 16.7,
-  "carbon 6-pack must not exceed the Filtrete odor single",
+    (liveUnitPrice({ size: "20x25x1", merv: 8, isCarbon: true }, 6) as number) === 23.64,
+  "carbon 6-pack stays on the same 35% floor as qty 1 when packs would undercut cost",
 );
 {
   const carbon = { size: "20x25x1", merv: 8 as const, isCarbon: true };
@@ -257,7 +286,7 @@ assert(
   const c4 = liveUnitPrice(carbon, 4);
   const c6 = liveUnitPrice(carbon, 6);
   const c12 = liveUnitPrice(carbon, 12);
-  assert(typeof c1 === "number" && c1 === 16.7, `carbon qty 1 must be $16.70, got ${c1}`);
+  assert(typeof c1 === "number" && c1 === 23.64, `carbon qty 1 must be $23.64, got ${c1}`);
   assert(typeof c4 === "number" && typeof c6 === "number" && typeof c12 === "number", "carbon pack rungs must resolve");
   assert(c4 <= c1, `carbon qty 4 must not exceed qty 1 (${c4} > ${c1})`);
   assert(c6 <= c4, `carbon qty 6 must not exceed qty 4 (${c6} > ${c4})`);
@@ -287,9 +316,26 @@ assert(liveUnitPrice({ size: "20x20x1", merv: 11 }, 2) === 11, "20x20x1 MERV 11 
 assert(liveUnitPrice({ size: "16x25x1", merv: 11 }, 2) === 11, "16x25x1 MERV 11 qty 2 must match Filtrete $11.00");
 assert(liveUnitPrice({ size: "16x25x1", merv: 13 }, 2) === 15, "16x25x1 MERV 13 qty 2 must match Filtrete $15.00");
 assert(liveUnitPrice({ size: "20x25x1", merv: 13 }, 2) === 17.76, "20x25x1 MERV 13 qty 2 must match cheaper Filter King $17.76");
-assert(liveUnitPrice({ size: "20x20x1", merv: 8 }, 12) === 5.18, "20x20x1 MERV 8 qty 12 must match Filtrete Walmart $5.18");
-assert(liveUnitPrice({ size: "16x25x1", merv: 8 }, 12) === 5.83, "16x25x1 MERV 8 qty 12 must match cheaper Filtrete $5.83");
-assert(liveUnitPrice({ size: "20x25x1", merv: 8 }, 6) === 7.49, "20x25x1 MERV 8 qty 6 must match cheaper Filter King $7.49");
+assert(liveUnitPrice({ size: "20x20x1", merv: 8 }, 12) === 6.8, "20x20x1 MERV 8 qty 12 clears 35% margin floor ($6.80) — Filtrete Walmart $5.18 is under cost");
+assert(liveUnitPrice({ size: "16x25x1", merv: 8 }, 12) === 6.16, "16x25x1 MERV 8 qty 12 clears 35% margin floor ($6.16) — Filtrete $5.83 is under cost");
+assert(liveUnitPrice({ size: "20x25x1", merv: 8 }, 6) === 7.49, "20x25x1 MERV 8 qty 6 must match cheaper Filter King $7.49 (already above floor)");
+assert(liveUnitPrice({ size: "20x25x1", merv: 8 }, 12) === 7.42, "20x25x1 MERV 8 qty 12 clears 35% margin floor ($7.42)");
+{
+  let under = 0;
+  for (const row of (SELLABLE as { skus: Array<{ size: string; merv: 8 | 11 | 13; isCarbon?: boolean; cost: number }> }).skus) {
+    const cost = wholesaleCostFor(row.size, row.merv, row.isCarbon) ?? row.cost;
+    for (const qty of [1, 2, 4, 6, 12] as const) {
+      const sell = liveUnitPrice(
+        { size: row.size, merv: row.merv, isCarbon: Boolean(row.isCarbon) },
+        qty,
+      );
+      if (typeof sell !== "number" || !(cost > 0)) continue;
+      const margin = (sell - cost) / sell;
+      if (margin < MIN_GROSS_MARGIN - 1e-9) under += 1;
+    }
+  }
+  assert(under === 0, `every sellable rung must clear ${MIN_GROSS_MARGIN * 100}% gross margin (got ${under} under)`);
+}
 assert(
   PACK_QTYS.length === 12 && PACK_QTYS[0] === 1 && PACK_QTYS[11] === 12,
   "size page pack picker must offer 1 through 12",

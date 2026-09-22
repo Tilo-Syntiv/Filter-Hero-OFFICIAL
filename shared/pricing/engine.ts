@@ -1,4 +1,5 @@
 import FK_LIVE from "./fk-live-prices.json";
+import SELLABLE from "../sellable-skus.json";
 
 /** Undercut scraped FilterKing sale units by 10%. */
 export const UNDERCUT_RATIO = 0.9;
@@ -7,6 +8,13 @@ export const UNDERCUT_RATIO = 0.9;
  * even when the model is a bit high.
  */
 export const ESTIMATED_UNDERCUT_RATIO = 0.88;
+
+/**
+ * Minimum gross margin on sell price: (sell − wholesale) / sell.
+ * Shopper tickets are raised to clear this floor even when a competitor
+ * undercut would have been cheaper (FH-363).
+ */
+export const MIN_GROSS_MARGIN = 0.35;
 
 /**
  * Target / Lowe’s Filtrete 1-pack, 1-inch only. Same ticket across sizes.
@@ -124,6 +132,50 @@ const QTY_STEPS: Array<{ minQty: number; key: QtyKey }> = [
 
 function money(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+/**
+ * Lowest sell unit that clears MIN_GROSS_MARGIN on this wholesale cost.
+ * Ceil to the cent so (sell − cost) / sell is never slightly under the floor
+ * after money() rounding (e.g. 4.00 / 0.65 → 6.1538 → $6.16, not $6.15).
+ */
+export function minSellForMargin(cost: number, margin = MIN_GROSS_MARGIN): number {
+  if (!(cost > 0) || !(margin > 0) || margin >= 1) return money(cost);
+  const raw = cost / (1 - margin);
+  return money(Math.ceil(raw * 100 - 1e-9) / 100);
+}
+
+type SellableCostRow = {
+  size: string;
+  merv: 8 | 11 | 13;
+  isCarbon?: boolean;
+  cost: number;
+};
+
+const WHOLESALE_COST = new Map<string, number>();
+for (const row of (SELLABLE as { skus: SellableCostRow[] }).skus) {
+  const key = `${normalizeSize(row.size)}|${row.isCarbon ? "carbon" : row.merv}`;
+  if (Number.isFinite(row.cost) && row.cost > 0) WHOLESALE_COST.set(key, row.cost);
+}
+
+export function wholesaleCostFor(
+  size: string,
+  merv: 8 | 11 | 13,
+  isCarbon?: boolean,
+): number | undefined {
+  return WHOLESALE_COST.get(`${normalizeSize(size)}|${isCarbon ? "carbon" : merv}`);
+}
+
+/** Raise a competitive unit so gross margin is at least MIN_GROSS_MARGIN. */
+export function applyMarginFloor(
+  unit: number,
+  size: string,
+  merv: 8 | 11 | 13,
+  isCarbon?: boolean,
+): number {
+  const cost = wholesaleCostFor(size, merv, isCarbon);
+  if (cost == null) return money(unit);
+  return money(Math.max(unit, minSellForMargin(cost)));
 }
 
 function normalizeSize(size: string): string {
@@ -305,17 +357,24 @@ function rawLiveUnitPrice(product: Priceable, qty: number): number | undefined {
 }
 
 /**
- * Pack unit. Same sources as rawLiveUnitPrice, then carry the cheapest unlocked
- * lower rung forward so a higher qty never costs more per filter (FH-341 /
- * FH-361). Does not invent Filtrete tickets — it only keeps a deal the
- * shopper already unlocked.
+ * Pack unit. Same sources as rawLiveUnitPrice, then raise to the 35% gross
+ * margin floor (FH-363), then carry the cheapest unlocked lower rung forward
+ * so a higher qty never costs more per filter (FH-341 / FH-361). Does not
+ * invent Filtrete tickets — it only keeps a deal the shopper already unlocked,
+ * then never sells below the wholesale margin floor.
  */
 export function liveUnitPrice(product: Priceable, qty: number): number | undefined {
   let best: number | undefined;
   for (const step of QTY_STEPS) {
     if (step.minQty > qty) break;
-    const unit = rawLiveUnitPrice(product, step.minQty);
-    if (typeof unit !== "number") continue;
+    const competitive = rawLiveUnitPrice(product, step.minQty);
+    if (typeof competitive !== "number") continue;
+    const unit = applyMarginFloor(
+      competitive,
+      product.size,
+      product.merv,
+      product.isCarbon,
+    );
     best = best == null ? unit : money(Math.min(best, unit));
   }
   return best;

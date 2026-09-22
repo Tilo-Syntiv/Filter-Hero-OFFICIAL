@@ -21,6 +21,7 @@ import {
   syncStartedCheckout,
 } from "./klaviyo";
 import { sendOrderConfirmation } from "./mailer";
+import { stripeCheckoutBrandingSettings } from "../shared/stripe-checkout-brand";
 
 const SESSION_ID = /^cs_(test|live)_[A-Za-z0-9]+$/;
 const META_MAX = 490;
@@ -233,6 +234,7 @@ export async function createCheckoutSession(
     line_items,
     success_url: `${clientUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${clientUrl}/checkout/cancel`,
+    branding_settings: stripeCheckoutBrandingSettings(),
     shipping_address_collection: { allowed_countries: ["US"] },
     shipping_options: [
       {
@@ -269,7 +271,8 @@ export async function createCheckoutSession(
     payment_intent_data: {
       metadata: { items: itemsMeta },
     },
-  });
+    // stripe 17 types omit branding_settings; API accepts it on hosted Checkout.
+  } as Stripe.Checkout.SessionCreateParams);
 
   if (email && session.url) {
     try {

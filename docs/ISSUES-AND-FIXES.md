@@ -14,7 +14,34 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-362**
+Next id: **FH-364**
+
+---
+
+### FH-363 — Pack tickets undercut wholesale below 35% gross margin
+- **Status:** fixed
+- **Area:** pricing
+- **Symptom:** Competitive ladders (Filtrete beat, Filter King × 0.90, FilterBuy match) could price a pack unit below the wholesale margin floor. Example: 20x25x1 MERV 8 cost $4.82 → qty 12 competitive ~$5.88 (~18% margin). ~232 sellable rungs were under 35% before the floor.
+- **Do NOT:** Drop the competitive ladder. Do not invent Filtrete tickets. Do not round the floor with `money(cost / 0.65)` alone — that can land a hair under 35% after cents (use ceil-to-cent). Do not exempt qty 12 from the floor to stay “cheapest.”
+- **Do:** After each competitive rung, raise to `minSellForMargin(wholesale)` so `(sell − cost) / sell ≥ 35%`, then carry the cheapest unlocked stair forward (FH-361). Same floor for every qty on a SKU when cost is fixed. Cart, Stripe, JSON-LD, and Klaviyo use `liveUnitPrice`.
+- **Files:** `shared/pricing/engine.ts`, `shared/products.ts`, `scripts/verify-store.ts`, `shared/sellable-skus.json` (cost source)
+- **Verify:** `pnpm verify:store`. Flagship 20x25x1 MERV 8: qty 1 $9.99, qty 6 $7.49, qty 12 $7.42. Carbon qty 1 $23.64 (Filtrete odor $16.70 under cost). 20x20x1 MERV 8 qty 12 $6.80. 16x25x1 MERV 8 qty 12 $6.16. Sellable scan: 0 rungs under 35%.
+- **Added:** 2026-09-22
+- **Fixed:** 2026-09-22
+
+---
+
+### FH-362 — Stripe Checkout had no transparent logo and did not match the shop
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** FILTER HERO hosted Checkout had `logo`/`icon` null. Brand colors were on (`checkout_use_brand_colors`), which navy-washes the page instead of the shop’s light canvas + burgundy Pay. The boxed `logo.png` is a near-white plate, so Stripe cannot show the flying mark the way the header does.
+- **Do NOT:** Point Checkout at `https://filterhero.net/logo.png` (opaque plate). Do not use localhost as the logo URL. Do not pass `/logo-checkout.png` to Stripe until live serves it as `image/png` (the SPA currently returns HTML). Do not set `checkout_use_brand_colors` if the page should stay canvas `#f6f7f9` with burgundy buttons. Do not pick a Stripe font other than Nunito for this shop. Do not add a second Checkout UI (Payment Element).
+- **Do:** Dashboard + every hosted session use `shared/stripe-checkout-brand.ts`: transparent `https://filterhero.net/hero/lockup-mascot.png`, canvas `#f6f7f9`, Pay `#7F2328`, navy `#203868`, Nunito, rounded, display name Filter Hero. Keep `/logo-checkout.png` (knockout of `logo.png` with the FILTER HERO wordmark) in `client/public` for later. Receipts stay on `/logo.png`.
+- **Files:** `shared/stripe-checkout-brand.ts`, `server/stripe.ts`, `client/public/logo-checkout.png`, `scripts/verify-store.ts`, `scripts/debug-stripe-checkout.ts`, `scripts/smoke-site.ts`, `docs/STRIPE-FULL-BUILD.md`
+- **Verify:** `pnpm verify:store`. `pnpm debug:stripe-checkout` — session `branding_settings` has Nunito, `#f6f7f9`, `#7F2328`, and the lockup-mascot URL. Stripe Dashboard → Branding: logo is the transparent flyer. Open a test Checkout URL: mascot on the light canvas, burgundy Pay.
+- **Added:** 2026-09-22
+- **Fixed:** 2026-09-22
+- **Mitigates:** the logo line in FH-358
 
 ---
 
@@ -25,7 +52,7 @@ Next id: **FH-362**
 - **Do NOT:** Raise the cheap qty-4 rung to match qty 6. Do not invent Filtrete carbon multi-packs. Do not drop Filter King undercut or FilterBuy match (FH-342). Do not let a higher qty cost more per filter than a lower unlocked rung.
 - **Do:** `liveUnitPrice` computes each rung as before (`rawLiveUnitPrice`), then carries the cheapest unlocked stair (1 / 2 / 4 / 6 / 12) forward. Qty 6 and 12 keep the $8.37 carbon deal once qty 4 unlocks it. Same rule for every size × MERV. Cart, Stripe, and JSON-LD use the same function.
 - **Files:** `shared/pricing/engine.ts`, `shared/products.ts`, `scripts/verify-store.ts`
-- **Verify:** `pnpm verify:store`. `/sizes/20x25x1?merv=carbon` — qty 4 / 6 / 12 are non-increasing per filter. 20x25x1 MERV 8 qty 6 stays **$7.49**.
+- **Verify:** `pnpm verify:store`. `/sizes/20x25x1?merv=carbon` — qty 4 / 6 / 12 are non-increasing per filter. 20x25x1 MERV 8 qty 6 stays **$7.49** when still above the FH-363 floor.
 - **Added:** 2026-09-22
 - **Fixed:** 2026-09-22
 - **Mitigates:** FH-135 pack-inversion bullet (1)

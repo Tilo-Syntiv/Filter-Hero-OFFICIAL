@@ -19,6 +19,9 @@ export {
   liveUnitPrice,
   liveLadderCount,
   liveScrapedCount,
+  MIN_GROSS_MARGIN,
+  minSellForMargin,
+  wholesaleCostFor,
   UNDERCUT_RATIO,
   ESTIMATED_UNDERCUT_RATIO,
   type Priceable,
@@ -157,9 +160,10 @@ function fallbackUnitPrice(listPrice: number, qty: number): number {
  * Pack unit price. When Filtrete and Filter King both list the same rung,
  * match the cheaper one. Otherwise 1-inch qty 1 is Filtrete; other rungs
  * are Filter King × 0.90, capped at the Filtrete single. Then match a
- * confirmed FilterBuy ticket if that ticket is cheaper. Higher qty never
- * costs more per filter than a lower unlocked rung (FH-361). No ladder:
- * PACK_TIERS on listPrice.
+ * confirmed FilterBuy ticket if that ticket is cheaper. Never sell below
+ * 35% gross margin on wholesale cost (FH-363). Higher qty never costs more
+ * per filter than a lower unlocked rung (FH-361). No ladder: PACK_TIERS on
+ * listPrice.
  */
 export function unitPriceForQty(
   listPrice: number,

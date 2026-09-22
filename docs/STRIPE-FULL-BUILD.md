@@ -636,7 +636,7 @@ Do this on **FILTER HERO** live keys. Never copy local sandbox secrets.
    - `CLIENT_URL=https://filterhero.net`
 3. `pnpm sync:catalog` with that live key so Products exist on the live account.
 4. Tax: head office + registrations for states already collecting.
-5. Branding: navy `#203868`, burgundy `#7F2328`, logo `https://filterhero.net/logo.png` (same kit as Resend / Klaviyo). Do not click Save on Klaviyo’s “Review your brand” wizard — it overwrites email defaults.
+5. Branding: navy `#203868`, burgundy `#7F2328`. Checkout uses the transparent header flyer `https://filterhero.net/hero/lockup-mascot.png`, canvas `#f6f7f9`, burgundy Pay, Nunito, rounded corners (`shared/stripe-checkout-brand.ts`). Receipts / Resend / Klaviyo still use `https://filterhero.net/logo.png`. Do not click Save on Klaviyo’s “Review your brand” wizard — it overwrites email defaults.
 6. `pnpm setup:stripe-webhook` with the **live** key:
    - Creates `https://filterhero.net/api/stripe/webhook` for the two Checkout events.
    - Tries `railway variable set STRIPE_WEBHOOK_SECRET` from the new endpoint secret.

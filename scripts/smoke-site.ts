@@ -66,6 +66,7 @@ for (const brand of HVAC_BRAND_LIST) {
 }
 for (const asset of [
   "/logo.png",
+  "/logo-checkout.png",
   "/favicon.png",
   "/hero/pack-merv8.png",
   "/hero/pack-merv11.png",

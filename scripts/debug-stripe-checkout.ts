@@ -237,6 +237,30 @@ async function main() {
   }
   check(session.phone_number_collection?.enabled === true, "phone collected");
   check(session.metadata?.items?.includes(String(product.id)) === true, "items metadata on session");
+  const branded = session as Stripe.Checkout.Session & {
+    branding_settings?: {
+      display_name?: string | null;
+      font_family?: string | null;
+      background_color?: string | null;
+      button_color?: string | null;
+      logo?: { type?: string; url?: string | null } | null;
+    };
+  };
+  const brand = branded.branding_settings;
+  check(brand?.display_name === "Filter Hero", `branding display_name=${brand?.display_name}`);
+  check(brand?.font_family === "nunito", `branding font_family=${brand?.font_family}`);
+  check(
+    brand?.background_color?.toLowerCase() === "#f6f7f9",
+    `branding background_color=${brand?.background_color}`,
+  );
+  check(
+    brand?.button_color?.toLowerCase() === "#7f2328",
+    `branding button_color=${brand?.button_color}`,
+  );
+  check(
+    Boolean(brand?.logo?.url?.includes("/hero/lockup-mascot.png")),
+    `branding logo=${brand?.logo?.url}`,
+  );
 
   const expanded = await stripe.checkout.sessions.retrieve(session.id, {
     expand: ["line_items.data.price.product"],
