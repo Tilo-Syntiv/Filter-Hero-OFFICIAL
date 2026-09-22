@@ -62,7 +62,7 @@ export default function HowToReplaceGuide() {
             key={step.num}
             className="relative rounded-2xl border border-border/80 bg-white/85 p-5"
           >
-            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-deep text-ice">
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-deep-fill text-ice">
               {step.icon}
             </div>
             <span className="absolute right-4 top-4 text-3xl font-extrabold leading-none text-muted/80">

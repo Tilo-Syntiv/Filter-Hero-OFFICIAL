@@ -277,12 +277,12 @@ export function liveListPrice(
 }
 
 /**
- * Pack unit. When Filtrete and Filter King both have a listing, match the
- * cheaper one at list. Otherwise 1-inch qty 1 is Filtrete; other rungs are
- * Filter King × undercut, capped at the Filtrete single. Then match a
- * confirmed FilterBuy ticket if that ticket is cheaper.
+ * Raw pack unit for one qty (no carry-forward). When Filtrete and Filter King
+ * both have a listing, match the cheaper one at list. Otherwise 1-inch qty 1
+ * is Filtrete; other rungs are Filter King × undercut, capped at the Filtrete
+ * single. Then match a confirmed FilterBuy ticket if that ticket is cheaper.
  */
-export function liveUnitPrice(product: Priceable, qty: number): number | undefined {
+function rawLiveUnitPrice(product: Priceable, qty: number): number | undefined {
   const filtrete = filtreteUnitFor(product.size, product.merv, qty, product.isCarbon);
   const single = filtreteQty1(product.size, product.merv, product.isCarbon);
   const ladder = fkLadderFor(product.size, product.merv, product.isCarbon);
@@ -302,6 +302,23 @@ export function liveUnitPrice(product: Priceable, qty: number): number | undefin
     return money(Math.min(hero, filterbuy));
   }
   return hero;
+}
+
+/**
+ * Pack unit. Same sources as rawLiveUnitPrice, then carry the cheapest unlocked
+ * lower rung forward so a higher qty never costs more per filter (FH-341 /
+ * FH-361). Does not invent Filtrete tickets — it only keeps a deal the
+ * shopper already unlocked.
+ */
+export function liveUnitPrice(product: Priceable, qty: number): number | undefined {
+  let best: number | undefined;
+  for (const step of QTY_STEPS) {
+    if (step.minQty > qty) break;
+    const unit = rawLiveUnitPrice(product, step.minQty);
+    if (typeof unit !== "number") continue;
+    best = best == null ? unit : money(Math.min(best, unit));
+  }
+  return best;
 }
 
 /**

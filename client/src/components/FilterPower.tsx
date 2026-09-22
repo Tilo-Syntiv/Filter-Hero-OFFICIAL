@@ -43,7 +43,7 @@ function Chip({
         selected
           ? "text-white shadow-sm"
           : "border-border bg-white text-foreground hover:border-ice",
-        selected && !color && "border-navy bg-navy",
+        selected && !color && "border-navy bg-navy-fill",
       )}
       style={
         color
@@ -109,7 +109,7 @@ export default function FilterPower() {
   };
 
   return (
-    <div className="overflow-hidden rounded-[1.85rem] border border-ice/30 bg-[#1e3a66] shadow-[0_24px_60px_rgba(16,32,56,0.32)]">
+    <div className="overflow-hidden rounded-[1.85rem] border border-ice/30 bg-navy-fill shadow-[0_24px_60px_rgba(16,32,56,0.32)]">
       <div className="grid lg:grid-cols-12 lg:items-stretch">
         <div className="h-full lg:col-span-5">
           <ClockDeck result={result} input={input} dates={swapDates} />

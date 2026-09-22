@@ -97,7 +97,7 @@ export default function CarouselDots({
                     : "bg-white"
                   : active
                     ? "bg-hero"
-                    : "bg-navy/40",
+                    : "bg-navy-fill/40",
               )}
             />
           </button>

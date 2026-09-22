@@ -251,6 +251,36 @@ assert(
     (liveUnitPrice({ size: "20x25x1", merv: 8, isCarbon: true }, 6) as number) <= 16.7,
   "carbon 6-pack must not exceed the Filtrete odor single",
 );
+{
+  const carbon = { size: "20x25x1", merv: 8 as const, isCarbon: true };
+  const c1 = liveUnitPrice(carbon, 1);
+  const c4 = liveUnitPrice(carbon, 4);
+  const c6 = liveUnitPrice(carbon, 6);
+  const c12 = liveUnitPrice(carbon, 12);
+  assert(typeof c1 === "number" && c1 === 16.7, `carbon qty 1 must be $16.70, got ${c1}`);
+  assert(typeof c4 === "number" && typeof c6 === "number" && typeof c12 === "number", "carbon pack rungs must resolve");
+  assert(c4 <= c1, `carbon qty 4 must not exceed qty 1 (${c4} > ${c1})`);
+  assert(c6 <= c4, `carbon qty 6 must not exceed qty 4 (${c6} > ${c4})`);
+  assert(c12 <= c6, `carbon qty 12 must not exceed qty 6 (${c12} > ${c6})`);
+  assert(c6 === c4, `carbon qty 6 must carry the cheaper qty-4 unit forward (got ${c6}, qty 4 ${c4})`);
+}
+{
+  const steps = [1, 2, 4, 6, 12] as const;
+  for (const merv of [8, 11, 13] as const) {
+    let prev: number | undefined;
+    for (const qty of steps) {
+      const unit = liveUnitPrice({ size: "20x25x1", merv }, qty);
+      assert(typeof unit === "number", `20x25x1 MERV ${merv} qty ${qty} must resolve`);
+      if (prev != null) {
+        assert(
+          (unit as number) <= prev,
+          `20x25x1 MERV ${merv} qty ${qty} ($${unit}) must not exceed lower rung $${prev}`,
+        );
+      }
+      prev = unit as number;
+    }
+  }
+}
 const live2 = liveUnitPrice({ size: "20x20x1", merv: 8 }, 2);
 assert(typeof live2 === "number" && live2 <= 9.99, `20x20x1 MERV 8 qty 2 must not exceed the Filtrete single (${live2})`);
 assert(liveUnitPrice({ size: "20x20x1", merv: 11 }, 2) === 11, "20x20x1 MERV 11 qty 2 must match Filtrete $11.00");
@@ -370,8 +400,12 @@ assert(!cssSrc.includes("background: rgba(8, 14, 26, 0.38)"), "repair rows must 
 assert(cssSrc.includes("translateY(0.09em)"), "lockup mascot sits another hair lower than the FILTER HERO cap line");
 assert(cssSrc.includes("--brand-band-fill"), "hero and Who you're protecting share one navy fill");
 assert(
-  cssSrc.includes("linear-gradient(90deg, #1a3058 0%, #2a4d82 48%, #3a66a3 100%)"),
-  "brand-band fill is the chrome 90deg navy",
+  cssSrc.includes("linear-gradient(90deg, #23406a 0%, #2a4d82 48%, #3a66a3 100%)"),
+  "brand-band fill is the chrome 90deg navy (FH-355)",
+);
+assert(
+  !cssSrc.includes("linear-gradient(90deg, #1a3058 0%, #2a4d82 48%, #3a66a3 100%)"),
+  "brand-band must not use the darker #1a3058 chrome (FH-355)",
 );
 const headerSrc = fs.readFileSync(path.join(srcRoot, "client/src/components/SiteHeader.tsx"), "utf8");
 assert(headerSrc.includes("md:py-1\""), "shopper header padding stays a tad shorter than md:py-1.5");

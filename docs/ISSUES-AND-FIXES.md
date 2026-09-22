@@ -14,7 +14,127 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-353**
+Next id: **FH-362**
+
+---
+
+### FH-361 — Higher qty cost more per filter than a lower rung
+- **Status:** fixed
+- **Area:** pricing
+- **Symptom:** On `/sizes/20x25x1` Carbon, the Qty / Each / Savings ladder showed **4 @ $8.37 (50%)** as Best value while **6+ @ $10.34** and **12+ @ $10.28** were more expensive per filter. Filter King carbon ladders invert at qty 4 vs 6 (FH-135 item 1). “Best value” undercut “Most popular.”
+- **Do NOT:** Raise the cheap qty-4 rung to match qty 6. Do not invent Filtrete carbon multi-packs. Do not drop Filter King undercut or FilterBuy match (FH-342). Do not let a higher qty cost more per filter than a lower unlocked rung.
+- **Do:** `liveUnitPrice` computes each rung as before (`rawLiveUnitPrice`), then carries the cheapest unlocked stair (1 / 2 / 4 / 6 / 12) forward. Qty 6 and 12 keep the $8.37 carbon deal once qty 4 unlocks it. Same rule for every size × MERV. Cart, Stripe, and JSON-LD use the same function.
+- **Files:** `shared/pricing/engine.ts`, `shared/products.ts`, `scripts/verify-store.ts`
+- **Verify:** `pnpm verify:store`. `/sizes/20x25x1?merv=carbon` — qty 4 / 6 / 12 are non-increasing per filter. 20x25x1 MERV 8 qty 6 stays **$7.49**.
+- **Added:** 2026-09-22
+- **Fixed:** 2026-09-22
+- **Mitigates:** FH-135 pack-inversion bullet (1)
+
+---
+
+### FH-360 — Hovering a MERV chip left the pack photo on the pressed rating
+- **Status:** fixed
+- **Area:** photos
+- **Symptom:** On a size page, hovering MERV 8, Carbon, 11, or 13 updated the chip and the Capture box, but the gallery kept the pressed rating’s pack shot.
+- **Do NOT:** Leave `.product-shot` on `selectedType` while `hoverKey` is set. Do not change the unit price, cart line, or JSON-LD image on hover. Do not keep a mesh or layers thumb index when the preview rating changes.
+- **Do:** The theater, pack photo, thumbs, and MERV chip follow `previewType`. A hover that is not the pressed rating shows that rating’s pack shot (index 0). Leaving the row restores the pressed rating and its thumb. Click still commits the rating, price, and gallery.
+- **Files:** `client/src/pages/SizeDetail.tsx`
+- **Verify:** `/sizes/20x25x1` — hover MERV 11, 13, and Carbon. The pack photo src matches that rating. Move the pointer off; the photo returns to the pressed rating. The price does not change until click.
+- **Added:** 2026-09-22
+- **Fixed:** 2026-09-22
+- **Supersedes:** the gallery line in FH-359
+
+---
+
+---
+
+### FH-359 — Capture note stayed gray while hovering a MERV chip
+- **Status:** fixed
+- **Area:** catalog
+- **Symptom:** On a size page, hovering MERV 8, Carbon, 11, or 13 tinted only the chip. The Capture box under Choose MERV stayed the same cool gray, so the two sections did not share that rating’s color.
+- **Do NOT:** Hard-code `.pdp-merv-note` to `rgba(232, 237, 244, 0.7)`. Do not leave the Capture label on `--mesh`. Do not let hover change the price or the pressed MERV. Gallery preview is FH-360.
+- **Do:** Hover (and keyboard focus) sets the pair’s `--merv-wash` from that chip’s `badgeColor`. Chip and Capture box both use a 20% wash while hot, and 14% for the pressed chip and its note at rest. Capture dots use the same badge color. Leaving the row restores the pressed rating.
+- **Files:** `client/src/pages/SizeDetail.tsx`, `client/src/index.css`, `client/src/components/CaptureDots.tsx`
+- **Verify:** `/sizes/20x25x1` — hover MERV 8 (navy), Carbon (black), MERV 11 (red), MERV 13 (gold). Chip body and Capture box match. Move the pointer off; the box returns to the pressed rating. Click still changes the gallery and price.
+- **Added:** 2026-09-22
+- **Fixed:** 2026-09-22
+
+---
+
+### FH-358 — FILTER HERO Checkout brand colors on, logo missing; Railway still test keys
+- **Status:** open
+- **Area:** other
+- **Symptom:** FILTER HERO (`acct_1U9bqlQEENEs0Qmw`) test branding now uses navy `#203868` / burgundy `#7F2328` with `checkout_use_brand_colors`. The Checkout logo/icon files are empty (`logo`/`icon` null). Default PMC has Google Pay **off**. Tax Settings are active (Miami FL head office) but there are **zero** tax registrations, so automatic tax collects nothing. Catalog Products on this account are not the 293 `prod_fh_*` SKUs (sandbox `acct_1U9bqs790NnFGDLv` has that map). Railway production `STRIPE_SECRET_KEY` is still `sk_test_` (FH-305). Stripe MCP has test mode only — cannot create the live shop webhook.
+- **Do NOT:** Copy local sandbox `STRIPE_SECRET_KEY` onto Railway. Do not point sandbox or FILTER HERO test webhooks at `https://filterhero.net/api/stripe/webhook`. Do not connect Klaviyo to sandbox. Do not add a tax registration unless Filter Hero is registered with that state. Do not invent a `sk_live_` key.
+- **Do:** Dashboard → FILTER HERO → Branding: re-upload `https://filterhero.net/logo.png`. Enable Google Pay on the account Default PMC. Add live FILTER HERO to the Stripe MCP session. Put `sk_live_` / `pk_live_` / `VITE_STRIPE_PUBLISHABLE_KEY` on Railway, rebuild, then `pnpm setup:stripe-webhook` and `pnpm sync:catalog` on that live key. Add tax registrations only for states already collecting.
+- **Files:** `shared/stripe-accounts.ts`, `scripts/setup-stripe-webhook.ts`, `docs/STRIPE-FULL-BUILD.md`
+- **Verify:** Checkout shows the Filter Hero logo. Railway `STRIPE_SECRET_KEY` starts with `sk_live_`. Live webhook `https://filterhero.net/api/stripe/webhook` enabled. `pnpm verify:stripe-books`. `pnpm verify:env`.
+- **Added:** 2026-09-21
+
+---
+
+### FH-357 — verify:store still required the dark brand-band chrome
+- **Status:** fixed
+- **Area:** photos
+- **Symptom:** `pnpm verify:store` failed after FH-355: `brand-band fill is the chrome 90deg navy`. The checker still wanted `linear-gradient(90deg, #1a3058 …)`. CSS already uses `#23406a` → `#2a4d82` → `#3a66a3`.
+- **Do NOT:** Put `#1a3058` back on `--brand-band-fill`. Do not leave the verifier on the old dark chrome.
+- **Do:** Assert the FH-355 90deg chrome (`#23406a` 0%, `#2a4d82` 48%, `#3a66a3` 100%) and forbid the `#1a3058` start.
+- **Files:** `scripts/verify-store.ts`
+- **Verify:** `pnpm verify:store`
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-356 — Size-page MERV 11 fill did not match the home card
+- **Status:** fixed
+- **Area:** photos
+- **Symptom:** `/sizes/…` gallery used a stronger `--pdp-glow` mix (34% badge over navy). Home `#merv` `.merv-tile` MERV 11 is 28% badge over `#345a94` → `--navy-fill` → `--deep-fill`. The two reds did not match.
+- **Do NOT:** Mix the theater at 34% into `--navy-fill`, or put a white-tinted glow over the panel. Do not change `badgeColor` `#d21b22` on the MERV 11 chip.
+- **Do:** `.product-theater` uses the same 165deg wash as `.merv-tile` (`28%` badge into `#345a94`, then `--navy-fill` / `--deep-fill`). `--pdp-glow` stays `selectedType.badgeColor`.
+- **Files:** `client/src/index.css`
+- **Verify:** Home MERV 11 card vs `/sizes/20x25x1?merv=11` left gallery — same wine navy. Chip stays `#d21b22`. MERV 8 / Carbon / 13 galleries follow the same recipe as their home tiles.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-355 — Shopper navy fills were a tad too dark
+- **Status:** fixed
+- **Area:** photos
+- **Symptom:** Header, footer, brand bands, size-page sky, sizing-guide hero, clock chassis, and `bg-deep` tiles sat on `#141e30` / `#1a3058` / `#1b3258` / `#203868`. The measure-guide band read too dark.
+- **Do NOT:** Paint those fills back to `#141e30`, `#1a3058`, `#1b3258`, or `#0c121c`. Do not lighten `--navy` / `--deep` text, `color: #141e30`, or email-brand `#203868`.
+- **Do:** Backgrounds use `--navy-fill` `#264478` and `--deep-fill` `#1e3a66` (and Tailwind `bg-navy-fill` / `bg-deep-fill`). Mesh `#3a66a3` and ice stay. Type stays `--navy` / `--deep`.
+- **Files:** `client/src/index.css`, `client/src/components/HowToMeasureGuide.tsx`, `client/src/components/HowToReplaceGuide.tsx`, `client/src/components/FilterPower.tsx`, `client/src/components/TrustMarquee.tsx`, `client/src/components/CarouselDots.tsx`, `client/src/pages/FilterChangeGuide.tsx`
+- **Verify:** `/` header + hero + marquee; `/sizes/20x25x1` measure-guide band; `/how-often-to-change-air-filter`; Filter Clock. Copy on white is still `#141e30`.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-354 — Size-page gallery MERV fill was too loud
+- **Status:** fixed
+- **Area:** photos
+- **Symptom:** After FH-353 the left gallery used the raw badge (`#d21b22` / `#ee9e10` / `#3a66a3` / `#111111`) as the full panel. MERV 11 and 13 read as neon slabs.
+- **Do NOT:** Set `.product-theater` `background-color` to `var(--pdp-glow)` at 100%. Do not put the wash back in one corner (FH-353).
+- **Do:** Full-panel wash mixed into navy — about 34% badge over `#1a3058` / `#1e3a66`. Same `--pdp-glow` from `selectedType.badgeColor`.
+- **Files:** `client/src/index.css`
+- **Verify:** `/sizes/20x25x1` — MERV 8, Carbon, 11, 13. Whole gallery tints that color, muted, not a raw fill.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
+
+---
+
+### FH-353 — Size-page gallery color lived in one corner
+- **Status:** fixed
+- **Area:** photos
+- **Symptom:** On `/sizes/…` the MERV wash (`--pdp-glow`) sat in the top-right of `.product-theater` over navy. MERV 11 looked like a red corner, not a red panel. Same for MERV 8 blue, MERV 13 gold, and Carbon black.
+- **Do NOT:** Put the glow back as `ellipse … at 80% 10%` over `#1e3a66` / `#1a3058`. Do not hard-code one MERV color on the theater.
+- **Do:** `.product-theater` fills with `var(--pdp-glow)` from `selectedType.badgeColor` (MERV 8 `#3a66a3`, 11 `#d21b22`, 13 `#ee9e10`, Carbon `#111111`). Glow covers the full panel.
+- **Files:** `client/src/index.css`, `client/src/pages/SizeDetail.tsx`
+- **Verify:** `/sizes/20x25x1` — click MERV 8, Carbon, 11, 13. Left gallery is that color throughout, not a corner blob.
+- **Added:** 2026-09-21
+- **Fixed:** 2026-09-21
 
 ---
 
@@ -648,6 +768,7 @@ Next id: **FH-353**
 - **Files:** `shared/stripe-accounts.ts`, `scripts/setup-stripe-webhook.ts`, README Production
 - **Verify:** Railway `STRIPE_SECRET_KEY` starts with `sk_live_`. Dashboard → FILTER HERO live → Webhooks shows `https://filterhero.net/api/stripe/webhook` enabled. A live Checkout session is `livemode: true`.
 - **Added:** 2026-09-20
+- **Rechecked:** 2026-09-21 — Railway production still `sk_test_` / `pk_test_`. Stripe MCP session is FILTER HERO test only.
 
 ---
 
@@ -2834,9 +2955,9 @@ Next id: **FH-353**
 ### FH-135 — Full-catalog Filtrete match still leaves pack, MERV, and thick-size gaps
 - **Status:** open
 - **Area:** pricing
-- **Symptom:** After FH-134, every 1-inch qty 1 (8 / 11 / 13 / carbon) matches a Filtrete 1-pack. Shoppers still see: (1) 253 pack rungs where a bigger pack costs more per filter (102 of those are carbon qty 4 cheaper than qty 6, copied from Filter King); (2) 815 size × qty cells where a higher MERV is cheaper; (3) Filtrete MERV 11 2-pack $11.00 only on five sizes — 9,376 other 1-inch MERV 11 stay at $13.49 at qty 2; (4) 2" / 4" / 5" / 0.5" (2,308 SKUs) have no Filtrete table, so they stay on Filter King × 0.90; (5) carbon is Filter King MERV 8 Carbon priced to Filtrete MERV 11 odor; (6) off-sheet SKUs, including all carbon, have no wholesale cost.
-- **Do NOT:** Invent Filtrete 4-inch or 2-pack tickets. Do not expand `FILTRETE_BEAT` beyond confirmed scrapes. Do not flatten pack inversions by raising cheap rungs without a new rule.
-- **Do:** Keep 1-inch qty 1 on `FILTRETE_1INCH_QTY1`. Add a Filtrete-beat row only when a live Filtrete multi-pack still undercuts us. Thick sizes stay on the Filter King undercut unless a confirmed FilterBuy ticket is cheaper (FH-138).
+- **Symptom:** After FH-134, every 1-inch qty 1 (8 / 11 / 13 / carbon) matches a Filtrete 1-pack. Remaining gaps: (1) ~~253 pack rungs where a bigger pack costs more per filter~~ — mitigated by FH-361 carry-forward; (2) 815 size × qty cells where a higher MERV is cheaper; (3) Filtrete MERV 11 2-pack $11.00 only on five sizes — 9,376 other 1-inch MERV 11 stay at $13.49 at qty 2; (4) 2" / 4" / 5" / 0.5" (2,308 SKUs) have no Filtrete table, so they stay on Filter King × 0.90; (5) carbon is Filter King MERV 8 Carbon priced to Filtrete MERV 11 odor; (6) off-sheet SKUs, including all carbon, have no wholesale cost.
+- **Do NOT:** Invent Filtrete 4-inch or 2-pack tickets. Do not expand `FILTRETE_BEAT` beyond confirmed scrapes. Do not flatten pack inversions by raising cheap rungs (FH-361 carries the cheap unlocked unit forward instead).
+- **Do:** Keep 1-inch qty 1 on `FILTRETE_1INCH_QTY1`. Add a Filtrete-beat row only when a live Filtrete multi-pack still undercuts us. Thick sizes stay on the Filter King undercut unless a confirmed FilterBuy ticket is cheaper (FH-138). Pack ladders stay non-increasing via FH-361.
 - **Files:** `shared/pricing/engine.ts`, `docs/WHOLESALE-PRICE-LISTS.md`
 - **Verify:** Canvas `filtrete-match-gaps.canvas.tsx`. `pnpm exec tsx scripts/verify-store.ts`.
 - **Added:** 2026-09-01

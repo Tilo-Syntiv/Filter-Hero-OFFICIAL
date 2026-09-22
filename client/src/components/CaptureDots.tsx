@@ -8,12 +8,14 @@ const CARBON_ACCENT = "#111111";
 export default function CaptureDots({
   merv,
   compact = false,
+  color,
 }: {
   merv: PreferredMerv;
   compact?: boolean;
+  color?: string;
 }) {
   const filled = MERV_GUIDE[merv].strength;
-  const accent = merv === "carbon" ? CARBON_ACCENT : MERV_GUIDE[merv].accent;
+  const accent = color ?? (merv === "carbon" ? CARBON_ACCENT : MERV_GUIDE[merv].accent);
   const scale = compact ? 0.82 : 1;
 
   return (

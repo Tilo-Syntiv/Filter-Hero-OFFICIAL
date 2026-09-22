@@ -65,13 +65,13 @@ const NOTES = [
     label: "Nominal size",
     value: "20 × 25 × 2",
     desc: "The rounded size printed on the filter — use this when ordering.",
-    tone: "bg-deep",
+    tone: "bg-deep-fill",
   },
   {
     label: "Actual size",
     value: "19½ × 24½ × 1¾",
     desc: "The true dimensions when you put a tape to the filter itself.",
-    tone: "bg-navy",
+    tone: "bg-navy-fill",
   },
   {
     label: "Depth note",
@@ -87,7 +87,7 @@ export default function HowToMeasureGuide() {
   return (
     <div className="space-y-8 md:space-y-10">
       <div className="relative overflow-hidden rounded-3xl surface-panel">
-        <div className="relative bg-[linear-gradient(125deg,#141e30_0%,#203868_55%,#3a66a3_120%)] px-4 py-7 md:px-10 md:py-10 text-white overflow-hidden">
+        <div className="relative bg-[linear-gradient(125deg,#1e3a66_0%,#264478_55%,#3a66a3_120%)] px-4 py-7 md:px-10 md:py-10 text-white overflow-hidden">
           <div
             className="pointer-events-none absolute inset-0 opacity-40"
             style={{
@@ -186,7 +186,7 @@ export default function HowToMeasureGuide() {
                 <div
                   className={[
                     "flex h-10 w-10 items-center justify-center rounded-xl mb-4 transition-colors",
-                    isActive ? "bg-deep text-ice" : "bg-deep/90 text-ice/80",
+                    isActive ? "bg-deep-fill text-ice" : "bg-deep-fill/90 text-ice/80",
                   ].join(" ")}
                 >
                   {step.icon}

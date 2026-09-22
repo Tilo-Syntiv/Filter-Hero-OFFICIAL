@@ -195,7 +195,7 @@ function LightTest() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-12 lg:items-center">
-      <div className="relative overflow-hidden rounded-3xl bg-deep lg:col-span-7">
+      <div className="relative overflow-hidden rounded-3xl bg-deep-fill lg:col-span-7">
         <div
           className="absolute inset-0 transition-opacity duration-300"
           style={{
@@ -412,7 +412,7 @@ export default function FilterChangeGuidePage() {
               {PILLARS.map((p) => (
                 <article
                   key={p.k}
-                  className="relative min-h-[17rem] overflow-hidden rounded-2xl bg-navy p-6 text-white"
+                  className="relative min-h-[17rem] overflow-hidden rounded-2xl bg-navy-fill p-6 text-white"
                 >
                   <img
                     src={p.photo.src}
@@ -426,7 +426,7 @@ export default function FilterChangeGuidePage() {
                         : undefined
                     }
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy/95 via-navy/65 to-navy/25" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-navy-fill/95 via-navy-fill/65 to-navy-fill/25" />
                   <span className="absolute right-4 top-3 z-[1] text-4xl font-extrabold text-white/10">
                     {p.k}
                   </span>
@@ -479,7 +479,7 @@ export default function FilterChangeGuidePage() {
                       </div>
                       <div className="h-2 overflow-hidden rounded-full bg-muted">
                         <div
-                          className="h-full rounded-full bg-[linear-gradient(90deg,#203868,#8eb0d8)] transition-all duration-500"
+                          className="h-full rounded-full bg-[linear-gradient(90deg,#264478,#8eb0d8)] transition-all duration-500"
                           style={{ width: `${(t.days / 365) * 100}%` }}
                         />
                       </div>
@@ -487,7 +487,7 @@ export default function FilterChangeGuidePage() {
                   );
                 })}
               </div>
-              <aside className="rounded-3xl bg-[linear-gradient(135deg,#203868_0%,#8eb0d8_140%)] p-6 text-white lg:col-span-5">
+              <aside className="rounded-3xl bg-[linear-gradient(135deg,#264478_0%,#8eb0d8_140%)] p-6 text-white lg:col-span-5">
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/80">
                   {formatDepth(activeLife.depth)} baseline
                 </p>
@@ -592,7 +592,7 @@ export default function FilterChangeGuidePage() {
                   key={step.num}
                   className="relative rounded-2xl border border-border/80 bg-white/85 p-5"
                 >
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-deep text-ice">
+                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-deep-fill text-ice">
                     {step.icon}
                   </div>
                   <span className="absolute right-4 top-4 text-3xl font-extrabold leading-none text-muted/80">

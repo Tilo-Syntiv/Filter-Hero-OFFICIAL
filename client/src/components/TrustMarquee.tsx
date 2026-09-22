@@ -71,11 +71,11 @@ export default function TrustMarquee() {
       </p>
 
       <div
-        className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-[#173056] to-transparent md:w-16"
+        className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-deep-fill to-transparent md:w-16"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[#23406a] to-transparent md:w-16"
+        className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-mesh to-transparent md:w-16"
         aria-hidden
       />
 

@@ -79,6 +79,7 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
   const [mervKey, setMervKey] = useState<PreferredMerv>(
     () => (availableTypes[0]?.key as PreferredMerv) ?? "8",
   );
+  const [hoverKey, setHoverKey] = useState<PreferredMerv | null>(null);
   const [qty, setQty] = useState(6);
   const [shot, setShot] = useState(0);
   const pickQty = (n: number) => setQty(Math.min(qtyMax, Math.max(qtyMin, n)));
@@ -104,9 +105,14 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
 
   const selectedType =
     availableTypes.find((t) => t.key === mervKey) ?? availableTypes[0] ?? MERV_TYPES[0];
-  const gallery = productGalleryFor(selectedType.merv, selectedType.isCarbon);
+  const previewType =
+    availableTypes.find((t) => t.key === (hoverKey ?? mervKey)) ?? selectedType;
+  const gallery = productGalleryFor(previewType.merv, previewType.isCarbon);
   const packShot = packShotSrc(selectedType.merv, selectedType.isCarbon);
-  const guide = MERV_GUIDE[selectedType.key];
+  const previewGuide = MERV_GUIDE[previewType.key];
+  const previewing = hoverKey != null && hoverKey !== mervKey;
+  const displayShot = previewing ? 0 : Math.min(shot, Math.max(gallery.length - 1, 0));
+  const frame = gallery[displayShot] ?? gallery[0];
 
   useEffect(() => {
     setShot(0);
@@ -328,8 +334,8 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
               className="product-deck"
               style={
                 {
-                  "--pdp-glow": selectedType.badgeColor,
-                  "--pdp-accent": guide.accent,
+                  "--pdp-glow": previewType.badgeColor,
+                  "--pdp-accent": previewGuide.accent,
                 } as CSSProperties
               }
             >
@@ -341,16 +347,16 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
                   <span className="product-size-plaque">{decoded}</span>
                   <span
                     className="product-merv-chip"
-                    style={{ backgroundColor: selectedType.badgeColor }}
+                    style={{ backgroundColor: previewType.badgeColor }}
                   >
-                    {selectedType.name}
+                    {previewType.name}
                   </span>
                 </div>
 
                 <div className="product-shot-wrap">
                   <img
-                    src={gallery[shot].src}
-                    alt={`${decoded} ${selectedType.name} — ${gallery[shot].alt}`}
+                    src={frame.src}
+                    alt={`${decoded} ${previewType.name} — ${frame.alt}`}
                     className="product-shot"
                   />
                 </div>
@@ -361,9 +367,9 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
                       key={item.src}
                       type="button"
                       role="listitem"
-                      className={cn("product-thumb", i === shot && "product-thumb-active")}
+                      className={cn("product-thumb", i === displayShot && "product-thumb-active")}
                       aria-label={item.alt}
-                      aria-pressed={i === shot}
+                      aria-pressed={i === displayShot}
                       onClick={() => setShot(i)}
                     >
                       <img src={item.src} alt="" />
@@ -405,49 +411,62 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
 
                 <div className="mb-7">
                   <h2 className="section-label !text-mesh">1 · Choose MERV</h2>
-                  <div className="pdp-merv-row">
-                    {availableTypes.map((t) => {
-                      const active = t.key === mervKey;
-                      const g = MERV_GUIDE[t.key];
-                      return (
-                        <button
-                          key={t.key}
-                          type="button"
-                          onClick={() => pickMerv(t.key)}
-                          aria-pressed={active}
-                          className={cn("pdp-merv", active && "pdp-merv-active")}
-                          style={{ "--merv-wash": t.badgeColor } as CSSProperties}
-                        >
-                          <span
-                            className="pdp-merv-badge"
-                            style={{ backgroundColor: t.badgeColor }}
+                  <div
+                    className={cn("pdp-merv-pair", hoverKey && "is-hot")}
+                    style={{ "--merv-wash": previewType.badgeColor } as CSSProperties}
+                  >
+                    <div className="pdp-merv-row">
+                      {availableTypes.map((t) => {
+                        const active = t.key === mervKey;
+                        const g = MERV_GUIDE[t.key];
+                        return (
+                          <button
+                            key={t.key}
+                            type="button"
+                            onClick={() => pickMerv(t.key)}
+                            onMouseEnter={() => setHoverKey(t.key)}
+                            onMouseLeave={() =>
+                              setHoverKey((current) => (current === t.key ? null : current))
+                            }
+                            onFocus={() => setHoverKey(t.key)}
+                            onBlur={() =>
+                              setHoverKey((current) => (current === t.key ? null : current))
+                            }
+                            aria-pressed={active}
+                            className={cn("pdp-merv", active && "pdp-merv-active")}
+                            style={{ "--merv-wash": t.badgeColor } as CSSProperties}
                           >
-                            {t.key === "carbon" ? (
-                              <span className="flex flex-col items-center leading-[1.05]">
-                                <span>MERV 8</span>
-                                <span>Carbon</span>
-                              </span>
-                            ) : (
-                              t.name
-                            )}
-                          </span>
-                          <span className="pdp-merv-name">{t.name}</span>
-                          <span className="pdp-merv-for">{g.bestFor}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="pdp-merv-note">
-                    <p className="pdp-merv-capture-label">Capture</p>
-                    <CaptureDots merv={selectedType.key} />
-                    <p className="pdp-merv-efficiency">{guide.efficiency}</p>
-                    <p className="pdp-merv-copy">
-                      <span>{guide.bestFor}.</span> {guide.note} Catches{" "}
-                      {guide.catches.join(", ").toLowerCase()}.
-                    </p>
-                    <p className="pdp-merv-copy">
-                      <span>{MERV_CAPACITY_SHORT}</span> {MERV_CAPACITY_NOTE}
-                    </p>
+                            <span
+                              className="pdp-merv-badge"
+                              style={{ backgroundColor: t.badgeColor }}
+                            >
+                              {t.key === "carbon" ? (
+                                <span className="flex flex-col items-center leading-[1.05]">
+                                  <span>MERV 8</span>
+                                  <span>Carbon</span>
+                                </span>
+                              ) : (
+                                t.name
+                              )}
+                            </span>
+                            <span className="pdp-merv-name">{t.name}</span>
+                            <span className="pdp-merv-for">{g.bestFor}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="pdp-merv-note">
+                      <p className="pdp-merv-capture-label">Capture</p>
+                      <CaptureDots merv={previewType.key} color={previewType.badgeColor} />
+                      <p className="pdp-merv-efficiency">{previewGuide.efficiency}</p>
+                      <p className="pdp-merv-copy">
+                        <span>{previewGuide.bestFor}.</span> {previewGuide.note} Catches{" "}
+                        {previewGuide.catches.join(", ").toLowerCase()}.
+                      </p>
+                      <p className="pdp-merv-copy">
+                        <span>{MERV_CAPACITY_SHORT}</span> {MERV_CAPACITY_NOTE}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
