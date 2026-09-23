@@ -14,7 +14,20 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-364**
+Next id: **FH-365**
+
+---
+
+### FH-364 — Stripe Checkout branding type error, leads file guard, and Stripe Tax QBO accounting confirmation
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** `pnpm check` failed with TypeScript error in `server/stripe.ts` because `branding_settings` was not recognized on `Stripe.Checkout.SessionCreateParams`. Clean clone runs failed in `scripts/verify-json.ts` when gitignored `server/data/leads.json` was missing. Settings UI and Stripe Books docs lacked explicit confirmation that Stripe Tax is the active tax calculation engine rather than QBO Automated Sales Tax.
+- **Do NOT:** Enable QBO Automated Sales Tax to recalculate checkout taxes or strip `branding_settings` from Stripe Checkout session params. Do not query Postgres directly or bypass Stripe Tax.
+- **Do:** Cast Stripe checkout creation params safely through `unknown` to preserve the `branding_settings` payload without compiler errors. Safely auto-initialize empty `leads.json` when absent in verification scripts. Keep Stripe Tax (`automatic_tax: { enabled: tax.automaticTax }`) as the sole tax calculator for cart/checkout, recording collected taxes into QBO via Stripe books sync as Sales Tax Payable.
+- **Files:** `server/stripe.ts`, `scripts/verify-json.ts`, `docs/STRIPE-BOOKS.md`, `client/src/pages/admin/Settings.tsx`
+- **Verify:** `pnpm check`, `pnpm verify:intuit-discovery`, `pnpm verify:intuit-oauth`, `pnpm verify:stripe-books`, `pnpm verify:json`, `pnpm verify:store`
+- **Added:** 2026-09-23
+- **Fixed:** 2026-09-23
 
 ---
 
