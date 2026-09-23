@@ -272,7 +272,7 @@ export async function createCheckoutSession(
       metadata: { items: itemsMeta },
     },
     // stripe 17 types omit branding_settings; API accepts it on hosted Checkout.
-  } as Stripe.Checkout.SessionCreateParams);
+  } as unknown as Stripe.Checkout.SessionCreateParams);
 
   if (email && session.url) {
     try {

@@ -308,6 +308,10 @@ function SettingsBody() {
               )}
             </p>
           ) : null}
+          <p className="text-xs text-muted-foreground">
+            Sales tax is calculated and collected by Stripe Tax at checkout, not by QuickBooks. QBO
+            records the paid sale, invoice, and sales tax collected by Stripe.
+          </p>
         </div>
       </AdminPanel>
 
