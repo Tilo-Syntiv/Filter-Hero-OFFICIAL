@@ -25,12 +25,6 @@ import {
 import { recordPurchaseOnAccount } from "./account";
 import { closeDealsOnPurchase } from "./crm/intake";
 import { dataFile } from "./data-store";
-import {
-  parseCheckoutItems,
-  syncCheckoutExpired,
-  syncPlacedOrder,
-  syncStartedCheckout,
-} from "./klaviyo";
 import { sendOrderConfirmation } from "./mailer";
 import { stripeCheckoutBrandingSettings } from "../shared/stripe-checkout-brand";
 
@@ -218,6 +212,8 @@ export function normalizeCheckoutItems(items: CheckoutItem[]): CheckoutItem[] {
     const product = getProductById(item.productId);
     if (!product) throw new Error(`Unknown product: ${item.productId}`);
     if (!product.inStock) throw new Error(`Out of stock: ${product.size}`);
+    // Parent may be the sheet's exact cut while stock collapsed to undersize (or vice versa).
+    // Live allowlist is the size×MERV stock key via product.inStock.
     const key = `${item.productId}:${delivery}`;
     const prev = byKey.get(key);
     byKey.set(key, {
@@ -411,20 +407,6 @@ export async function createCheckoutSession(
 
   if (!session.url) throw new Error("No checkout URL returned");
 
-  if (email && session.url) {
-    try {
-      await syncStartedCheckout({
-        email,
-        sessionId: session.id,
-        checkoutUrl: session.url,
-        items: current,
-        marketingConsent: shopper?.marketingConsent,
-      });
-    } catch (err) {
-      console.error("[checkout] klaviyo Started Checkout failed", err);
-    }
-  }
-
   return {
     url: session.url,
     sessionId: session.id,
@@ -449,11 +431,6 @@ async function persistPaidOrder(stored: StoredOrder): Promise<void> {
   if (!existing) orders.push(row);
   writeOrders(orders);
 
-  try {
-    await syncPlacedOrder(row);
-  } catch (err) {
-    console.error("[stripe webhook] klaviyo Placed Order failed", err);
-  }
   try {
     if (!row.confirmationSentAt) {
       const mail = await sendOrderConfirmation(row);
@@ -632,21 +609,7 @@ export async function handleStripeWebhook(
   }
 
   if (event.type === "checkout.session.expired") {
-    const expired = event.data.object as Stripe.Checkout.Session;
-    const email =
-      expired.customer_details?.email ??
-      expired.customer_email ??
-      expired.metadata?.email ??
-      null;
-    try {
-      await syncCheckoutExpired({
-        email,
-        sessionId: expired.id,
-        items: parseCheckoutItems(expired.metadata?.items),
-      });
-    } catch (err) {
-      console.error("[stripe webhook] klaviyo Checkout Expired failed", err);
-    }
+    return { received: true };
   }
 
   return { received: true };

@@ -62,7 +62,6 @@ export const contactInputSchema = z.object({
   lastName: z.string().trim().max(80).optional(),
   phone: z.string().trim().max(40).optional(),
   companyId: z.string().uuid().optional(),
-  klaviyoProfileId: z.string().trim().max(80).optional(),
   stripeCustomerId: z.string().trim().max(80).optional(),
   properties: z.record(z.string(), z.unknown()).optional(),
 });
@@ -135,7 +134,6 @@ export type CrmContactRow = {
   last_name: string | null;
   phone: string | null;
   company_id: string | null;
-  klaviyo_profile_id: string | null;
   stripe_customer_id: string | null;
   properties: Record<string, unknown>;
   created_at: string;

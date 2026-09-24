@@ -97,8 +97,8 @@ async function main() {
   }
   const adminRoutes = fs.readFileSync("server/admin/routes.ts", "utf-8");
   assert(
-    adminRoutes.includes("/klaviyo-stripe/connect"),
-    "staff settings can create the Klaviyo Stripe webhook",
+    !adminRoutes.includes("/klaviyo-stripe/connect"),
+    "staff settings must not create a Klaviyo Stripe webhook",
   );
   assert(adminRoutes.includes("stripeTax:"), "staff settings expose Stripe Tax readiness");
 

@@ -15,12 +15,6 @@ import {
   stripeKeyIsLive,
   writeStripeCatalogFile,
 } from "../../shared/stripe-catalog.ts";
-import {
-  buildKlaviyoCatalog,
-  isKlaviyoEnabled,
-  klaviyoApi,
-  productUrl,
-} from "../../server/klaviyo.ts";
 
 export type CatalogIdentity = {
   id: number;
@@ -32,6 +26,14 @@ export type CatalogIdentity = {
   filterKingUrl: string;
   parentModel?: string;
 };
+
+function filterHeroProductUrl(
+  product: { size: string; merv: number; isCarbon?: boolean },
+  site: string,
+): string {
+  const merv = product.isCarbon ? "carbon" : String(product.merv);
+  return `${site}/sizes/${encodeURIComponent(product.size)}?merv=${merv}`;
+}
 
 function origin(): string {
   return (process.env.SITE_URL || process.env.VITE_SITE_URL || DEFAULT_SITE_URL).replace(/\/$/, "");
@@ -45,7 +47,7 @@ export function catalogIdentityRows(): CatalogIdentity[] {
     merv: product.merv,
     isCarbon: Boolean(product.isCarbon),
     image: `${site}${packShotSrc(product.merv, product.isCarbon)}`,
-    filterHeroUrl: productUrl(product, site),
+    filterHeroUrl: filterHeroProductUrl(product, site),
     filterKingUrl: product.filterKingUrl || "",
     parentModel: product.parentModel,
   }));
@@ -91,61 +93,6 @@ export async function syncStripeCatalog(): Promise<{ count: number; skipped?: st
     products: map,
   });
   return { count: rows.length };
-}
-
-export async function syncKlaviyoCatalog(): Promise<{ count: number; skipped?: string }> {
-  if (!isKlaviyoEnabled()) return { count: 0, skipped: "Klaviyo disabled" };
-  const catalog = buildKlaviyoCatalog(origin());
-  const existing = new Map<string, string>();
-  let next: string | null = "/api/catalog-items?page[size]=100";
-  let pages = 0;
-  while (next && pages < 40) {
-    const res: {
-      ok: boolean;
-      status: number;
-      data: {
-        data?: Array<{ id?: string; attributes?: { external_id?: string } }>;
-        links?: { next?: string | null };
-      } | null;
-      error?: string;
-    } = await klaviyoApi("GET", next);
-    if (!res.ok || !res.data?.data) break;
-    for (const item of res.data.data) {
-      if (item.id && item.attributes?.external_id) {
-        existing.set(item.attributes.external_id, item.id);
-      }
-    }
-    next = res.data.links?.next ? res.data.links.next.replace("https://a.klaviyo.com", "") : null;
-    pages += 1;
-  }
-  const want = new Set(catalog.items.map((item) => item.id));
-  for (const item of catalog.items) {
-    const body = {
-      type: "catalog-item",
-      attributes: {
-        external_id: item.id,
-        integration_type: "$custom",
-        title: item.title,
-        description: item.description,
-        url: item.link,
-        image_full_url: item.image_link,
-        published: true,
-        price: item.price,
-      },
-    };
-    const klaviyoId = existing.get(item.id);
-    if (klaviyoId) {
-      await klaviyoApi("PATCH", `/api/catalog-items/${klaviyoId}/`, { data: { ...body, id: klaviyoId } });
-    } else {
-      await klaviyoApi("POST", "/api/catalog-items/", { data: body });
-    }
-  }
-  for (const [externalId, klaviyoId] of existing) {
-    if (!want.has(externalId)) {
-      await klaviyoApi("DELETE", `/api/catalog-items/${klaviyoId}/`);
-    }
-  }
-  return { count: catalog.items.length };
 }
 
 export async function syncSupabaseCatalog(): Promise<{ count: number; skipped?: string }> {

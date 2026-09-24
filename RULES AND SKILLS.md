@@ -4,19 +4,19 @@ Filter Hero operating law. If a later change fights this file, the live code plu
 
 Cursor always-on rules live in `.cursor/rules/`. This document is the same law in one place, plus the catalog/API rules added for rebuild, plus which skills and tools to use.
 
-**Last aligned:** 2026-09-20.
+**Last aligned:** 2026-09-24.
 
 ---
 
 ## 1. Always-on Cursor rules
 
-These three files apply to every Filter Hero session.
+These files apply to every Filter Hero session. The table is the index; each file is the law.
 
 | File | Law |
 |---|---|
 | `.cursor/rules/stripe-klaviyo-email.mdc` | Live Stripe ↔ live Klaviyo only. One shopper message, one sender. |
 | `.cursor/rules/issue-hygiene.mdc` | Every new or fixed bug goes in `docs/ISSUES-AND-FIXES.md` as the next `FH-XXX`. Never reuse ids. A fix is not done until that file is updated. |
-| `.cursor/rules/higgsfield-media.mdc` | GPT Image 2 stills, Seedance 2.0 video, minimum credits, batch 1. |
+| `.cursor/rules/repo-boundary.mdc` | This shop is `Tilo-Syntiv/Filter-Hero-OFFICIAL`. `Tilo-Syntiv/FILTER-HERO` is a different GitHub project. |
 
 ---
 
@@ -24,6 +24,7 @@ These three files apply to every Filter Hero session.
 
 | Thing | Live value |
 |---|---|
+| GitHub | `Tilo-Syntiv/Filter-Hero-OFFICIAL` only. `Tilo-Syntiv/FILTER-HERO` is a different project. Do not fetch, merge, or deploy it. Railway service name `FILTER-HERO` is the host. |
 | Shop | `https://filterhero.net` |
 | Inbox | `info@filterhero.net` |
 | Registrar | Squarespace. Do not transfer the domain. |
@@ -43,31 +44,28 @@ These three files apply to every Filter Hero session.
 
 | Layer | Source | Job |
 |---|---|---|
-| What we sell + what we pay | `E:\FILTER HEROE\IMPORTANT PAPERS\Model Pricing - Contractor Commerce.xlsx` | Add-to-cart SKUs and wholesale cost |
-| Full catalog + Filter King page links | Filter King API `GET /api/v1/get-all-parent-models` | Finder archive and `filterking.com` URL on the matching Filter Hero page |
+| What we sell (cart) + live stock | Filter King API `GET /api/v1/get-all-parent-models` | Add-to-cart allowlist; Express auto-sync every 15 min |
+| What we pay (wholesale) | Model Pricing XLS / `shared/pricing/model-pricing.csv`, else API `unit_price` | Margin floor only |
 | What the shopper pays | Filtrete in `shared/pricing/engine.ts` | PDP, cart, Checkout, JSON-LD, Klaviyo item price |
 
-### Sellable + wholesale
-
-- Only file: the Model Pricing XLS. Fallback CSV of **that same workbook**: `E:\FILTER HEROE\Model Pricing - Contractor Commerce - Sheet1.csv`.
-- Column **Sale Price is wholesale**, not the customer price.
-- Parent Model (example `AF16x25x1-M8`) joins to Filter King `parent_model`.
-- Shop copy: `shared/pricing/model-pricing.csv`. Importer: `scripts/build-sellable-skus.ts`.
-- **Do not import** `fk-contractor-commerce.csv`, `FK PRICING_SHEET PS`, or the 2025 PDF.
-- `VITE_FULL_CATALOG=false` and `FULL_CATALOG=false` for checkout. Cart = XLS. Off-XLS sizes → custom quote, not Stripe.
-
-### Filter King API
+### Live stock + cart
 
 - Docs: `https://filterking.com/api/v1/documentation`
 - Token: `POST https://filterking.com/oauth/token`
 - Catalog: `GET https://filterking.com/api/v1/get-all-parent-models`
-- Persist `parent_model` + `filterKingUrl` on every Filter Hero size × MERV.
-- Size hub: `https://filterking.com/air-filter-sizes/{size}`
-- MERV PDP: `https://filterking.com/air-filter-sizes-{size}-merv-{8|11|13}`
+- Cart = parent models in the latest stock sync (`server/filterking-stock.ts`). Not the full 9,958 archive.
+- Persist `parent_model` + `filterKingUrl`. Size hub / MERV PDP URL construction stays in `shared/filterking.ts`.
 - **Do not scrape filterking.com.**
-- **API `unit_price` is not the shopper price.**
-- API-only SKUs are not add-to-cart until they are on the XLS.
+- **API `unit_price` is not the shopper price.** It may fill wholesale cost when the sheet has no row (server only).
+- `VITE_FULL_CATALOG=false` and `FULL_CATALOG=false`. Off-stock sizes → custom quote, not Stripe.
 - Env, server only, never `VITE_`: `FILTERKING_CLIENT_ID`, `FILTERKING_CLIENT_SECRET`, `FILTERKING_API_BASE=https://filterking.com`.
+
+### Wholesale (sheet preferred)
+
+- Only cost file: the Model Pricing XLS → `shared/pricing/model-pricing.csv`. Importer: `scripts/build-sellable-skus.ts`.
+- Column **Sale Price is wholesale**, not the customer price.
+- Parent Model (example `AF16x25x1-M8`) joins to Filter King `parent_model`.
+- **Do not import** `fk-contractor-commerce.csv`, `FK PRICING_SHEET PS`, or the 2025 PDF.
 
 ### Filtrete shopper tickets
 
@@ -214,7 +212,7 @@ Read the skill file **before** using the tool. Do not substitute a different mod
 
 Run the matching script instead of inventing a new check:
 
-`pnpm verify:store` · `verify:crm` · `verify:account` · `verify:supabase` · `verify:security` · `verify:env` · `verify:klaviyo` · `verify:resend` · `verify:stripe-books` · `verify:intuit-oauth` · `pnpm smoke`
+`pnpm verify:store` · `verify:crm` · `verify:account` · `verify:supabase` · `verify:security` · `verify:env` · `verify:resend` · `verify:stripe-books` · `verify:intuit-oauth` · `pnpm smoke`
 
 Secrets never go in `VITE_` vars except publishable keys the browser must have (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_TURNSTILE_SITE_KEY`, `VITE_SITE_URL`, `VITE_FULL_CATALOG`).
 
@@ -230,7 +228,7 @@ Secrets never go in `VITE_` vars except publishable keys the browser must have (
 | `docs/ISSUES-AND-FIXES.md` | Every `FH-XXX` |
 | `shared/email-channels.ts` | Sender ownership in code |
 | `docs/STRIPE-FULL-BUILD.md` | Checkout + webhooks |
-| `docs/KLAVIYO-FULL-BUILD.md` | Flows + catalog feed |
+| `archive/klaviyo/` | Parked marketing code (FH-369) |
 | `docs/RESEND-FULL-BUILD.md` | Transactional HTML |
 | `CRM FULL BUILD.md` | Staff Quotes pipeline, CRM sync, every CRM issue |
 | `docs/SUPABASE-AND-POSTGRES-FULL-BUILD.md` | Auth, CRM, RLS |

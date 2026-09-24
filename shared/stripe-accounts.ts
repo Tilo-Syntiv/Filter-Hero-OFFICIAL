@@ -1,14 +1,12 @@
 /**
- * Stripe account + webhook ownership. Shop fulfillment and Klaviyo's native
- * app must not share events or sit on the sandbox key.
+ * Stripe account + webhook ownership. Shop fulfillment must not sit on the
+ * sandbox key. Klaviyo charge/invoice URLs are classified so webhook setup
+ * deletes them on every Stripe key (FH-370). Creating that endpoint is archived.
  *
  * FILTER HERO live (`acct_1U9bqlQEENEs0Qmw`) is the only account that may
  * post `checkout.session.*` to filterhero.net. Local sandbox uses
- * `stripe listen`. Klaviyo OAuth is the same FILTER HERO account — never
- * FILTER HERO sandbox.
+ * `stripe listen`.
  */
-
-import { isKlaviyoStripeWebhookUrl } from "./klaviyo-stripe";
 
 export const FILTER_HERO_ACCOUNT_ID = "acct_1U9bqlQEENEs0Qmw";
 export const FILTER_HERO_SANDBOX_ACCOUNT_ID = "acct_1U9bqs790NnFGDLv";
@@ -37,9 +35,17 @@ export function shopFulfillmentWebhookAllowed(input: {
   return isFilterHeroAccount(input.accountId) && input.livemode === true;
 }
 
-/** Native charge/invoice webhook is FILTER HERO only (test or live). */
-export function klaviyoNativeWebhookAllowed(accountId: string | null | undefined): boolean {
-  return isFilterHeroAccount(accountId);
+export function isKlaviyoStripeWebhookUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.protocol === "https:" &&
+      parsed.hostname === "a.klaviyo.com" &&
+      parsed.pathname === "/api/webhook/integration/stripe"
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function isShopFulfillmentWebhookUrl(url: string): boolean {
@@ -82,7 +88,7 @@ export function stripeWebhookHealth(input: {
     },
     klaviyo: {
       present: klaviyo,
-      conflict: klaviyo && !klaviyoNativeWebhookAllowed(input.accountId),
+      conflict: klaviyo,
     },
   };
 }

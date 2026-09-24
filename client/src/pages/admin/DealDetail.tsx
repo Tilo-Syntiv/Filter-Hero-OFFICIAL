@@ -220,8 +220,8 @@ function DetailBody({ id }: { id: string }) {
             <p className="mt-3 text-sm text-muted-foreground">No contact linked.</p>
           )}
           <p className="mt-5 border-t border-border pt-4 text-xs text-muted-foreground">
-            Email the shopper from your own inbox. The CRM never sends mail —
-            Resend owns receipts, Klaviyo owns marketing.
+            Email the shopper from your own inbox. The CRM never sends mail.
+            Resend owns receipts.
           </p>
         </aside>
       </div>

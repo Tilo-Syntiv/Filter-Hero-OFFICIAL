@@ -3,7 +3,6 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 import { recordLeadInCrm } from "./crm/intake";
 import { dataFile } from "./data-store";
-import { syncContactToKlaviyo } from "./klaviyo";
 import { sendContactReceipt, sendLeadAlert } from "./mailer";
 import { resendSendsShopperReceipt } from "../shared/email-channels";
 import { isHoneypotTripped, shouldEnforceTurnstile, verifyTurnstile } from "./security";
@@ -78,11 +77,6 @@ export async function submitContact(raw: unknown, ip?: string) {
     }
   } catch (err) {
     console.error("[contact] crm failed after save", err);
-  }
-  try {
-    await syncContactToKlaviyo(lead);
-  } catch (err) {
-    console.error("[contact] klaviyo failed after save", err);
   }
   try {
     const staff = await sendLeadAlert(lead);

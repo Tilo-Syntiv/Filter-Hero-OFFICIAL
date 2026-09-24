@@ -7,8 +7,6 @@ import {
   contactLimiter,
   isHoneypotTripped,
   publicError,
-  sanitizeEventProperties,
-  sanitizeIdentifyProperties,
   verifyTurnstile,
 } from "../server/security.ts";
 import {
@@ -227,54 +225,6 @@ async function main() {
   assert(!missing.ok, "a configured Turnstile rejects a missing token");
   delete process.env.TURNSTILE_SECRET_KEY;
 
-  // --- Property allowlists (FH-175) ----------------------------------------
-
-  const poisoned = sanitizeIdentifyProperties({
-    house_type: "suburban",
-    change_interval_days: 90,
-    preferred_merv: "13",
-    // The attack: set a replenish trigger on someone else's profile.
-    next_change_date: "2026-01-01",
-    $email: "victim@example.com",
-  }) as Record<string, unknown> | undefined;
-  assert(poisoned, "legitimate identify properties survive");
-  assert(
-    !("next_change_date" in poisoned!),
-    "next_change_date must never come from the browser",
-  );
-  assert(!("$email" in poisoned!), "unknown identify properties are dropped");
-  assert(
-    Object.keys(poisoned!).length === 3,
-    "exactly the three allowlisted identify properties remain",
-  );
-  assert(
-    sanitizeIdentifyProperties({ next_change_date: "2026-01-01" }) === undefined,
-    "a payload of only forbidden keys yields nothing",
-  );
-  assert(sanitizeIdentifyProperties("nope") === undefined, "non-objects are dropped");
-
-  assert(
-    sanitizeEventProperties({ SKU: "20x25x1-13", Quantity: 6 }),
-    "ordinary event properties pass",
-  );
-  const tooManyKeys = Object.fromEntries(
-    Array.from({ length: 60 }, (_, index) => [`k${index}`, index]),
-  );
-  assert(sanitizeEventProperties(tooManyKeys) === undefined, "key count is bounded");
-  assert(
-    sanitizeEventProperties({ blob: "x".repeat(20_000) }) === undefined,
-    "payload size is bounded",
-  );
-  const cartEvent = sanitizeEventProperties(
-    JSON.parse(
-      '{"$value":19.99,"$email":"victim@example.com","SKU":"20x25x1-13","__proto__":{"admin":true}}',
-    ),
-  ) as Record<string, unknown> | undefined;
-  assert(cartEvent && cartEvent.$value === 19.99, "Klaviyo $value is kept");
-  assert(cartEvent && cartEvent.SKU === "20x25x1-13", "ordinary event keys survive");
-  assert(cartEvent && !("$email" in cartEvent), "event $email is dropped");
-  assert(cartEvent && !("admin" in cartEvent), "prototype keys cannot land on the payload");
-
   // --- Error shaping --------------------------------------------------------
 
   const leaky = publicError(new Error("Stripe key sk_live_abc is invalid"), {
@@ -296,8 +246,8 @@ async function main() {
 
   assert(CRM_SENDS_MAIL === false, "CRM is not a sender");
   assert(EMAIL_OWNER.order_confirmation === "resend", "Resend owns the receipt");
-  assert(EMAIL_OWNER.welcome === "klaviyo", "Klaviyo owns marketing");
-  assert(EMAIL_OWNER.replenish === "klaviyo", "Klaviyo owns replenish");
+  assert(EMAIL_OWNER.welcome === "none", "marketing welcome has no sender");
+  assert(EMAIL_OWNER.replenish === "none", "replenish has no sender");
   assert(EMAIL_OWNER.clock_cadence === "none", "clock save is not a CRM or mailer event");
   for (const file of [
     "server/crm/routes.ts",
@@ -315,7 +265,7 @@ async function main() {
     );
     assert(
       !/from\s+["'].*klaviyo["']/.test(source),
-      `${file} must not import Klaviyo — events stay in server/klaviyo.ts`,
+      `${file} must not import Klaviyo`,
     );
     assert(
       !/from\s+["']resend["']/.test(source),

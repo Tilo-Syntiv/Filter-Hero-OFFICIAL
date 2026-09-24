@@ -92,24 +92,17 @@ async function checkLiveTax() {
     );
   }
   assert(!listed.health.shop.conflict, "sandbox/test must not post checkout events to filterhero.net");
-  assert(!listed.health.klaviyo.conflict, "sandbox must not host the Klaviyo native webhook");
+  assert(!listed.health.klaviyo.present, "this Stripe key must not host a Klaviyo webhook");
   if (listed.health.shop.present) {
     console.log("Fulfillment webhook: https://filterhero.net/api/stripe/webhook (enabled)");
   } else if (listed.livemode && listed.accountId === FILTER_HERO_ACCOUNT_ID) {
     console.log("No enabled Dashboard webhook to /api/stripe/webhook.");
-    console.log("Paid Checkout will not write orders or sync Klaviyo / CRM / accounts.");
+    console.log("Paid Checkout will not write orders or sync CRM / accounts.");
     console.log("Run: pnpm setup:stripe-webhook");
   } else {
     console.log("No production fulfillment webhook on this test key (use stripe listen).");
   }
-  if (listed.health.klaviyo.present) {
-    console.log("Klaviyo Stripe webhook: https://a.klaviyo.com/api/webhook/integration/stripe?c=VnVNmQ");
-  } else if (listed.accountId === FILTER_HERO_ACCOUNT_ID) {
-    console.log("No enabled Klaviyo charge/invoice webhook. Run: pnpm setup:klaviyo-stripe");
-  } else {
-    console.log(`Klaviyo native webhook stays on FILTER HERO ${FILTER_HERO_ACCOUNT_ID}.`);
-  }
-  console.log("See docs/STRIPE-BOOKS.md and docs/KLAVIYO.md");
+  console.log("See docs/STRIPE-BOOKS.md.");
 }
 
 void checkLiveTax();

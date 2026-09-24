@@ -14,7 +14,97 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-367**
+Next id: **FH-374**
+
+---
+
+### FH-373 — Constant Contact callback was missing on the live shop
+- **Status:** mitigated
+- **Area:** other
+- **Symptom:** Admin Connect could not finish. `GET /api/constant-contact/oauth/callback` on filterhero.net was 404, so Constant Contact had nowhere to return the login. Keys were already on Railway and the API key was accepted. No refresh token was stored, so the account stayed unauthorized.
+- **Do NOT:** `railway up` a dirty working tree over this service. Do not point the Railway source at `Tilo-Syntiv/FILTER-HERO`. Do not send welcome, abandon, or replenish from Constant Contact. Shopper receipts stay on Resend. Do not put the client secret in a `VITE_` var.
+- **Do:** Production source is `Tilo-Syntiv/Filter-Hero-OFFICIAL` `main`. Callback is `https://filterhero.net/api/constant-contact/oauth/callback`. A bare hit redirects to `/admin/settings?constantcontact=csrf`. Staff finishes the account from Settings → Connect, signed in as the Constant Contact user that owns the FILTER HERO app. Tokens stay in `DATA_DIR/constant-contact-oauth.json`.
+- **Files:** `server/constant-contact/routes.ts`, `server/constant-contact/oauth.ts`, `server/index.ts`, `client/src/pages/admin/Settings.tsx`
+- **Verify:** `pnpm connect:constant-contact` prints “client accepted” and the production redirect. `GET https://filterhero.net/api/constant-contact/oauth/callback` is 302 to the settings page. After Connect, Settings shows “Account authorized” and the organization name.
+- **Added:** 2026-09-24
+
+---
+
+### FH-372 — Klaviyo identify and track leftovers were still in the shop
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** After the uninstall, unused identify/track sanitizers and limiters, empty tracking fields, and smoke checks for the old 400 codes were still in the live tree.
+- **Do NOT:** Restore `sanitizeIdentifyProperties`, `sanitizeEventProperties`, `identifyLimiter`, `trackLimiter`, or `catalogExternalId` without restoring the archived routes. Do not expect `POST /api/identify` or `POST /api/track` to return `identify_failed` / `track_failed`.
+- **Do:** Those routes stay `404` `not_found`. An enabled `a.klaviyo.com` Stripe webhook is still a conflict. Cart email still migrates `fh_klaviyo_email` once. The archive stays.
+- **Files:** `server/security.ts`, `server/admin/data.ts`, `shared/products.ts`, `shared/email-channels.ts`, `shared/stripe-accounts.ts`, `scripts/smoke-site.ts`, `scripts/verify-crm.ts`, `scripts/verify-security.ts`
+- **Verify:** `pnpm verify:crm` and `pnpm verify:security`
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-371 — Cart follows live Filter King stock automatically
+- **Status:** fixed
+- **Area:** catalog
+- **Symptom:** Add to cart was gated by the Model Pricing sheet (~293). Filter King stock (~315) only lived in a manual `pnpm sync:filterking` file. Stock could drift until someone re-ran the script. API-only parent models could not check out.
+- **Do NOT:** Gate the cart on the sheet alone. Do not set `VITE_FULL_CATALOG=true` (that sells the 9,958 archive). Do not put API `unit_price` on PDP, cart, Checkout, or JSON-LD. Do not scrape filterking.com. Do not add a second Railway service or Redis for sync.
+- **Do:** Cart allowlist = live `GET /api/v1/get-all-parent-models`. Express `startFilterKingStockSync()` pulls on boot and every 15 minutes into `DATA_DIR/filterking-stock.json`. Client overlays via `GET /api/catalog/stock`. Checkout rejects lines not in the live parent-model set. Sheet Sale Price is preferred wholesale; API `unit_price` is server-only cost fallback. Shopper tickets stay Filtrete. Committed `shared/filterking-catalog.json` is bootstrap (no prices).
+- **Files:** `server/filterking-stock.ts`, `server/filterking.ts`, `server/index.ts`, `server/stripe.ts`, `shared/stock.ts`, `shared/products.ts`, `shared/pricing/engine.ts`, `client/src/contexts/StockContext.tsx`, `client/src/App.tsx`, `.cursor/rules/catalog.mdc`
+- **Verify:** Boot API → `/api/catalog/stock` returns ~294 keys and no `unit_price`. `pnpm verify:store` — sellableCount ~294, `14x24x1` MERV 13 in stock (sheet-missing), `14x25x1` MERV 11 still out. Admin Catalog shows stock sync time.
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-370 — Klaviyo keys, webhook, and CRM column were still installed
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** After FH-369 the shop no longer called Klaviyo, but Railway still had `KLAVIYO_*`, FILTER HERO test mode still posted charges to `a.klaviyo.com`, and `crm_contacts.klaviyo_profile_id` was still selected.
+- **Do NOT:** Set `KLAVIYO_PRIVATE_API_KEY`, `KLAVIYO_PUBLIC_API_KEY`, or `KLAVIYO_LIST_ID` on Railway. Do not recreate `https://a.klaviyo.com/api/webhook/integration/stripe`. Do not add `klaviyo_profile_id` back to CRM selects. Do not import `archive/klaviyo`.
+- **Do:** Stripe scrub deletes every `a.klaviyo.com` webhook. Marketing stays `none`. Cart email uses `fh_cart_email`.
+- **Files:** `server/stripe-webhooks.ts`, `shared/stripe-accounts.ts`, `server/crm/contacts.ts`, `server/crm/schema.ts`, `supabase/migrations/0007_drop_klaviyo_profile_id.sql`, `.env.example`
+- **Verify:** `pnpm verify:crm`. Railway production variables have no `KLAVIYO_` names. FILTER HERO test webhook `we_1UGgz8QEENEs0QmwgI31tz6f` is `disabled`. Sandbox `acct_1U9bqs790NnFGDLv` has no webhooks.
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-369 — Klaviyo parked out of the running shop
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** Welcome, abandon, replenish, win-back, onsite identify, the catalog feed, and the Stripe charge/invoice helper were still wired. Those events could still post after marketing was taken off the shop.
+- **Do NOT:** Import `archive/klaviyo` from `server/`, `client/`, or `shared/`. Do not restore `/api/identify`, `/api/track`, or `/api/klaviyo/*`. Do not send welcome, abandon, replenish, or a second receipt from Resend. Do not drop `contacts.klaviyo_profile_id`. Do not delete the live Klaviyo account, list `RiTKiS`, or `klv.filterhero.net`. Do not create the Klaviyo Stripe webhook from this repo. Sandbox must not host that URL.
+- **Do:** Stripe owns the payment receipt. Resend owns order confirmation, quote/support receipts, and the staff lead alert. Marketing messages are `none` in `shared/email-channels.ts`. Cart email still prefills from `fh_klaviyo_email`. Restore only from `archive/klaviyo/README.md`.
+- **Files:** `archive/klaviyo/`, `shared/email-channels.ts`, `server/index.ts`, `server/stripe.ts`, `server/contact.ts`, `client/src/App.tsx`, `scripts/lib/catalog-sync.ts`
+- **Verify:** `pnpm check`. `pnpm verify:crm`. `pnpm verify:security`. `pnpm verify:json`. `GET /api/klaviyo/config` is 404.
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-368 — Hidden mark on 19x26x1 parent model missed the Filter King join
+- **Status:** fixed
+- **Area:** catalog
+- **Symptom:** `AF19x26x1-M8` was the only sellable parent model that did not match `GET /api/v1/get-all-parent-models`. The sheet cell started with U+200E (left-to-right mark), so the wholesale SKU and `parentModel` did not equal the API `parent_model`.
+- **Do NOT:** Hand-edit `sellable-skus.json`. Do not copy API `unit_price` onto the sheet as a shopper ticket.
+- **Do:** Model Pricing parent models are plain ASCII. The importer strips U+200B–U+200F and BOM before writing `parentModel`. `19x26x1` MERV 8 stays `AF19x26x1-M8`.
+- **Files:** `shared/pricing/model-pricing.csv`, `scripts/build-sellable-skus.ts`, `shared/sellable-skus.json`
+- **Verify:** `pnpm exec tsx scripts/build-sellable-skus.ts` still writes 293 SKUs / 153 sizes. `parentModel` for `19x26x1` is `AF19x26x1-M8` with no non-ASCII character.
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-367 — Official and FILTER-HERO were still wired as one project
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** This checkout kept a git remote named `source` on `Tilo-Syntiv/FILTER-HERO`, and `docs/RAILWAY-FULL-BUILD.md` still told a rebuild to connect that repo. Agents could push, merge, or redeploy the other GitHub project as if it were this shop.
+- **Do NOT:** Add `FILTER-HERO` back as `origin`, `source`, or an upstream. Do not merge, cherry-pick, or `railway up` from that repo. Do not retarget the Railway service at `Tilo-Syntiv/FILTER-HERO`.
+- **Do:** This shop is `Tilo-Syntiv/Filter-Hero-OFFICIAL` only. Remote is `origin`. Production GitHub source stays Official `main` on the existing Railway service named `FILTER-HERO` (FH-351). `filter-hero-pro` stays the investor-deck repo.
+- **Files:** `.cursor/rules/repo-boundary.mdc`, `.cursor/rules/identity.mdc`, `README.md`, `RULES AND SKILLS.md`, `docs/RAILWAY-FULL-BUILD.md`
+- **Verify:** `git remote -v` lists only `origin` → `https://github.com/Tilo-Syntiv/Filter-Hero-OFFICIAL`. Railway source repo is `Tilo-Syntiv/Filter-Hero-OFFICIAL`.
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
 
 ---
 
@@ -748,15 +838,16 @@ Next id: **FH-367**
 ---
 
 ### FH-326 — Filter King API credentials are not installed
-- **Status:** open
+- **Status:** fixed
 - **Area:** catalog
 - **Official log was:** FH-230
 - **Symptom:** Finder archive still comes from the committed `filter-catalog.json` size list (9958 sizes). Railway and local `.env` have no `FILTERKING_CLIENT_ID` / `FILTERKING_CLIENT_SECRET`. `pnpm sync:filterking` exits without writing `shared/filterking-catalog.json`.
-- **Do NOT:** Scrape filterking.com. Do not copy API `unit_price` onto PDP, cart, Checkout, JSON-LD, or Klaviyo. Do not prefix these keys with `VITE_`.
-- **Do:** Apply at `https://filterking.com/api-onboarding`. Put server-only `FILTERKING_CLIENT_ID`, `FILTERKING_CLIENT_SECRET`, `FILTERKING_API_BASE=https://filterking.com` on Railway and local env. Then `pnpm sync:filterking` and persist `parent_model` + `filterKingUrl` on every size × MERV. Until then, constructed PDP URLs still apply: `https://filterking.com/air-filter-sizes-{size}-merv-{8|11|13}`.
-- **Files:** `server/filterking.ts`, `scripts/sync-filterking-catalog.ts`, `shared/filterking.ts`, `.env.example`
-- **Verify:** `GET /api/v1/get-all-parent-models` with a bearer token returns `sku_items[]`. `shared/filterking-catalog.json` has no `unit_price` / `cost` column.
+- **Do NOT:** Scrape filterking.com. Do not copy API `unit_price` onto PDP, cart, Checkout, JSON-LD, or Klaviyo. Do not prefix these keys with `VITE_`. Do not replace `filter-catalog.json` with the stock rows for product IDs. Do not place a Filter King wholesale order from catalog sync. Do not render `filterKingUrl` on the storefront.
+- **Do:** Server-only credentials on local `.env` and Railway `FILTER-HERO`. Cart follows live stock (FH-369). `pnpm sync:filterking` refreshes bootstrap `shared/filterking-catalog.json` (no `unit_price`). Express auto-syncs to `DATA_DIR`. Finder archive stays for IDs and off-stock quotes.
+- **Files:** `server/filterking.ts`, `server/filterking-stock.ts`, `scripts/sync-filterking-catalog.ts`, `shared/filterking.ts`, `shared/filterking-catalog.json`, `.env.example`
+- **Verify:** `POST /oauth/token` returns a bearer. `pnpm sync:filterking` writes ~315 rows with no `unit_price`. `/api/catalog/stock` returns keys after boot.
 - **Added:** 2026-09-20
+- **Fixed:** 2026-09-24
 
 ---
 

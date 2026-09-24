@@ -12,6 +12,13 @@ import {
   unitPriceForDelivery,
   type DeliveryMode,
 } from "./delivery";
+import {
+  isStockKeyActive,
+  onStockChange,
+  stockFilterKingUrl,
+  stockParentModel,
+  stockSizeSlugs,
+} from "./stock";
 
 export {
   FILTRETE_1INCH_QTY1,
@@ -261,13 +268,14 @@ function envFlag(...keys: string[]): boolean | undefined {
 }
 
 /**
- * Checkout allowlist. Must stay false: cart = Model Pricing XLS.
- * Finder still uses the archived size universe; off-XLS sizes quote, not Stripe.
+ * Must stay false so we never sell the full 9,958-size archive.
+ * Cart allowlist is live Filter King stock (shared/stock), not the Model Pricing sheet.
+ * Finder still uses the archived size universe; off-stock sizes quote, not Stripe.
  */
 export const FULL_CATALOG = envFlag("VITE_FULL_CATALOG", "FULL_CATALOG") === true;
 
 /**
- * When true, the shop only lists size × MERV lines on the contractor sheet.
+ * When true (FULL_CATALOG false), checkout is gated by Filter King stock keys.
  * Inverse of FULL_CATALOG. Do not delete filter-catalog.json or sellable-skus.json.
  */
 export const SELLABLE_ONLY = !FULL_CATALOG;
@@ -294,15 +302,7 @@ export function catalogStripeProductId(productId: number): string {
   return `prod_fh_${productId}`;
 }
 
-/** Klaviyo custom-catalog external_id. Same as the shop product id. */
-export function catalogExternalId(productId: number): string {
-  return String(productId);
-}
-
 const SELLABLE_ROWS = SELLABLE_FILE.skus as SellableSkuRow[];
-const SELLABLE_SKU_KEYS = new Set(
-  SELLABLE_ROWS.map((row) => sellableKey(row.size, row.merv, Boolean(row.isCarbon))),
-);
 const WHOLESALE_SKU_BY_KEY = new Map(
   SELLABLE_ROWS.map((row) => [
     sellableKey(row.size, row.merv, Boolean(row.isCarbon)),
@@ -314,10 +314,6 @@ const FILTER_KING_URL_BY_KEY = new Map(
     sellableKey(row.size, row.merv, Boolean(row.isCarbon)),
     row.filterKingUrl || filterKingPdpUrl(row.size, row.merv, Boolean(row.isCarbon)),
   ]),
-);
-const SELLABLE_SIZE_KEYS = new Set(SELLABLE_ROWS.map((row) => row.size.toLowerCase()));
-const SELLABLE_MERV_KEYS = new Set<MervTypeKey>(
-  SELLABLE_ROWS.map((row) => (row.isCarbon ? "carbon" : (String(row.merv) as MervTypeKey))),
 );
 const SIZE_ACTUALS = new Map<string, Pick<FilterSize, "actualWidth" | "actualLength" | "actualDepth">>();
 for (const row of SELLABLE_ROWS) {
@@ -343,7 +339,7 @@ export function isSkuSellable(
   isCarbon = false,
 ): boolean {
   if (!SELLABLE_ONLY) return true;
-  return SELLABLE_SKU_KEYS.has(sellableKey(size, merv, isCarbon));
+  return isStockKeyActive(size, merv, isCarbon);
 }
 
 export function wholesaleSkuFor(
@@ -351,7 +347,10 @@ export function wholesaleSkuFor(
   merv: MervRating,
   isCarbon = false,
 ): string | undefined {
-  return WHOLESALE_SKU_BY_KEY.get(sellableKey(size, merv, isCarbon));
+  return (
+    WHOLESALE_SKU_BY_KEY.get(sellableKey(size, merv, isCarbon)) ||
+    stockParentModel(size, merv, isCarbon)
+  );
 }
 
 export function parentModelFor(
@@ -369,18 +368,22 @@ export function filterKingUrlFor(
 ): string {
   return (
     FILTER_KING_URL_BY_KEY.get(sellableKey(size, merv, isCarbon)) ||
+    stockFilterKingUrl(size, merv, isCarbon) ||
     filterKingPdpUrl(size, merv, isCarbon)
   );
 }
 
 export function isSizeShoppable(slug: string): boolean {
   if (!SELLABLE_ONLY) return true;
-  return SELLABLE_SIZE_KEYS.has(slug.toLowerCase());
+  const needle = slug.toLowerCase();
+  return stockSizeSlugs().includes(needle);
 }
 
 export function isMervKeyOnSale(key: MervTypeKey): boolean {
   if (!SELLABLE_ONLY) return true;
-  return SELLABLE_MERV_KEYS.has(key);
+  return MERV_TYPES.some(
+    (t) => t.key === key && stockSizeSlugs().some((size) => isSkuSellable(size, t.merv, t.isCarbon)),
+  );
 }
 
 function withSheetActuals(meta: FilterSize): FilterSize {
@@ -388,19 +391,34 @@ function withSheetActuals(meta: FilterSize): FilterSize {
   return actuals ? { ...meta, ...actuals } : meta;
 }
 
-/** Archived Filter King size universe. Keep this for when more wholesale lands. */
+/** Archived Filter King size universe. Keep this for stable product IDs and finder quote routing. */
 export const ALL_FILTER_SIZES: FilterSize[] = uniqueSizes(
   (FILTER_CATALOG as Array<[number, number, number]>).map(([w, l, d]) => size(w, l, d)),
 ).map(withSheetActuals);
 
-/** Live shop catalog. Each slug maps to `/sizes/{slug}`. */
-export const FILTER_SIZES: FilterSize[] = SELLABLE_ONLY
-  ? ALL_FILTER_SIZES.filter((s) => isSizeShoppable(s.slug))
-  : ALL_FILTER_SIZES;
-
 const ALL_SIZE_INDEX = new Map(
   ALL_FILTER_SIZES.map((s, i) => [s.slug.toLowerCase(), i]),
 );
+
+function shopSizesFromStock(): FilterSize[] {
+  if (!SELLABLE_ONLY) return [...ALL_FILTER_SIZES];
+  const allowed = new Set(stockSizeSlugs());
+  return ALL_FILTER_SIZES.filter((s) => allowed.has(s.slug.toLowerCase()));
+}
+
+/**
+ * Live shop catalog. Mutated in place when Filter King stock refreshes so
+ * existing imports keep a live reference. Each slug maps to `/sizes/{slug}`.
+ */
+export const FILTER_SIZES: FilterSize[] = shopSizesFromStock();
+
+export function rebuildShopCatalogFromStock(): void {
+  const next = shopSizesFromStock();
+  FILTER_SIZES.length = 0;
+  FILTER_SIZES.push(...next);
+}
+
+onStockChange(rebuildShopCatalogFromStock);
 
 function widthsFrom(list: FilterSize[]): number[] {
   return Array.from(new Set(list.map((s) => s.width))).sort((a, b) => a - b);
@@ -531,7 +549,7 @@ export function mervTypesForDisplay(): MervTypeInfo[] {
   );
 }
 
-/** MERV chips a shopper can buy for this size. Off-sheet ratings stay in MERV_TYPES when SELLABLE_ONLY. */
+/** MERV chips a shopper can buy for this size. Off-stock ratings stay hidden when SELLABLE_ONLY. */
 export function mervTypesForSize(slug: string): MervTypeInfo[] {
   return mervTypesForDisplay().filter((t) => isSkuSellable(slug, t.merv, t.isCarbon));
 }
@@ -622,12 +640,15 @@ export function findProductVariant(
   );
 }
 
-/** Contractor-sheet SKUs for the Klaviyo catalog feed (not the full archive). */
+/** In-stock SKUs from live Filter King stock (checkout + catalog mirrors). */
 export function sellableSheetProducts(): Product[] {
   const products: Product[] = [];
-  for (const row of SELLABLE_ROWS) {
-    const product = findProductVariant(row.size, row.merv, Boolean(row.isCarbon));
-    if (product) products.push(product);
+  for (const sizeMeta of FILTER_SIZES) {
+    for (const type of MERV_TYPES) {
+      if (!isSkuSellable(sizeMeta.slug, type.merv, type.isCarbon)) continue;
+      const product = findProductVariant(sizeMeta.slug, type.merv, type.isCarbon);
+      if (product?.inStock) products.push(product);
+    }
   }
   return products;
 }

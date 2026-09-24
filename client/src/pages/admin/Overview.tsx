@@ -111,7 +111,6 @@ function OverviewBody() {
                 ok={status.account.enabled && status.account.reachable}
                 label="Accounts"
               />
-              <StatusDot ok={status.klaviyo.enabled} label="Klaviyo" />
               <StatusDot ok={status.stripe.configured} label="Stripe" />
               <StatusDot ok={status.resend.configured} label="Resend" />
             </div>

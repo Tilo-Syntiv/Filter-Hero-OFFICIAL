@@ -1,0 +1,11 @@
+export const BRAND_NAME = "Filter Hero";
+export const BRAND_EMAIL = "info@filterhero.net";
+export const BRAND_TAGLINE = "Find your exact filter size in seconds.";
+export const SITE_ORIGIN = "https://filterhero.net";
+export const BRAND_NAVY = "#203868";
+export const BRAND_BURGUNDY = "#7F2328";
+export const STRIPE_LIVE_ACCOUNT = "acct_1U9bqlQEENEs0Qmw";
+export const KLAVIYO_SITE_ID = "VnVNmQ";
+export const KLAVIYO_LIST_ID_DEFAULT = "RiTKiS";
+export const RESEND_FROM_DEFAULT = `${BRAND_NAME} <${BRAND_EMAIL}>`;
+export const EMAIL_LOGO_URL = `${SITE_ORIGIN}/logo.png`;

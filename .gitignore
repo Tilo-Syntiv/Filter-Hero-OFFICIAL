@@ -132,6 +132,7 @@ client/public/__manus__/
 # Runtime data (orders, leads, Intuit tokens)
 server/data/leads.json
 server/data/orders.json
+server/data/filterking-stock.json
 server/data/intuit-oauth.json
 server/data/intuit-oauth-pending.json
 server/data/constant-contact-oauth.json

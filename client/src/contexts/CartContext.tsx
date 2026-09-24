@@ -17,7 +17,7 @@ import {
   type DeliveryMode,
   type Product,
 } from "@shared/products";
-import { trackAddedToCart } from "@/lib/klaviyo";
+import { useStock } from "@/contexts/StockContext";
 
 export type CartItem = {
   /** productId + delivery — same SKU can be once and on a schedule */
@@ -151,6 +151,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const { count: stockCount, ready: stockReady } = useStock();
 
   useEffect(() => {
     const { items: next, dropped } = loadCart();
@@ -164,6 +165,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
       );
     }
   }, []);
+
+  useEffect(() => {
+    if (!hydrated || !stockReady) return;
+    setItems((prev) => {
+      const next = prev.filter((item) => {
+        const product = getProductById(item.productId);
+        return Boolean(product?.inStock);
+      });
+      if (next.length === prev.length) return prev;
+      const dropped = prev.length - next.length;
+      toast.info(
+        dropped === 1
+          ? "One item in your cart is no longer available and was removed."
+          : `${dropped} items in your cart are no longer available and were removed.`,
+      );
+      return next;
+    });
+  }, [hydrated, stockReady, stockCount]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -183,7 +202,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const next = existing
           ? prev.map((i) => (i.lineKey === key ? line : i))
           : [...prev, line];
-        trackAddedToCart(product, qty, next);
         return next;
       });
       setIsOpen(true);

@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { fetchAllParentModels, filterKingConfigured } from "../server/filterking.ts";
 import { filterKingPdpUrl } from "../shared/filterking.ts";
+import { normalizeParentModel, normalizeStockSize, parseFkMerv } from "../shared/stock.ts";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = path.join(ROOT, "shared", "filterking-catalog.json");
@@ -25,30 +26,36 @@ type Row = {
   filterKingUrl: string;
 };
 
-function mervKey(raw: string): { merv: 8 | 11 | 13; isCarbon: boolean } | null {
-  const v = raw.toLowerCase();
-  if (v.includes("carbon") || v.includes("odor")) return { merv: 8, isCarbon: true };
-  if (v.includes("13")) return { merv: 13, isCarbon: false };
-  if (v.includes("11")) return { merv: 11, isCarbon: false };
-  if (v.includes("8")) return { merv: 8, isCarbon: false };
-  return null;
-}
-
 const items = await fetchAllParentModels();
-const rows: Row[] = [];
+const byKey = new Map<string, Row>();
 for (const item of items) {
-  const parent = (item.parent_model || "").trim();
-  const size = (item.size || "").trim().toLowerCase().replace(/\s/g, "");
-  const parsed = mervKey(String(item.merv || ""));
+  const parent = normalizeParentModel(item.parent_model || "");
+  const size = normalizeStockSize(item.size || "");
+  const parsed = parseFkMerv(String(item.merv || ""));
   if (!parent || !size || !parsed) continue;
-  rows.push({
+  const merv = parsed.isCarbon ? "carbon" : String(parsed.merv);
+  const key = `${size}|${merv}`;
+  const next: Row = {
     parent_model: parent,
     size,
-    merv: parsed.isCarbon ? "carbon" : String(parsed.merv),
+    merv,
     actual_size: item.actual_size,
     filterKingUrl: filterKingPdpUrl(size, parsed.merv, parsed.isCarbon),
+  };
+  const prev = byKey.get(key);
+  if (!prev) {
+    byKey.set(key, next);
+    continue;
+  }
+  const prevExact = /A-M|\dA-M/i.test(prev.parent_model);
+  const nextExact = /A-M|\dA-M/i.test(next.parent_model);
+  byKey.set(key, {
+    ...prev,
+    parent_model: prevExact && !nextExact ? next.parent_model : prev.parent_model,
+    actual_size: prev.actual_size || next.actual_size,
   });
 }
+const rows = Array.from(byKey.values());
 
 fs.writeFileSync(
   OUT,

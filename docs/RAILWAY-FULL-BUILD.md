@@ -60,7 +60,7 @@ Shopper
 | Service hostname | `filter-hero-production.up.railway.app` (`ACTIVE`) |
 | Railway CNAME target | `ckury9c8.up.railway.app` |
 | Apex A (observed) | `69.46.46.70` |
-| GitHub source | `Tilo-Syntiv/FILTER-HERO` |
+| GitHub source | `Tilo-Syntiv/Filter-Hero-OFFICIAL` `main` (FH-351, FH-367). `Tilo-Syntiv/FILTER-HERO` is a different GitHub project. |
 | Latest SUCCESS (as of snapshot) | deploy `53f7af54-dc5b-4d5e-ac06-417e1f14d628` (2026-09-17 03:29 UTC), Cursor `railway up`, **no commit SHA** |
 | Builder | **Railpack** `V3` (not Nixpacks, not Dockerfile) |
 | Runtime | `V2` |
@@ -201,13 +201,13 @@ Catalog SKUs, prices, and most homepage copy **ship in git** (`shared/*.json`, `
 
 ## 6. GitHub autodeploy vs `railway up`
 
-Source is repo `Tilo-Syntiv/FILTER-HERO`. `source.branch` is **not** pinned (FH-304).
+Production GitHub source is `Tilo-Syntiv/Filter-Hero-OFFICIAL`, branch `main` (FH-351, FH-367). `Tilo-Syntiv/FILTER-HERO` is a different repository. Do not connect it to this service.
 
-That is the most dangerous wiring in this install:
+Two deploy paths can still overwrite each other:
 
 - A push to any connected branch can replace production.
 - `railway up` from a dirty local tree (the 2026-09-17 SUCCESS `53f7af54`) ships the working directory **with no commit SHA**. GitHub can then roll it back or forward without anyone noticing.
-- Feature branch `design/family-section-blue` is historically ahead of `origin/main` and contains scrape/video files that are not the shop.
+- Branches such as `design/family-section-blue` live on `Tilo-Syntiv/FILTER-HERO`. They are not branches of this shop.
 
 **The rule that survived every rollback:**
 
@@ -424,7 +424,7 @@ Do this only for a **new** Filter Hero. The live shop already exists; creating a
 
 1. **Account.** `railway login` as `info@filterhero.net`. Workspace is the personal “TILO DOMINGUEZ's Projects” workspace.
 2. **Project.** One project. Live name is the generated `superb-expression`. One environment: `production`.
-3. **Service.** Empty service named `FILTER-HERO`. Connect GitHub `Tilo-Syntiv/FILTER-HERO`. **Pin branch `main`.** Root directory empty (repo root).
+3. **Service.** Empty service named `FILTER-HERO`. Connect GitHub `Tilo-Syntiv/Filter-Hero-OFFICIAL`. **Pin branch `main`.** Root directory empty (repo root). Do not connect `Tilo-Syntiv/FILTER-HERO`.
 4. **Builder.** Leave Railpack. No Dockerfile. No custom start command. `package.json` `build` / `start` are the contract.
 5. **Scale.** `railway scale us-east=1` → only `us-east4-eqdc4a`, one replica. Never add `ams` / `eu-west` on this plan (FH-182).
 6. **Volume.** Create `filter-hero-volume`, 500 MB, mount `/data`, same region as the replica. Set `DATA_DIR=/data`.
@@ -506,8 +506,8 @@ FILTER-HERO is Online and `/api/health` returns 200, but `deploy.healthcheckPath
 **FH-305 — Railway Stripe keys are FILTER HERO sandbox test, not live FILTER HERO**  
 Live `filterhero.net` Checkout uses Railway `sk_test_` / `pk_test_` from FILTER HERO sandbox (`acct_1U9bqs790NnFGDLv`). Fulfillment and Klaviyo OAuth belong on live FILTER HERO (`acct_1U9bqlQEENEs0Qmw`). Real cards cannot pay. Local `.env` staying sandbox is correct. Do not copy local `STRIPE_SECRET_KEY` onto Railway. Do not point sandbox endpoints at `/api/stripe/webhook`. Put `sk_live_` + `pk_live_` + `VITE_STRIPE_PUBLISHABLE_KEY` on Railway, rebuild so Vite bakes `VITE_`, then `pnpm setup:stripe-webhook` against the live key.
 
-**FH-304 — GitHub autodeploy and `railway up` both own FILTER-HERO**  
-Source is `Tilo-Syntiv/FILTER-HERO` with no `source.branch`. Latest SUCCESS is a Cursor `railway up` with no commit SHA. A later push or variable change can replace the CLI snapshot. Do not `railway up` a dirty feature branch. Pin `source.branch=main`. Deploy production only from `main`.
+**FH-304 — GitHub autodeploy and `railway up` both own FILTER-HERO** (mitigated; source corrected by FH-351 / FH-367)  
+Production source is `Tilo-Syntiv/Filter-Hero-OFFICIAL` `main`. `Tilo-Syntiv/FILTER-HERO` is a different GitHub project. Do not `railway up` a dirty feature branch. Deploy production only from Official `main`.
 
 **FH-303 — Railway FULL_CATALOG=true conflicts with the Model Pricing shop**  
 Local flags are `false` (Model Pricing SKUs). Railway has both `true` (archived size universe). Live catalog.json is still 299 because the 2026-09-17 CLI image baked the old allowlist. The next rebuild with current Railway vars would sell every archived size × MERV (FH-216 / FH-217 / FH-300). Set both flags `false` with `--skip-deploys`, then rebuild from `main`.

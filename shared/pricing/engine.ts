@@ -158,12 +158,24 @@ for (const row of (SELLABLE as { skus: SellableCostRow[] }).skus) {
   if (Number.isFinite(row.cost) && row.cost > 0) WHOLESALE_COST.set(key, row.cost);
 }
 
+/** Server-only: Filter King API unit_price when the sheet has no row. */
+let wholesaleCostFallback:
+  | ((size: string, merv: 8 | 11 | 13, isCarbon?: boolean) => number | undefined)
+  | null = null;
+
+export function setWholesaleCostFallback(
+  fn: ((size: string, merv: 8 | 11 | 13, isCarbon?: boolean) => number | undefined) | null,
+): void {
+  wholesaleCostFallback = fn;
+}
+
 export function wholesaleCostFor(
   size: string,
   merv: 8 | 11 | 13,
   isCarbon?: boolean,
 ): number | undefined {
-  return WHOLESALE_COST.get(`${normalizeSize(size)}|${isCarbon ? "carbon" : merv}`);
+  const key = `${normalizeSize(size)}|${isCarbon ? "carbon" : merv}`;
+  return WHOLESALE_COST.get(key) ?? wholesaleCostFallback?.(size, merv, isCarbon);
 }
 
 /** Raise a competitive unit so gross margin is at least MIN_GROSS_MARGIN. */

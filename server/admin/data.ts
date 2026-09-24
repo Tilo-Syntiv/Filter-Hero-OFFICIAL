@@ -11,12 +11,13 @@ import {
   sellableSheetProducts,
   wholesaleSkuFor,
 } from "../../shared/products";
+import { stockKeyCount, stockSyncedAt } from "../../shared/stock";
 import { mappedStripeProductId, stripeKeyIsLive } from "../../shared/stripe-catalog";
 import { HVAC_BRAND_LIST } from "../../shared/hvac-brands";
-import { CLIENT_METRICS } from "../klaviyo";
 import { listAllLeads, type StoredLead } from "../contact";
 import { dataFile } from "../data-store";
 import { getAccountDb, getDb } from "../db";
+import { stockSyncedAtLive } from "../filterking-stock";
 import { listAllOrders, type StoredOrder } from "../stripe";
 import { loadSiteConfig } from "./config";
 import { intuitConfigFromEnv, intuitPublicStatus } from "../intuit/oauth";
@@ -388,7 +389,7 @@ export async function listAdminContacts(opts: { q?: string; limit?: number } = {
   const { data, error } = await db
     .from("crm_contacts")
     .select(
-      "id, email, first_name, last_name, phone, klaviyo_profile_id, stripe_customer_id, created_at, updated_at",
+      "id, email, first_name, last_name, phone, stripe_customer_id, created_at, updated_at",
     )
     .order("updated_at", { ascending: false })
     .limit(opts.limit ?? 200);
@@ -406,7 +407,6 @@ export type AdminContact = {
   first_name: string | null;
   last_name: string | null;
   phone: string | null;
-  klaviyo_profile_id: string | null;
   stripe_customer_id: string | null;
   created_at: string;
   updated_at: string;
@@ -456,6 +456,8 @@ export function catalogSnapshot(opts: { q?: string; limit?: number } = {}) {
     sizeCount: FILTER_SIZES.length,
     archivedSizeCount: ALL_FILTER_SIZES.length,
     skuCount: products.length,
+    stockCount: stockKeyCount(),
+    stockSyncedAt: stockSyncedAtLive() || stockSyncedAt(),
     thicknesses: [...THICKNESSES],
     merv: MERV_TYPES.map((type) => ({
       key: type.key,
@@ -587,15 +589,13 @@ export function securitySnapshot() {
     rateLimits: [
       { name: "Contact", window: "15 min", max: 5 },
       { name: "Checkout", window: "15 min", max: 10 },
-      { name: "Identify", window: "1 min", max: 20 },
-      { name: "Track", window: "1 min", max: 40 },
       { name: "CRM", window: "1 min", max: 60 },
       { name: "Admin", window: "1 min", max: 80 },
     ],
     rls: "deny-by-default — browser never queries Postgres",
     notes: [
       "Admin access is STAFF_EMAILS plus a verified Supabase session.",
-      "The CRM never sends email and never writes Klaviyo.",
+      "The CRM never sends email.",
       "Adding an admin inbox means editing STAFF_EMAILS and restarting the server.",
     ],
   };
@@ -620,9 +620,6 @@ export function settingsSnapshot() {
         process.env.STRIPE_PUBLISHABLE_KEY || process.env.VITE_STRIPE_PUBLISHABLE_KEY,
       ),
       stripeWebhook: present(process.env.STRIPE_WEBHOOK_SECRET),
-      klaviyoPrivate: present(process.env.KLAVIYO_PRIVATE_API_KEY),
-      klaviyoPublic: present(process.env.KLAVIYO_PUBLIC_API_KEY),
-      klaviyoList: present(process.env.KLAVIYO_LIST_ID),
       resend: present(process.env.RESEND_API_KEY),
       resendFrom: (process.env.RESEND_FROM || "").trim() || null,
       contactTo: (process.env.CONTACT_TO || "").trim() || null,
@@ -645,7 +642,6 @@ export function settingsSnapshot() {
       stripe: "https://dashboard.stripe.com",
       stripeTax: "https://dashboard.stripe.com/tax/registrations",
       stripeTaxSettings: "https://dashboard.stripe.com/settings/tax",
-      klaviyo: "https://www.klaviyo.com/dashboard",
       resend: "https://resend.com/emails",
       constantContact: "https://app.constantcontact.com/pages/dma/portal/",
       supabase: (process.env.SUPABASE_URL || "").replace(/\/$/, "") + "/project/default",
@@ -667,24 +663,10 @@ export function staffSnapshot() {
 
 export function trackingSnapshot() {
   return {
-    clientMetrics: [...CLIENT_METRICS],
-    serverEvents: [
-      "Started Checkout",
-      "Checkout Expired",
-      "Placed Order",
-      "Ordered Product",
-      "Requested Quote",
-      "Requested Support",
-      "Signed Up Reminder",
-    ],
-    identifyPath: "/api/identify",
-    trackPath: "/api/track",
-    catalogFeed: "/api/klaviyo/catalog.json",
     channels: {
       resend: "Branded transactional receipts and admin lead alerts",
-      klaviyo: "Marketing profiles, flows, and shopper events",
       stripe: "Payment receipts",
-      crm: "Admin pipeline only — never mail, never Klaviyo writes",
+      crm: "Admin pipeline only — never mail",
     },
   };
 }

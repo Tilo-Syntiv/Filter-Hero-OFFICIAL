@@ -48,8 +48,8 @@ import FaqSection from "@/components/FaqSection";
 import LifeImage from "@/components/LifeImage";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useStock } from "@/contexts/StockContext";
 import { useCart } from "@/contexts/CartContext";
-import { trackSelectedMerv, trackViewedProduct, trackViewedSize } from "@/lib/klaviyo";
 import { getSiteUrl, useSeo } from "@/hooks/useSeo";
 import { BRAND_NAME } from "@/const";
 import { brandsForSize } from "@shared/hvac-brands";
@@ -72,9 +72,13 @@ type SizeDetailPageProps = {
 
 export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
   const decoded = decodeURIComponent(sizeSlug);
+  const { count: stockCount } = useStock();
   const sizeMeta = getFilterSize(decoded);
   const { addItem } = useCart();
-  const availableTypes = useMemo(() => mervTypesForSize(decoded), [decoded]);
+  const availableTypes = useMemo(
+    () => mervTypesForSize(decoded),
+    [decoded, stockCount],
+  );
   const mervOptions = sellableMervPhrase(decoded);
 
   const qtyMin = PACK_QTYS[0];
@@ -104,7 +108,6 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
   const pickMerv = (key: PreferredMerv) => {
     setMervKey(key);
     setPreferredMerv(key);
-    trackSelectedMerv(key);
   };
 
   const selectedType =
@@ -126,14 +129,6 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
     selectedType.merv,
     selectedType.isCarbon,
   );
-
-  useEffect(() => {
-    trackViewedSize(decoded);
-  }, [decoded]);
-
-  useEffect(() => {
-    if (variant) trackViewedProduct(variant);
-  }, [variant]);
 
   const listUnit = variant ? unitPriceForQty(variant.price, qty, variant) : 0;
   const unitPrice = variant

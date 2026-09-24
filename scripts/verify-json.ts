@@ -19,7 +19,6 @@ import {
   resolveDocumentSeo,
   sitemapPaths,
 } from "../shared/seo.ts";
-import { buildKlaviyoCatalog } from "../server/klaviyo.ts";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SITE = "https://filterhero.net";
@@ -306,14 +305,6 @@ for (const rel of [
 
 const faqBlob = JSON.stringify([...SITE_FAQS, ...CUSTOM_FAQS]);
 record("faqs:no-50-minimum", !/\$50/.test(faqBlob) && /contiguous|2–3 day|2-3 day/i.test(faqBlob), "copy");
-
-const catalogFeed = buildKlaviyoCatalog(SITE);
-record("klaviyo:schema", catalogFeed.$schema.includes("json-schema"), catalogFeed.$schema);
-record("klaviyo:items", catalogFeed.items.length > 0, `${catalogFeed.items.length}`);
-const badFeed = catalogFeed.items.filter(
-  (item) => !item.id || !item.link.startsWith(SITE) || typeof item.price !== "number" || item.price <= 0,
-);
-record("klaviyo:item-fields", badFeed.length === 0, `bad=${badFeed.length}`);
 
 const sizePages = sitemapPaths().filter((p) => p.path.startsWith("/sizes/")).length;
 record("sitemap:sizes", sizePages === FILTER_SIZES.length, `${sizePages}/${FILTER_SIZES.length}`);

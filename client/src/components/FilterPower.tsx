@@ -20,7 +20,6 @@ import { setPowerPackQty, setPreferredMerv } from "@/lib/merv-pref";
 import { scrollToHashTarget } from "@/hooks/useHashScroll";
 import { Input } from "@/components/ui/input";
 import ClockDeck from "@/components/ClockDeck";
-import { identifyShopper } from "@/lib/klaviyo";
 
 function Chip({
   selected,
@@ -284,14 +283,6 @@ function ReminderCapture({
     }
     setStatus("sending");
     try {
-      identifyShopper({
-        email,
-        properties: {
-          house_type: result.house.id,
-          change_interval_days: result.days,
-          preferred_merv: input.merv,
-        },
-      });
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

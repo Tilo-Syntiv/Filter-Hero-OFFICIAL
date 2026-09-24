@@ -9,7 +9,7 @@ import {
 } from "./schema";
 
 const COLUMNS =
-  "id, email, first_name, last_name, phone, company_id, klaviyo_profile_id, stripe_customer_id, properties, created_at, updated_at";
+  "id, email, first_name, last_name, phone, company_id, stripe_customer_id, properties, created_at, updated_at";
 
 export async function findContactByEmail(
   email: string,
@@ -56,9 +56,6 @@ export async function upsertContact(
     assignIfNew("last_name", input.lastName, row.last_name);
     assignIfNew("phone", input.phone, row.phone);
     assignIfNew("company_id", input.companyId, row.company_id);
-    // Identity links are the exception: a newer id from Klaviyo or Stripe is
-    // more correct than a stale one.
-    if (input.klaviyoProfileId) patch.klaviyo_profile_id = input.klaviyoProfileId;
     if (input.stripeCustomerId) patch.stripe_customer_id = input.stripeCustomerId;
     if (input.properties && Object.keys(input.properties).length > 0) {
       patch.properties = { ...row.properties, ...input.properties };
@@ -92,7 +89,6 @@ export async function upsertContact(
       last_name: input.lastName ?? null,
       phone: input.phone ?? null,
       company_id: input.companyId ?? null,
-      klaviyo_profile_id: input.klaviyoProfileId ?? null,
       stripe_customer_id: input.stripeCustomerId ?? null,
       properties: input.properties ?? {},
     })

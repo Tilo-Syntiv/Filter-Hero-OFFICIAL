@@ -1,5 +1,5 @@
 ---
-description: Three catalog layers — XLS sellable, Filter King API archive, Filtrete tickets.
+description: Three catalog layers — Filter King live stock cart, XLS wholesale, Filtrete tickets.
 alwaysApply: true
 ---
 
@@ -7,14 +7,14 @@ alwaysApply: true
 
 | Layer | Source | Job |
 |---|---|---|
-| What we sell + what we pay | Model Pricing XLS / `shared/pricing/model-pricing.csv` | Add-to-cart SKUs and wholesale cost |
-| Full catalog + Filter King page links | Filter King API `GET /api/v1/get-all-parent-models` | Finder archive and `filterKingUrl` |
+| What we sell (cart) + live stock | Filter King API `GET /api/v1/get-all-parent-models` | Add-to-cart allowlist; auto-sync every 15 min into `DATA_DIR` |
+| What we pay (wholesale) | Model Pricing XLS / `shared/pricing/model-pricing.csv`, else API `unit_price` | Margin floor only — never shopper-facing |
 | What the shopper pays | Filtrete in `shared/pricing/engine.ts` | PDP, cart, Checkout, JSON-LD, Klaviyo item price |
 
-Sale Price is wholesale, not the customer price. Do not import `fk-contractor-commerce.csv`, `FK PRICING_SHEET PS`, or the 2025 PDF. Do not scrape filterking.com. API `unit_price` is not the shopper price. API-only SKUs are not add-to-cart until they are on the XLS.
+Sale Price on the sheet is wholesale, not the customer price. API `unit_price` is wholesale fallback only when the sheet has no row — never the shopper price. Do not import `fk-contractor-commerce.csv`, `FK PRICING_SHEET PS`, or the 2025 PDF. Do not scrape filterking.com.
 
-`VITE_FULL_CATALOG=false` and `FULL_CATALOG=false` for checkout. Cart = XLS. Off-XLS sizes → custom quote, not Stripe.
+`VITE_FULL_CATALOG=false` and `FULL_CATALOG=false` so we never sell the 9,958-size archive. Cart = live Filter King stock parent models. Off-stock / custom sizes → custom quote, not Stripe. Finder keeps the archive for quote routing.
 
 Filtrete 1-inch qty 1: MERV 8 `$9.99`, MERV 11 `$13.49`, MERV 13 `$22.99`, Carbon `$16.70`. Multi-packs: `FILTRETE_PACKS` only. Do not invent pack prices. Do not use Filter King website sale or FilterBuy undercut as the customer price.
 
-`pnpm sync:catalog` copies identity (id, size, MERV, image, Filter Hero URL, Filter King URL). Never copies wholesale cost or API `unit_price`. Env, server only: `FILTERKING_CLIENT_ID`, `FILTERKING_CLIENT_SECRET`, `FILTERKING_API_BASE=https://filterking.com`.
+Express boots `startFilterKingStockSync()` (immediate + 15 min). Client overlays via `GET /api/catalog/stock`. Checkout re-checks server stock. `pnpm sync:filterking` refreshes the committed bootstrap JSON (no `unit_price`). `pnpm sync:catalog` copies identity only, never wholesale cost or API `unit_price`. Env, server only: `FILTERKING_CLIENT_ID`, `FILTERKING_CLIENT_SECRET`, `FILTERKING_API_BASE=https://filterking.com`.

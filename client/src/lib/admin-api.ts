@@ -311,7 +311,6 @@ export type AdminContact = {
   first_name: string | null;
   last_name: string | null;
   phone: string | null;
-  klaviyo_profile_id: string | null;
   stripe_customer_id: string | null;
   created_at: string;
   updated_at: string;
@@ -376,6 +375,8 @@ export const getAdminCatalog = (q = "") =>
     sizeCount: number;
     archivedSizeCount: number;
     skuCount: number;
+    stockCount?: number;
+    stockSyncedAt?: string | null;
     thicknesses: number[];
     merv: { key: string; label: string }[];
     featuredSizes: string[];
@@ -396,24 +397,12 @@ export const getAdminCatalog = (q = "") =>
 export const getAdminAnalytics = () => adminFetch<AdminAnalytics>("/analytics");
 export const getAdminTracking = () =>
   adminFetch<{
-    clientMetrics: string[];
-    serverEvents: string[];
-    identifyPath: string;
-    trackPath: string;
-    catalogFeed: string;
     channels: Record<string, string>;
   }>("/tracking");
 export const getAdminHealth = () =>
   adminFetch<{
     crm: { enabled: boolean; reachable: boolean; stages: number; error?: string };
     account: { enabled: boolean; reachable: boolean; error?: string };
-    klaviyo: {
-      enabled: boolean;
-      publicKey: boolean;
-      listConfigured: boolean;
-      account?: string;
-      error?: string;
-    };
     stripe: { configured: boolean };
     resend: { configured: boolean };
   }>("/health");
@@ -475,30 +464,7 @@ export const getAdminSettings = () =>
       headOfficeReady: boolean;
       registrations: { country: string; state: string | null; status: string }[];
     };
-    klaviyoStripe: {
-      shopEvents: boolean;
-      configured: boolean;
-      nativeWebhook: boolean;
-      fulfillmentConflict: boolean;
-      nativeConflict: boolean;
-      url: string | null;
-      connectUrl: string;
-      companyId: string;
-      stripeAccountId: string | null;
-      stripeAccountName: string | null;
-      webhookId: string | null;
-      oauthAccountMatch: boolean;
-    };
   }>("/settings");
-export const connectKlaviyoStripe = () =>
-  adminFetch<{
-    id: string;
-    url: string;
-    created: boolean;
-    secret: string | null;
-    secretLast4: string | null;
-    connectUrl: string;
-  }>("/klaviyo-stripe/connect", { method: "POST" });
 export const startIntuitConnect = () =>
   adminFetch<{ url: string }>("/intuit/connect", { method: "POST" });
 export const disconnectIntuit = () =>

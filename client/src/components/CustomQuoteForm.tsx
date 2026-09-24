@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { MERV_TYPES, mervTypesForDisplay } from "@shared/products";
 import { parseSizeSlug } from "@/lib/filter-size";
 import MarketingOptIn from "@/components/MarketingOptIn";
-import { identifyShopper } from "@/lib/klaviyo";
 import TurnstileField, { readTurnstileToken, turnstileSiteKey } from "@/components/TurnstileField";
 
 const dimField = (label: string) =>
@@ -121,7 +120,6 @@ export default function CustomQuoteForm({
     }
 
     try {
-      identifyShopper({ email: values.email, firstName: values.name.split(/\s+/)[0] });
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

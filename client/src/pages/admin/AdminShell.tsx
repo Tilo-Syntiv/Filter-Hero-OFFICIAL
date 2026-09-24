@@ -133,7 +133,7 @@ function ConsoleFrame({
           <AdminNavList location={location} />
         </nav>
         <p className="border-t border-slate-800 px-4 py-3 text-[11px] leading-snug text-slate-400">
-          CRM never emails shoppers. Resend owns receipts. Klaviyo owns marketing.
+          CRM never emails shoppers. Resend owns receipts.
         </p>
       </aside>
 

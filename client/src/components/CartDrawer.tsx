@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import MarketingOptIn from "@/components/MarketingOptIn";
-import { identifyShopper, rememberedEmail } from "@/lib/klaviyo";
 import { stashCheckoutContinuation } from "@/lib/checkout-queue";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSiteConfig } from "@/contexts/SiteConfigContext";
@@ -28,6 +27,31 @@ import {
 } from "@shared/products";
 import { useCart } from "@/contexts/CartContext";
 import { stashQuoteHandoff } from "@/lib/quote-handoff";
+
+const CART_EMAIL_KEY = "fh_cart_email";
+const LEGACY_CART_EMAIL_KEY = "fh_klaviyo_email";
+
+function rememberedEmail(): string {
+  try {
+    const current = localStorage.getItem(CART_EMAIL_KEY);
+    if (current) return current;
+    const legacy = localStorage.getItem(LEGACY_CART_EMAIL_KEY);
+    if (!legacy) return "";
+    localStorage.setItem(CART_EMAIL_KEY, legacy);
+    localStorage.removeItem(LEGACY_CART_EMAIL_KEY);
+    return legacy;
+  } catch {
+    return "";
+  }
+}
+
+function rememberEmail(email: string) {
+  try {
+    localStorage.setItem(CART_EMAIL_KEY, email);
+  } catch {
+    /* private mode */
+  }
+}
 
 type CartDrawerProps = {
   onRequestQuote: () => void;
@@ -72,7 +96,7 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
       toast.error("Enter your email so we can save the cart if checkout is left open.");
       return;
     }
-    identifyShopper({ email: trimmed });
+    rememberEmail(trimmed);
     setCheckingOut(true);
     try {
       const res = await fetch("/api/checkout", {
@@ -256,7 +280,7 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
               onBlur={() => {
                 const trimmed = email.trim();
                 if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-                  identifyShopper({ email: trimmed });
+                  rememberEmail(trimmed);
                 }
               }}
               placeholder="you@email.com"

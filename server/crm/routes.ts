@@ -20,8 +20,8 @@ import {
  * Staff-only CRM API. Every route sits behind `requireStaff`, and every
  * mutation carries the signed-in staff member into the audit log.
  *
- * Nothing here sends email. Resend owns transactional, Klaviyo owns marketing,
- * and a third sender would re-open FH-171. See docs/CRM.md.
+ * Nothing here sends email. Resend owns transactional mail.
+ * A third sender would re-open FH-171. See docs/CRM.md.
  */
 
 function actorFrom(staff: StaffActor | undefined): CrmActor {

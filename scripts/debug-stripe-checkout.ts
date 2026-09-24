@@ -130,11 +130,9 @@ async function main() {
   const header = stripe.webhooks.generateTestHeaderString({ payload, secret });
 
   const prevResend = process.env.RESEND_API_KEY;
-  const prevKlaviyo = process.env.KLAVIYO_DISABLE;
   const prevCrm = process.env.CRM_DISABLE;
   const prevAccount = process.env.ACCOUNT_DISABLE;
   delete process.env.RESEND_API_KEY;
-  process.env.KLAVIYO_DISABLE = "1";
   process.env.CRM_DISABLE = "1";
   process.env.ACCOUNT_DISABLE = "1";
   try {
@@ -143,8 +141,6 @@ async function main() {
   } finally {
     if (prevResend) process.env.RESEND_API_KEY = prevResend;
     else delete process.env.RESEND_API_KEY;
-    if (prevKlaviyo === undefined) delete process.env.KLAVIYO_DISABLE;
-    else process.env.KLAVIYO_DISABLE = prevKlaviyo;
     if (prevCrm === undefined) delete process.env.CRM_DISABLE;
     else process.env.CRM_DISABLE = prevCrm;
     if (prevAccount === undefined) delete process.env.ACCOUNT_DISABLE;
@@ -330,7 +326,7 @@ async function main() {
   const { readStripeWebhookHealth } = await import("../server/stripe-webhooks.ts");
   const listed = await readStripeWebhookHealth(stripe);
   check(!listed.health.shop.conflict, "test/sandbox key does not post checkout events to filterhero.net");
-  check(!listed.health.klaviyo.conflict, "sandbox key does not host the Klaviyo native webhook");
+  check(!listed.health.klaviyo.present, "this Stripe key does not host a Klaviyo webhook");
   if (listed.livemode) {
     check(
       listed.health.shop.present,

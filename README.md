@@ -1,5 +1,7 @@
 # Filter Hero
 
+This repository is [Tilo-Syntiv/Filter-Hero-OFFICIAL](https://github.com/Tilo-Syntiv/Filter-Hero-OFFICIAL). [Tilo-Syntiv/FILTER-HERO](https://github.com/Tilo-Syntiv/FILTER-HERO) is a different GitHub project. Shop work, deploys, and `git push` stay on Official `main`.
+
 HVAC filter storefront: size finder, catalog, cart, Stripe Checkout, and quote/contact form.
 
 ## Stack

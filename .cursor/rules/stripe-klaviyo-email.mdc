@@ -1,11 +1,11 @@
 ---
-description: Live Stripe ↔ live Klaviyo only. One shopper message, one sender.
+description: One shopper message, one sender. Klaviyo is parked.
 alwaysApply: true
 ---
 
-# Stripe, Klaviyo, email
+# Stripe, email
 
-Live FILTER HERO Stripe `acct_1U9bqlQEENEs0Qmw` only. Never connect sandbox to live Klaviyo `VnVNmQ` / list `RiTKiS`.
+Live FILTER HERO Stripe `acct_1U9bqlQEENEs0Qmw` only.
 
 One shopper message, one sender. Code: `shared/email-channels.ts`.
 
@@ -13,12 +13,12 @@ One shopper message, one sender. Code: `shared/email-channels.ts`.
 |---|---|
 | Payment receipt | Stripe |
 | Order confirmation, quote/support receipt, staff lead alert | Resend `Filter Hero <info@filterhero.net>` on `send.filterhero.net` |
-| Welcome, abandon, post-purchase, replenish, win-back, campaigns | Klaviyo on `klv.filterhero.net` |
+| Welcome, abandon, post-purchase, replenish, win-back, campaigns | None. Parked in `archive/klaviyo` (FH-369) |
 | Filter Clock cadence save | None (staff inbox only) |
 | CRM notes / stage changes | None. `CRM_SENDS_MAIL = false` |
 
-Do not add a Klaviyo order-confirmation or quote-receipt flow. Do not trigger welcome, abandon, replenish, or a receipt from Successfully Paid. Do not import mailer or Klaviyo from `server/crm/`. Do not click Save on Klaviyo “Review your brand”. Do not subscribe Filter Clock `intent=reminder` to the marketing list. Replenish uses `next_change_date` from Placed Order only.
+Do not send welcome, abandon, replenish, or a second receipt from Resend or from Successfully Paid. Do not import the mailer from `server/crm/`. Do not wire Klaviyo back without restoring `archive/klaviyo`. Do not subscribe Filter Clock `intent=reminder` to a marketing list.
 
-Native Klaviyo Stripe webhook is charge/invoice only: `https://a.klaviyo.com/api/webhook/integration/stripe?c=VnVNmQ`. Shop Placed Order stays on `https://filterhero.net/api/stripe/webhook`.
+A Klaviyo charge/invoice URL must not exist on any Stripe key. `scrubConflictingStripeWebhooks` deletes it. Shop Placed Order stays on `https://filterhero.net/api/stripe/webhook`.
 
-Hosted Checkout only. US shipping + phone. Webhook: `checkout.session.completed` + `checkout.session.expired` → `orders.json`. Brand navy `#203868` / burgundy `#7F2328` on Stripe, Klaviyo defaults, and `shared/email-brand.ts`.
+Hosted Checkout only. US shipping + phone. Webhook: `checkout.session.completed` + `checkout.session.expired` → `orders.json`. Brand navy `#203868` / burgundy `#7F2328` on Stripe and `shared/email-brand.ts`.

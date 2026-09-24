@@ -62,11 +62,11 @@ assert(EMAIL_OWNER.support_receipt === "resend", "support_receipt is Resend");
 assert(EMAIL_OWNER.clock_cadence === "none", "clock_cadence sends nothing");
 assert(EMAIL_OWNER.order_confirmation === "resend", "order_confirmation is Resend");
 assert(EMAIL_OWNER.stripe_receipt === "stripe", "stripe_receipt is Stripe");
-assert(EMAIL_OWNER.welcome === "klaviyo", "welcome is Klaviyo");
-assert(EMAIL_OWNER.abandoned_checkout === "klaviyo", "abandoned_checkout is Klaviyo");
-assert(EMAIL_OWNER.post_purchase_nurture === "klaviyo", "post_purchase_nurture is Klaviyo");
-assert(EMAIL_OWNER.replenish === "klaviyo", "replenish is Klaviyo");
-assert(EMAIL_OWNER.winback === "klaviyo", "winback is Klaviyo");
+assert(EMAIL_OWNER.welcome === "none", "welcome has no sender");
+assert(EMAIL_OWNER.abandoned_checkout === "none", "abandoned_checkout has no sender");
+assert(EMAIL_OWNER.post_purchase_nurture === "none", "post_purchase_nurture has no sender");
+assert(EMAIL_OWNER.replenish === "none", "replenish has no sender");
+assert(EMAIL_OWNER.winback === "none", "winback has no sender");
 assert(resendSendsShopperReceipt("quote"), "quote gets a shopper receipt");
 assert(resendSendsShopperReceipt("support"), "support gets a shopper receipt");
 assert(!resendSendsShopperReceipt("reminder"), "clock does not get a shopper receipt");
@@ -289,7 +289,6 @@ const savedPipeline = {
   TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY,
   NODE_ENV: process.env.NODE_ENV,
   CRM_DISABLE: process.env.CRM_DISABLE,
-  KLAVIYO_DISABLE: process.env.KLAVIYO_DISABLE,
   ACCOUNT_DISABLE: process.env.ACCOUNT_DISABLE,
   DATA_DIR: process.env.DATA_DIR,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
@@ -298,7 +297,6 @@ const savedPipeline = {
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "fh-verify-resend-"));
 process.env.DATA_DIR = dataDir;
 process.env.CRM_DISABLE = "1";
-process.env.KLAVIYO_DISABLE = "1";
 process.env.ACCOUNT_DISABLE = "1";
 delete process.env.TURNSTILE_SECRET_KEY;
 if (process.env.NODE_ENV === "production") process.env.NODE_ENV = "test";

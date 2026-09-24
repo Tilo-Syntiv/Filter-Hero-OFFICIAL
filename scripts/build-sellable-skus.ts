@@ -114,7 +114,7 @@ if ([parentIdx, sizeIdx, mervIdx, priceIdx].some((i) => i < 0)) {
 
 const parsed: SheetRow[] = [];
 for (const cells of table.slice(1)) {
-  const parentModel = (cells[parentIdx] || "").trim();
+  const parentModel = (cells[parentIdx] || "").replace(/[\u200B-\u200F\uFEFF]/g, "").trim();
   const sizeRaw = (cells[sizeIdx] || "").trim().toLowerCase().replace(/\s/g, "");
   const size = sizeRaw.replace(/[an]$/i, "");
   const merv = parseMerv(cells[mervIdx] || "");

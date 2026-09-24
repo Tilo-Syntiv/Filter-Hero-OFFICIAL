@@ -1,0 +1,15 @@
+---
+description: Filter-Hero-OFFICIAL is a separate GitHub project from Tilo-Syntiv/FILTER-HERO.
+alwaysApply: true
+---
+
+# Repo boundary
+
+This workspace is GitHub [`Tilo-Syntiv/Filter-Hero-OFFICIAL`](https://github.com/Tilo-Syntiv/Filter-Hero-OFFICIAL). It is the shop for `https://filterhero.net`.
+
+[`Tilo-Syntiv/FILTER-HERO`](https://github.com/Tilo-Syntiv/FILTER-HERO) is a different GitHub project. It has its own history, branches, and commits. Work in this checkout stays here.
+
+- Push, pull, and deploy only `Filter-Hero-OFFICIAL`. Remote name is `origin`.
+- Leave `FILTER-HERO` alone. Do not add it back as a remote, upstream, or Railway source.
+- Production GitHub source is `Filter-Hero-OFFICIAL` `main` (FH-351). The Railway **service** is still named `FILTER-HERO`. That name is the host, not the GitHub project.
+- [`Tilo-Syntiv/filter-hero-pro`](https://github.com/Tilo-Syntiv/filter-hero-pro) is the investor-deck repo. Deck edits belong there. Shop edits belong here.

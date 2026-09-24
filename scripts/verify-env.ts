@@ -4,7 +4,6 @@ import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { BRAND_EMAIL, BRAND_NAME } from "../shared/const.ts";
 import { renderBrandedEmail } from "../shared/email-brand.ts";
-import { getKlaviyoAccount, isKlaviyoEnabled, klaviyoPublicKey } from "../server/klaviyo.ts";
 import { accountDisabledReason, crmDisabledReason, resetDbClient } from "../server/db.ts";
 import { FILTER_HERO_ACCOUNT_ID } from "../shared/stripe-accounts.ts";
 import { readStripeWebhookHealth } from "../server/stripe-webhooks.ts";
@@ -118,19 +117,6 @@ async function main() {
   }
 
   assertFormat("RESEND_API_KEY", ["re_"]);
-  assertFormat("KLAVIYO_PRIVATE_API_KEY", ["pk_"]);
-  assertFormat("KLAVIYO_PUBLIC_API_KEY", []);
-  assertFormat("KLAVIYO_LIST_ID", []);
-  if (env("KLAVIYO_PUBLIC_API_KEY") === "VnVNmQ") {
-    add("KLAVIYO_SITE_ID", "ok", "public site ID VnVNmQ");
-  } else if (present("KLAVIYO_PUBLIC_API_KEY")) {
-    add("KLAVIYO_SITE_ID", "fail", "expected public site ID VnVNmQ");
-  }
-  if (env("KLAVIYO_LIST_ID") === "RiTKiS") {
-    add("KLAVIYO_LIST", "ok", "marketing list RiTKiS");
-  } else if (present("KLAVIYO_LIST_ID")) {
-    add("KLAVIYO_LIST", "ok", "custom list set");
-  }
 
   assertFormat("SUPABASE_SERVICE_ROLE_KEY", ["eyJ"]);
   assertFormat("SUPABASE_ANON_KEY", ["eyJ"]);
@@ -159,8 +145,6 @@ async function main() {
   else add("CRM_DISABLE", "ok", "unset (CRM on)");
   if (env("ACCOUNT_DISABLE") === "1") add("ACCOUNT_DISABLE", "fail", "accounts are forced off");
   else add("ACCOUNT_DISABLE", "ok", "unset (accounts on)");
-  if (env("KLAVIYO_DISABLE") === "1") add("KLAVIYO_DISABLE", "fail", "Klaviyo is forced off");
-  else add("KLAVIYO_DISABLE", "ok", "unset (Klaviyo on)");
 
   resetDbClient();
   const crmOff = crmDisabledReason();
@@ -192,22 +176,14 @@ async function main() {
       } else {
         add("STRIPE_WEBHOOK", "ok", "https://filterhero.net/api/stripe/webhook enabled");
       }
-      if (listed.health.klaviyo.conflict) {
+      if (listed.health.klaviyo.present || listed.health.klaviyo.conflict) {
         add(
           "STRIPE_KLAVIYO",
           "fail",
-          `${listed.accountId} must not host the Klaviyo native webhook — run pnpm setup:stripe-webhook`,
-        );
-      } else if (listed.accountId === FILTER_HERO_ACCOUNT_ID && !listed.health.klaviyo.present) {
-        add("STRIPE_KLAVIYO", "fail", "run pnpm setup:klaviyo-stripe on FILTER HERO");
-      } else if (listed.accountId !== FILTER_HERO_ACCOUNT_ID) {
-        add(
-          "STRIPE_KLAVIYO",
-          "ok",
-          `sandbox key — native webhook lives on FILTER HERO ${FILTER_HERO_ACCOUNT_ID}`,
+          `${listed.accountId} still hosts a Klaviyo webhook — delete https://a.klaviyo.com endpoints`,
         );
       } else {
-        add("STRIPE_KLAVIYO", "ok", "https://a.klaviyo.com/api/webhook/integration/stripe?c=VnVNmQ");
+        add("STRIPE_KLAVIYO", "ok", "no Klaviyo webhook on this key");
       }
     } catch (err) {
       add("STRIPE_LIVE", "fail", err instanceof Error ? err.message : "Stripe API failed");
@@ -256,14 +232,6 @@ async function main() {
     } catch (err) {
       add("RESEND_SEND", "fail", err instanceof Error ? err.message : "Resend send failed");
     }
-  }
-
-  if (isKlaviyoEnabled()) {
-    const account = await getKlaviyoAccount();
-    if (account.ok) add("KLAVIYO_LIVE", "ok", `account ${account.accountId || klaviyoPublicKey()}`);
-    else add("KLAVIYO_LIVE", "fail", account.error || "Klaviyo account ping failed");
-  } else {
-    add("KLAVIYO_LIVE", "fail", "private key missing");
   }
 
   if (present("SUPABASE_URL") && present("SUPABASE_SERVICE_ROLE_KEY")) {

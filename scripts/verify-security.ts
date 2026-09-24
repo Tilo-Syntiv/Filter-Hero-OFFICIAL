@@ -7,11 +7,9 @@ import {
   apiNotFound,
   applySecurityHeaders,
   checkoutLimiter,
-  identifyLimiter,
   isApiPath,
   jsonBodyError,
   publicError,
-  sanitizeEventProperties,
   shouldEnforceTurnstile,
   unexpectedError,
   verifyTurnstile,
@@ -63,20 +61,12 @@ async function main() {
     "dev CSP does not upgrade localhost",
   );
   assert(
-    prodHeaders["Content-Security-Policy"].includes("https://*.klaviyo.com"),
-    "production allows HTTPS Klaviyo",
+    !prodHeaders["Content-Security-Policy"].includes("klaviyo.com"),
+    "production CSP does not allow Klaviyo",
   );
   assert(
-    !prodHeaders["Content-Security-Policy"].includes("http://*.klaviyo.com"),
-    "production must not allow plaintext Klaviyo",
-  );
-  assert(
-    devHeaders["Content-Security-Policy"].includes("http://*.klaviyo.com"),
-    "localhost HTTP shop must allow Klaviyo onsite identify",
-  );
-  assert(
-    devHeaders["Content-Security-Policy"].includes("http://a.klaviyo.com"),
-    "localhost CSP must name http://a.klaviyo.com (Chrome drops the wildcard)",
+    !devHeaders["Content-Security-Policy"].includes("klaviyo.com"),
+    "dev CSP does not allow Klaviyo",
   );
 
   const headed = express();
@@ -223,26 +213,8 @@ async function main() {
 
   const limited = express();
   limited.set("trust proxy", 1);
-  limited.post("/identify", identifyLimiter, (_req, res) => res.json({ ok: true }));
   limited.post("/checkout", checkoutLimiter, (_req, res) => res.json({ ok: true }));
   const limitedServer = serve(limited);
-
-  let identifyAllowed = 0;
-  let identifyBlocked = false;
-  for (let attempt = 0; attempt < 25; attempt += 1) {
-    const res = await fetch(`http://127.0.0.1:${limitedServer.port}/identify`, {
-      method: "POST",
-    });
-    if (res.status === 429) {
-      identifyBlocked = true;
-      const body = (await res.json()) as { code?: string };
-      assert(body.code === "rate_limited_identify", "identify 429 names the limiter");
-      break;
-    }
-    identifyAllowed += 1;
-  }
-  assert(identifyBlocked, "identify limiter must trip");
-  assert(identifyAllowed === 20, `identify allows 20 per window, allowed ${identifyAllowed}`);
 
   let checkoutAllowed = 0;
   let checkoutBlocked = false;
@@ -278,17 +250,9 @@ async function main() {
   assert(closedRes.status === 503, `unconfigured staff gate must be 503, got ${closedRes.status}`);
   closedServer.close();
 
-  // --- Redirect + event sanitizers ------------------------------------------
+  // --- Redirect -------------------------------------------------------------
 
   assert(safeNextPath("/account/../admin") === "/account", "next path cannot traverse");
-  assert(
-    sanitizeEventProperties({ $email: "victim@example.com", $value: 1 })?.$value === 1,
-    "event $value survives",
-  );
-  assert(
-    !("$email" in (sanitizeEventProperties({ $email: "victim@example.com", $value: 1 }) || {})),
-    "event $email is dropped",
-  );
 
   // --- Schema lock file -----------------------------------------------------
 

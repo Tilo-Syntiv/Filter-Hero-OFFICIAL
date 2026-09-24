@@ -1,0 +1,2064 @@
+{
+  "syncedAt": "2026-09-24T20:51:52.344Z",
+  "count": 294,
+  "items": [
+    {
+      "parent_model": "AF10x10x1-M13",
+      "size": "10x10x1",
+      "merv": "13",
+      "actual_size": "9.5 x 9.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-10x10x1-merv-13"
+    },
+    {
+      "parent_model": "AF10x10x1-M11",
+      "size": "10x10x1",
+      "merv": "11",
+      "actual_size": "9.5 x 9.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-10x10x1-merv-11"
+    },
+    {
+      "parent_model": "AF10x10x1-M8",
+      "size": "10x10x1",
+      "merv": "8",
+      "actual_size": "9.5 x 9.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-10x10x1-merv-8"
+    },
+    {
+      "parent_model": "AF10x10x2-M8",
+      "size": "10x10x2",
+      "merv": "8",
+      "actual_size": "9.5 x 9.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-10x10x2-merv-8"
+    },
+    {
+      "parent_model": "AF10x12x1-M8",
+      "size": "10x12x1",
+      "merv": "8",
+      "actual_size": "9.5 x 11.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-10x12x1-merv-8"
+    },
+    {
+      "parent_model": "AF10x14x1-M8",
+      "size": "10x14x1",
+      "merv": "8",
+      "actual_size": "9.5 x 13.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-10x14x1-merv-8"
+    },
+    {
+      "parent_model": "AF10x20x1-M8",
+      "size": "10x20x1",
+      "merv": "8",
+      "actual_size": "9.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-10x20x1-merv-8"
+    },
+    {
+      "parent_model": "AF10x30x1N-M8",
+      "size": "10x30x1",
+      "merv": "8",
+      "actual_size": "9.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-10x30x1-merv-8"
+    },
+    {
+      "parent_model": "AF10x36x1-M13",
+      "size": "10x36x1",
+      "merv": "13",
+      "actual_size": "9.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-10x36x1-merv-13"
+    },
+    {
+      "parent_model": "AF10x36x1-M11",
+      "size": "10x36x1",
+      "merv": "11",
+      "actual_size": "9.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-10x36x1-merv-11"
+    },
+    {
+      "parent_model": "AF10x36x1-M8",
+      "size": "10x36x1",
+      "merv": "8",
+      "actual_size": "9.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-10x36x1-merv-8"
+    },
+    {
+      "parent_model": "AF12x12x1-M13",
+      "size": "12x12x1",
+      "merv": "13",
+      "actual_size": "11.5 x 11.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x12x1-merv-13"
+    },
+    {
+      "parent_model": "AF12x12x1-M11",
+      "size": "12x12x1",
+      "merv": "11",
+      "actual_size": "11.5 x 11.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x12x1-merv-11"
+    },
+    {
+      "parent_model": "AF12x12x1-M8",
+      "size": "12x12x1",
+      "merv": "8",
+      "actual_size": "11.5 x 11.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x12x1-merv-8"
+    },
+    {
+      "parent_model": "AF12x14x1-M8",
+      "size": "12x14x1",
+      "merv": "8",
+      "actual_size": "11.5 x 13.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x14x1-merv-8"
+    },
+    {
+      "parent_model": "AF12x18x1-M8",
+      "size": "12x18x1",
+      "merv": "8",
+      "actual_size": "11.5 x 17.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x18x1-merv-8"
+    },
+    {
+      "parent_model": "AF12x20x1-M8",
+      "size": "12x20x1",
+      "merv": "8",
+      "actual_size": "11.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x20x1-merv-8"
+    },
+    {
+      "parent_model": "AF12x24x1-M13",
+      "size": "12x24x1",
+      "merv": "13",
+      "actual_size": "11.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x24x1-merv-13"
+    },
+    {
+      "parent_model": "AF12x24x1-M11",
+      "size": "12x24x1",
+      "merv": "11",
+      "actual_size": "11.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x24x1-merv-11"
+    },
+    {
+      "parent_model": "AF12x24x1-M8",
+      "size": "12x24x1",
+      "merv": "8",
+      "actual_size": "11.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x24x1-merv-8"
+    },
+    {
+      "parent_model": "AF12x24x2-M8",
+      "size": "12x24x2",
+      "merv": "8",
+      "actual_size": "11.75 x 23.75 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x24x2-merv-8"
+    },
+    {
+      "parent_model": "AF12x36x1-M8",
+      "size": "12x36x1",
+      "merv": "8",
+      "actual_size": "11.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x36x1-merv-8"
+    },
+    {
+      "parent_model": "AF13x13x1-M8",
+      "size": "13x13x1",
+      "merv": "8",
+      "actual_size": "12.5 x 12.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-13x13x1-merv-8"
+    },
+    {
+      "parent_model": "AF13x20x1A-M8",
+      "size": "13x20x1",
+      "merv": "8",
+      "actual_size": "13 x 20 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-13x20x1-merv-8"
+    },
+    {
+      "parent_model": "AF13x21.5x1A-M8",
+      "size": "13x21.5x1",
+      "merv": "8",
+      "actual_size": "13 x 21.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-13x21.5x1-merv-8"
+    },
+    {
+      "parent_model": "AF13x21x1A-M8",
+      "size": "13x21x1",
+      "merv": "8",
+      "actual_size": "13 x 21 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-13x21x1-merv-8"
+    },
+    {
+      "parent_model": "AF13x25x1-M8",
+      "size": "13x25x1",
+      "merv": "8",
+      "actual_size": "12.5 x 24.25 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-13x25x1-merv-8"
+    },
+    {
+      "parent_model": "AF14x14x1-M13",
+      "size": "14x14x1",
+      "merv": "13",
+      "actual_size": "13.5 x 13.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x14x1-merv-13"
+    },
+    {
+      "parent_model": "AF14x14x1-M11",
+      "size": "14x14x1",
+      "merv": "11",
+      "actual_size": "13.5 x 13.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x14x1-merv-11"
+    },
+    {
+      "parent_model": "AF14x14x1-M8",
+      "size": "14x14x1",
+      "merv": "8",
+      "actual_size": "13.5 x 13.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x14x1-merv-8"
+    },
+    {
+      "parent_model": "AF14x14x2-M8",
+      "size": "14x14x2",
+      "merv": "8",
+      "actual_size": "13.5 x 13.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x14x2-merv-8"
+    },
+    {
+      "parent_model": "AF14x16x1-M8",
+      "size": "14x16x1",
+      "merv": "8",
+      "actual_size": "13.5 x 15.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x16x1-merv-8"
+    },
+    {
+      "parent_model": "AF14x18x1-M8",
+      "size": "14x18x1",
+      "merv": "8",
+      "actual_size": "13.5 x 17.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x18x1-merv-8"
+    },
+    {
+      "parent_model": "AF14x18x2-M8",
+      "size": "14x18x2",
+      "merv": "8",
+      "actual_size": "13.5 x 17.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x18x2-merv-8"
+    },
+    {
+      "parent_model": "AF14x20x1-M13",
+      "size": "14x20x1",
+      "merv": "13",
+      "actual_size": "13.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x20x1-merv-13"
+    },
+    {
+      "parent_model": "AF14x20x1-M11",
+      "size": "14x20x1",
+      "merv": "11",
+      "actual_size": "13.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x20x1-merv-11"
+    },
+    {
+      "parent_model": "AF14x20x1-M8",
+      "size": "14x20x1",
+      "merv": "8",
+      "actual_size": "13.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x20x1-merv-8"
+    },
+    {
+      "parent_model": "AF14x20x2-M8",
+      "size": "14x20x2",
+      "merv": "8",
+      "actual_size": "13.5 x 19.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x20x2-merv-8"
+    },
+    {
+      "parent_model": "AF14x21x1-M8",
+      "size": "14x21x1",
+      "merv": "8",
+      "actual_size": "13.5 x 20.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x21x1-merv-8"
+    },
+    {
+      "parent_model": "AF14x22x1-M8",
+      "size": "14x22x1",
+      "merv": "8",
+      "actual_size": "13.5 x 21.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x22x1-merv-8"
+    },
+    {
+      "parent_model": "AF14x24x1-M13",
+      "size": "14x24x1",
+      "merv": "13",
+      "actual_size": "13.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x24x1-merv-13"
+    },
+    {
+      "parent_model": "AF14x24x1-M11",
+      "size": "14x24x1",
+      "merv": "11",
+      "actual_size": "13.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x24x1-merv-11"
+    },
+    {
+      "parent_model": "AF14x24x1-M8",
+      "size": "14x24x1",
+      "merv": "8",
+      "actual_size": "13.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x24x1-merv-8"
+    },
+    {
+      "parent_model": "AF14x25x1-M8",
+      "size": "14x25x1",
+      "merv": "8",
+      "actual_size": "13.5 x 24.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x25x1-merv-8"
+    },
+    {
+      "parent_model": "AF14x25x2-M8",
+      "size": "14x25x2",
+      "merv": "8",
+      "actual_size": "13.5 x 24.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x25x2-merv-8"
+    },
+    {
+      "parent_model": "AF14x30x1-M13",
+      "size": "14x30x1",
+      "merv": "13",
+      "actual_size": "13.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x30x1-merv-13"
+    },
+    {
+      "parent_model": "AF14x30x1-M11",
+      "size": "14x30x1",
+      "merv": "11",
+      "actual_size": "13.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x30x1-merv-11"
+    },
+    {
+      "parent_model": "AF14x30x1-M8",
+      "size": "14x30x1",
+      "merv": "8",
+      "actual_size": "13.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-14x30x1-merv-8"
+    },
+    {
+      "parent_model": "AF15x15x1A-M8",
+      "size": "15x15x1",
+      "merv": "8",
+      "actual_size": "15 x 15 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-15x15x1-merv-8"
+    },
+    {
+      "parent_model": "AF15x20x1-M8",
+      "size": "15x20x1",
+      "merv": "8",
+      "actual_size": "14.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-15x20x1-merv-8"
+    },
+    {
+      "parent_model": "AF15x24x1-M8",
+      "size": "15x24x1",
+      "merv": "8",
+      "actual_size": "14.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-15x24x1-merv-8"
+    },
+    {
+      "parent_model": "AF16x16x1-M13",
+      "size": "16x16x1",
+      "merv": "13",
+      "actual_size": "15.5 x 15.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x16x1-merv-13"
+    },
+    {
+      "parent_model": "AF16x16x1-M11",
+      "size": "16x16x1",
+      "merv": "11",
+      "actual_size": "15.5 x 15.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x16x1-merv-11"
+    },
+    {
+      "parent_model": "AF16x16x1-M8",
+      "size": "16x16x1",
+      "merv": "8",
+      "actual_size": "15.5 x 15.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x16x1-merv-8"
+    },
+    {
+      "parent_model": "AF16x16x2-M8",
+      "size": "16x16x2",
+      "merv": "8",
+      "actual_size": "15.5 x 15.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x16x2-merv-8"
+    },
+    {
+      "parent_model": "AF16x19x1-M13",
+      "size": "16x19x1",
+      "merv": "13",
+      "actual_size": "15.5 x 18.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x19x1-merv-13"
+    },
+    {
+      "parent_model": "AF16x19x1-M11",
+      "size": "16x19x1",
+      "merv": "11",
+      "actual_size": "15.5 x 18.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x19x1-merv-11"
+    },
+    {
+      "parent_model": "AF16x19x1-M8",
+      "size": "16x19x1",
+      "merv": "8",
+      "actual_size": "15.5 x 18.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x19x1-merv-8"
+    },
+    {
+      "parent_model": "AF16x20x1-M13",
+      "size": "16x20x1",
+      "merv": "13",
+      "actual_size": "15.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x20x1-merv-13"
+    },
+    {
+      "parent_model": "AF16x20x1-M11",
+      "size": "16x20x1",
+      "merv": "11",
+      "actual_size": "15.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x20x1-merv-11"
+    },
+    {
+      "parent_model": "AF16x20x1-M8",
+      "size": "16x20x1",
+      "merv": "8",
+      "actual_size": "15.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x20x1-merv-8"
+    },
+    {
+      "parent_model": "AF16x20x2-M13",
+      "size": "16x20x2",
+      "merv": "13",
+      "actual_size": "15.5 x 19.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x20x2-merv-13"
+    },
+    {
+      "parent_model": "AF16x20x2-M11",
+      "size": "16x20x2",
+      "merv": "11",
+      "actual_size": "15.5 x 19.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x20x2-merv-11"
+    },
+    {
+      "parent_model": "AF16x20x2-M8",
+      "size": "16x20x2",
+      "merv": "8",
+      "actual_size": "15.5 x 19.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x20x2-merv-8"
+    },
+    {
+      "parent_model": "AF16x20x4-M13",
+      "size": "16x20x4",
+      "merv": "13",
+      "actual_size": "15.5 x 19.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x20x4-merv-13"
+    },
+    {
+      "parent_model": "AF16x20x4-M11",
+      "size": "16x20x4",
+      "merv": "11",
+      "actual_size": "15.5 x 19.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x20x4-merv-11"
+    },
+    {
+      "parent_model": "AF16x20x4-M8",
+      "size": "16x20x4",
+      "merv": "8",
+      "actual_size": "15.5 x 19.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x20x4-merv-8"
+    },
+    {
+      "parent_model": "AF16x21x1A-M8",
+      "size": "16x21x1",
+      "merv": "8",
+      "actual_size": "16 x 21 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x21x1-merv-8"
+    },
+    {
+      "parent_model": "AF16x22x1A-M8",
+      "size": "16x22x1",
+      "merv": "8",
+      "actual_size": "16 x 22 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x22x1-merv-8"
+    },
+    {
+      "parent_model": "AF16x23x1-M8",
+      "size": "16x23x1",
+      "merv": "8",
+      "actual_size": "15.5 x 22.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x23x1-merv-8"
+    },
+    {
+      "parent_model": "AF16x24x1-M8",
+      "size": "16x24x1",
+      "merv": "8",
+      "actual_size": "15.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x24x1-merv-8"
+    },
+    {
+      "parent_model": "AF16x24x2-M8",
+      "size": "16x24x2",
+      "merv": "8",
+      "actual_size": "15.5 x 23.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x24x2-merv-8"
+    },
+    {
+      "parent_model": "AF16x24x4-M8",
+      "size": "16x24x4",
+      "merv": "8",
+      "actual_size": "15.5 x 23.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x24x4-merv-8"
+    },
+    {
+      "parent_model": "AF16x25x0.5-M8",
+      "size": "16x25x0.5",
+      "merv": "8",
+      "actual_size": "15.5 x 24.5 x 0.5",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x0.5-merv-8"
+    },
+    {
+      "parent_model": "AF16x25x1-CO",
+      "size": "16x25x1",
+      "merv": "carbon",
+      "actual_size": "15.5 x 24.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x1-odor"
+    },
+    {
+      "parent_model": "AF16x25x1-M13",
+      "size": "16x25x1",
+      "merv": "13",
+      "actual_size": "15.5 x 24.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x1-merv-13"
+    },
+    {
+      "parent_model": "AF16x25x1-M11",
+      "size": "16x25x1",
+      "merv": "11",
+      "actual_size": "15.5 x 24.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x1-merv-11"
+    },
+    {
+      "parent_model": "AF16x25x1-M8",
+      "size": "16x25x1",
+      "merv": "8",
+      "actual_size": "15.5 x 24.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x1-merv-8"
+    },
+    {
+      "parent_model": "AF16x25x2-M13",
+      "size": "16x25x2",
+      "merv": "13",
+      "actual_size": "15.5 x 24.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x2-merv-13"
+    },
+    {
+      "parent_model": "AF16x25x2-M11",
+      "size": "16x25x2",
+      "merv": "11",
+      "actual_size": "15.5 x 24.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x2-merv-11"
+    },
+    {
+      "parent_model": "AF16x25x2-M8",
+      "size": "16x25x2",
+      "merv": "8",
+      "actual_size": "15.5 x 24.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x2-merv-8"
+    },
+    {
+      "parent_model": "AF16x25x4-M13",
+      "size": "16x25x4",
+      "merv": "13",
+      "actual_size": "15.5 x 24.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x4-merv-13"
+    },
+    {
+      "parent_model": "AF16x25x4-M11",
+      "size": "16x25x4",
+      "merv": "11",
+      "actual_size": "15.5 x 24.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x4-merv-11"
+    },
+    {
+      "parent_model": "AF16x25x4-M8",
+      "size": "16x25x4",
+      "merv": "8",
+      "actual_size": "15.5 x 24.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x4-merv-8"
+    },
+    {
+      "parent_model": "AF16x30x1-M13",
+      "size": "16x30x1",
+      "merv": "13",
+      "actual_size": "15.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x30x1-merv-13"
+    },
+    {
+      "parent_model": "AF16x30x1-M11",
+      "size": "16x30x1",
+      "merv": "11",
+      "actual_size": "15.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x30x1-merv-11"
+    },
+    {
+      "parent_model": "AF16x30x1-M8",
+      "size": "16x30x1",
+      "merv": "8",
+      "actual_size": "15.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x30x1-merv-8"
+    },
+    {
+      "parent_model": "AF16x30x2-M8",
+      "size": "16x30x2",
+      "merv": "8",
+      "actual_size": "15.5 x 29.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x30x2-merv-8"
+    },
+    {
+      "parent_model": "AF16x36x1-M8",
+      "size": "16x36x1",
+      "merv": "8",
+      "actual_size": "15.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x36x1-merv-8"
+    },
+    {
+      "parent_model": "AF17.5x20x1A-M8",
+      "size": "17.5x20x1",
+      "merv": "8",
+      "actual_size": "17.5 x 20 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17.5x20x1-merv-8"
+    },
+    {
+      "parent_model": "AF17.5x21x1A-M8",
+      "size": "17.5x21x1",
+      "merv": "8",
+      "actual_size": "17.5 x 21 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17.5x21x1-merv-8"
+    },
+    {
+      "parent_model": "AF17.5x22x1A-M13",
+      "size": "17.5x22x1",
+      "merv": "13",
+      "actual_size": "17.5 x 22 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17.5x22x1-merv-13"
+    },
+    {
+      "parent_model": "AF17.5x22x1A-M11",
+      "size": "17.5x22x1",
+      "merv": "11",
+      "actual_size": "17.5 x 22 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17.5x22x1-merv-11"
+    },
+    {
+      "parent_model": "AF17.5x22x1A-M8",
+      "size": "17.5x22x1",
+      "merv": "8",
+      "actual_size": "17.5 x 22 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17.5x22x1-merv-8"
+    },
+    {
+      "parent_model": "AF17x17x1A-M8",
+      "size": "17x17x1",
+      "merv": "8",
+      "actual_size": "17 x 17 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17x17x1-merv-8"
+    },
+    {
+      "parent_model": "AF17x19x1A-M8",
+      "size": "17x19x1",
+      "merv": "8",
+      "actual_size": "17 x 19 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17x19x1-merv-8"
+    },
+    {
+      "parent_model": "AF17x20x1-M8",
+      "size": "17x20x1",
+      "merv": "8",
+      "actual_size": "16.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17x20x1-merv-8"
+    },
+    {
+      "parent_model": "AF17x21x1A-M13",
+      "size": "17x21x1",
+      "merv": "13",
+      "actual_size": "17 x 21 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17x21x1-merv-13"
+    },
+    {
+      "parent_model": "AF17x21x1A-M11",
+      "size": "17x21x1",
+      "merv": "11",
+      "actual_size": "17 x 21 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17x21x1-merv-11"
+    },
+    {
+      "parent_model": "AF17x21x1A-M8",
+      "size": "17x21x1",
+      "merv": "8",
+      "actual_size": "17 x 21 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17x21x1-merv-8"
+    },
+    {
+      "parent_model": "AF17x22x1-M8",
+      "size": "17x22x1",
+      "merv": "8",
+      "actual_size": "16.5 x 21.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17x22x1-merv-8"
+    },
+    {
+      "parent_model": "AF18x18x1-M13",
+      "size": "18x18x1",
+      "merv": "13",
+      "actual_size": "17.5 x 17.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x18x1-merv-13"
+    },
+    {
+      "parent_model": "AF18x18x1-M11",
+      "size": "18x18x1",
+      "merv": "11",
+      "actual_size": "17.5 x 17.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x18x1-merv-11"
+    },
+    {
+      "parent_model": "AF18x18x1-M8",
+      "size": "18x18x1",
+      "merv": "8",
+      "actual_size": "17.5 x 17.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x18x1-merv-8"
+    },
+    {
+      "parent_model": "AF18x18x2-M8",
+      "size": "18x18x2",
+      "merv": "8",
+      "actual_size": "17.5 x 17.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x18x2-merv-8"
+    },
+    {
+      "parent_model": "AF18x18x4-M8",
+      "size": "18x18x4",
+      "merv": "8",
+      "actual_size": "17.5 x 17.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x18x4-merv-8"
+    },
+    {
+      "parent_model": "AF18x20x1-M13",
+      "size": "18x20x1",
+      "merv": "13",
+      "actual_size": "17.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x20x1-merv-13"
+    },
+    {
+      "parent_model": "AF18X20X1-M11",
+      "size": "18x20x1",
+      "merv": "11",
+      "actual_size": "17.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x20x1-merv-11"
+    },
+    {
+      "parent_model": "AF18x20x1-M8",
+      "size": "18x20x1",
+      "merv": "8",
+      "actual_size": "17.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x20x1-merv-8"
+    },
+    {
+      "parent_model": "AF18x20x2-M8",
+      "size": "18x20x2",
+      "merv": "8",
+      "actual_size": "17.5 x 19.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x20x2-merv-8"
+    },
+    {
+      "parent_model": "AF18x21x1-M8",
+      "size": "18x21x1",
+      "merv": "8",
+      "actual_size": "17.5 x 20.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x21x1-merv-8"
+    },
+    {
+      "parent_model": "AF18x22x1-M8",
+      "size": "18x22x1",
+      "merv": "8",
+      "actual_size": "17.5 x 21.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x22x1-merv-8"
+    },
+    {
+      "parent_model": "AF18x24x1-M13",
+      "size": "18x24x1",
+      "merv": "13",
+      "actual_size": "17.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x24x1-merv-13"
+    },
+    {
+      "parent_model": "AF18x24x1-M11",
+      "size": "18x24x1",
+      "merv": "11",
+      "actual_size": "17.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x24x1-merv-11"
+    },
+    {
+      "parent_model": "AF18x24x1-M8",
+      "size": "18x24x1",
+      "merv": "8",
+      "actual_size": "17.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x24x1-merv-8"
+    },
+    {
+      "parent_model": "AF18x24x2-M8",
+      "size": "18x24x2",
+      "merv": "8",
+      "actual_size": "17.5 x 23.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x24x2-merv-8"
+    },
+    {
+      "parent_model": "AF18x25x1-M8",
+      "size": "18x25x1",
+      "merv": "8",
+      "actual_size": "17.5 x 24.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x25x1-merv-8"
+    },
+    {
+      "parent_model": "AF18x30x1-M13",
+      "size": "18x30x1",
+      "merv": "13",
+      "actual_size": "17.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x30x1-merv-13"
+    },
+    {
+      "parent_model": "AF18x30x1-M11",
+      "size": "18x30x1",
+      "merv": "11",
+      "actual_size": "17.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x30x1-merv-11"
+    },
+    {
+      "parent_model": "AF18x30x1-M8",
+      "size": "18x30x1",
+      "merv": "8",
+      "actual_size": "17.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x30x1-merv-8"
+    },
+    {
+      "parent_model": "AF18x36x1-M13",
+      "size": "18x36x1",
+      "merv": "13",
+      "actual_size": "17.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x36x1-merv-13"
+    },
+    {
+      "parent_model": "AF18x36x1-M11",
+      "size": "18x36x1",
+      "merv": "11",
+      "actual_size": "17.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x36x1-merv-11"
+    },
+    {
+      "parent_model": "AF18x36x1-M8",
+      "size": "18x36x1",
+      "merv": "8",
+      "actual_size": "17.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-18x36x1-merv-8"
+    },
+    {
+      "parent_model": "AF19.25x23.25x1A-M8",
+      "size": "19.25x23.25x1",
+      "merv": "8",
+      "actual_size": "19.25 x 23.25 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19.25x23.25x1-merv-8"
+    },
+    {
+      "parent_model": "AF19.5x21x1A-M8",
+      "size": "19.5x21x1",
+      "merv": "8",
+      "actual_size": "19.5 x 21 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19.5x21x1-merv-8"
+    },
+    {
+      "parent_model": "AF19.88x21.5x1A-M8",
+      "size": "19.88x21.5x1",
+      "merv": "8",
+      "actual_size": "19.88 x 21.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19.88x21.5x1-merv-8"
+    },
+    {
+      "parent_model": "AF19x19x1A-M13",
+      "size": "19x19x1",
+      "merv": "13",
+      "actual_size": "19 x 19 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x19x1-merv-13"
+    },
+    {
+      "parent_model": "AF19x19x1A-M11",
+      "size": "19x19x1",
+      "merv": "11",
+      "actual_size": "19 x 19 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x19x1-merv-11"
+    },
+    {
+      "parent_model": "AF19x19x1A-M8",
+      "size": "19x19x1",
+      "merv": "8",
+      "actual_size": "19 x 19 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x19x1-merv-8"
+    },
+    {
+      "parent_model": "AF19x20x1A-M8",
+      "size": "19x20x1",
+      "merv": "8",
+      "actual_size": "19 x 20 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x20x1-merv-8"
+    },
+    {
+      "parent_model": "AF19x21x1-M8",
+      "size": "19x21x1",
+      "merv": "8",
+      "actual_size": "18.5 x 20.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x21x1-merv-8"
+    },
+    {
+      "parent_model": "AF19x22x1A-M13",
+      "size": "19x22x1",
+      "merv": "13",
+      "actual_size": "19 x 22 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x22x1-merv-13"
+    },
+    {
+      "parent_model": "AF19x22x1A-M11",
+      "size": "19x22x1",
+      "merv": "11",
+      "actual_size": "19 x 22 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x22x1-merv-11"
+    },
+    {
+      "parent_model": "AF19x22x1A-M8",
+      "size": "19x22x1",
+      "merv": "8",
+      "actual_size": "19 x 22 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x22x1-merv-8"
+    },
+    {
+      "parent_model": "AF19x23x1A-M13",
+      "size": "19x23x1",
+      "merv": "13",
+      "actual_size": "19 x 23 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x23x1-merv-13"
+    },
+    {
+      "parent_model": "AF19x23x1A-M11",
+      "size": "19x23x1",
+      "merv": "11",
+      "actual_size": "19 x 23 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x23x1-merv-11"
+    },
+    {
+      "parent_model": "AF19x23x1A-M8",
+      "size": "19x23x1",
+      "merv": "8",
+      "actual_size": "19 x 23 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x23x1-merv-8"
+    },
+    {
+      "parent_model": "AF19x25x1-M8",
+      "size": "19x25x1",
+      "merv": "8",
+      "actual_size": "18.5 x 24.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x25x1-merv-8"
+    },
+    {
+      "parent_model": "AF19x26x1-M8",
+      "size": "19x26x1",
+      "merv": "8",
+      "actual_size": "18.5 x 25.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x26x1-merv-8"
+    },
+    {
+      "parent_model": "AF19x27x1A-M13",
+      "size": "19x27x1",
+      "merv": "13",
+      "actual_size": "19 x 27 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x27x1-merv-13"
+    },
+    {
+      "parent_model": "AF19x27x1A-M11",
+      "size": "19x27x1",
+      "merv": "11",
+      "actual_size": "19 x 27 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x27x1-merv-11"
+    },
+    {
+      "parent_model": "AF19x27x1A-M8",
+      "size": "19x27x1",
+      "merv": "8",
+      "actual_size": "19 x 27 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x27x1-merv-8"
+    },
+    {
+      "parent_model": "AF20x20x1-CO",
+      "size": "20x20x1",
+      "merv": "carbon",
+      "actual_size": "19.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x1-odor"
+    },
+    {
+      "parent_model": "AF20x20x1-M13",
+      "size": "20x20x1",
+      "merv": "13",
+      "actual_size": "19.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x1-merv-13"
+    },
+    {
+      "parent_model": "AF20x20x1-M11",
+      "size": "20x20x1",
+      "merv": "11",
+      "actual_size": "19.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x1-merv-11"
+    },
+    {
+      "parent_model": "AF20x20x1-M8",
+      "size": "20x20x1",
+      "merv": "8",
+      "actual_size": "19.5 x 19.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x1-merv-8"
+    },
+    {
+      "parent_model": "AF20x20x2-M13",
+      "size": "20x20x2",
+      "merv": "13",
+      "actual_size": "19.5 x 19.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x2-merv-13"
+    },
+    {
+      "parent_model": "AF20x20x2-M11",
+      "size": "20x20x2",
+      "merv": "11",
+      "actual_size": "19.5 x 19.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x2-merv-11"
+    },
+    {
+      "parent_model": "AF20x20x2-M8",
+      "size": "20x20x2",
+      "merv": "8",
+      "actual_size": "19.5 x 19.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x2-merv-8"
+    },
+    {
+      "parent_model": "AF20x20x4-M13",
+      "size": "20x20x4",
+      "merv": "13",
+      "actual_size": "19.5 x 19.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x4-merv-13"
+    },
+    {
+      "parent_model": "AF20x20x4-M11",
+      "size": "20x20x4",
+      "merv": "11",
+      "actual_size": "19.5 x 19.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x4-merv-11"
+    },
+    {
+      "parent_model": "AF20X20X4-M8",
+      "size": "20x20x4",
+      "merv": "8",
+      "actual_size": "19.5 x 19.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x4-merv-8"
+    },
+    {
+      "parent_model": "AF20x21.5x1A-M8",
+      "size": "20x21.5x1",
+      "merv": "8",
+      "actual_size": "20 x 21.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x21.5x1-merv-8"
+    },
+    {
+      "parent_model": "AF20x21x1A-M13",
+      "size": "20x21x1",
+      "merv": "13",
+      "actual_size": "20 x 21 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x21x1-merv-13"
+    },
+    {
+      "parent_model": "AF20x21x1A-M11",
+      "size": "20x21x1",
+      "merv": "11",
+      "actual_size": "20 x 21 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x21x1-merv-11"
+    },
+    {
+      "parent_model": "AF20x21x1A-M8",
+      "size": "20x21x1",
+      "merv": "8",
+      "actual_size": "20 x 21 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x21x1-merv-8"
+    },
+    {
+      "parent_model": "AF20x22x1-M8",
+      "size": "20x22x1",
+      "merv": "8",
+      "actual_size": "19.5 x 21.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x22x1-merv-8"
+    },
+    {
+      "parent_model": "AF20x22x2-M8",
+      "size": "20x22x2",
+      "merv": "8",
+      "actual_size": "19.5 x 21.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x22x2-merv-8"
+    },
+    {
+      "parent_model": "AF20x23x1-M13",
+      "size": "20x23x1",
+      "merv": "13",
+      "actual_size": "19.5 x 22.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x23x1-merv-13"
+    },
+    {
+      "parent_model": "AF20x23x1-M11",
+      "size": "20x23x1",
+      "merv": "11",
+      "actual_size": "19.5 x 22.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x23x1-merv-11"
+    },
+    {
+      "parent_model": "AF20x23x1-M8",
+      "size": "20x23x1",
+      "merv": "8",
+      "actual_size": "19.5 x 22.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x23x1-merv-8"
+    },
+    {
+      "parent_model": "AF20x24x1-M13",
+      "size": "20x24x1",
+      "merv": "13",
+      "actual_size": "19.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x24x1-merv-13"
+    },
+    {
+      "parent_model": "AF20x24x1-M11",
+      "size": "20x24x1",
+      "merv": "11",
+      "actual_size": "19.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x24x1-merv-11"
+    },
+    {
+      "parent_model": "AF20x24x1-M8",
+      "size": "20x24x1",
+      "merv": "8",
+      "actual_size": "19.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x24x1-merv-8"
+    },
+    {
+      "parent_model": "AF20x24x2-M13",
+      "size": "20x24x2",
+      "merv": "13",
+      "actual_size": "19.5 x 23.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x24x2-merv-13"
+    },
+    {
+      "parent_model": "AF20x24x2-M11",
+      "size": "20x24x2",
+      "merv": "11",
+      "actual_size": "19.5 x 23.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x24x2-merv-11"
+    },
+    {
+      "parent_model": "AF20x24x2-M8",
+      "size": "20x24x2",
+      "merv": "8",
+      "actual_size": "19.5 x 23.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x24x2-merv-8"
+    },
+    {
+      "parent_model": "AF20x24x4-M8",
+      "size": "20x24x4",
+      "merv": "8",
+      "actual_size": "19.5 x 23.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x24x4-merv-8"
+    },
+    {
+      "parent_model": "AF20x25x1-CO",
+      "size": "20x25x1",
+      "merv": "carbon",
+      "actual_size": "19.5 x 24.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x1-odor"
+    },
+    {
+      "parent_model": "AF20x25x1-M13",
+      "size": "20x25x1",
+      "merv": "13",
+      "actual_size": "19.5 x 24.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x1-merv-13"
+    },
+    {
+      "parent_model": "AF20x25x1-M11",
+      "size": "20x25x1",
+      "merv": "11",
+      "actual_size": "19.5 x 24.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x1-merv-11"
+    },
+    {
+      "parent_model": "AF20x25x1-M8",
+      "size": "20x25x1",
+      "merv": "8",
+      "actual_size": "19.5 x 24.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x1-merv-8"
+    },
+    {
+      "parent_model": "AF20x25x2-M13",
+      "size": "20x25x2",
+      "merv": "13",
+      "actual_size": "19.5 x 24.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x2-merv-13"
+    },
+    {
+      "parent_model": "AF20x25x2-M11",
+      "size": "20x25x2",
+      "merv": "11",
+      "actual_size": "19.5 x 24.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x2-merv-11"
+    },
+    {
+      "parent_model": "AF20x25x2-M8",
+      "size": "20x25x2",
+      "merv": "8",
+      "actual_size": "19.5 x 24.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x2-merv-8"
+    },
+    {
+      "parent_model": "AF20x25x4-M13",
+      "size": "20x25x4",
+      "merv": "13",
+      "actual_size": "19.5 x 24.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x4-merv-13"
+    },
+    {
+      "parent_model": "AF20x25x4-M11",
+      "size": "20x25x4",
+      "merv": "11",
+      "actual_size": "19.5 x 24.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x4-merv-11"
+    },
+    {
+      "parent_model": "AF20x25x4-M8",
+      "size": "20x25x4",
+      "merv": "8",
+      "actual_size": "19.5 x 24.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x4-merv-8"
+    },
+    {
+      "parent_model": "AF20x26x1A-M8",
+      "size": "20x26x1",
+      "merv": "8",
+      "actual_size": "20 x 26 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x26x1-merv-8"
+    },
+    {
+      "parent_model": "AF20x30x1-M13",
+      "size": "20x30x1",
+      "merv": "13",
+      "actual_size": "19.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x30x1-merv-13"
+    },
+    {
+      "parent_model": "AF20x30x1-M11",
+      "size": "20x30x1",
+      "merv": "11",
+      "actual_size": "19.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x30x1-merv-11"
+    },
+    {
+      "parent_model": "AF20x30x1-M8",
+      "size": "20x30x1",
+      "merv": "8",
+      "actual_size": "19.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x30x1-merv-8"
+    },
+    {
+      "parent_model": "AF20x30x2-M13",
+      "size": "20x30x2",
+      "merv": "13",
+      "actual_size": "19.5 x 29.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x30x2-merv-13"
+    },
+    {
+      "parent_model": "AF20x30x2-M11",
+      "size": "20x30x2",
+      "merv": "11",
+      "actual_size": "19.5 x 29.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x30x2-merv-11"
+    },
+    {
+      "parent_model": "AF20x30x2-M8",
+      "size": "20x30x2",
+      "merv": "8",
+      "actual_size": "19.5 x 29.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x30x2-merv-8"
+    },
+    {
+      "parent_model": "AF20x35x2-M13",
+      "size": "20x35x2",
+      "merv": "13",
+      "actual_size": "19.5 x 34.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x35x2-merv-13"
+    },
+    {
+      "parent_model": "AF20x35x2-M11",
+      "size": "20x35x2",
+      "merv": "11",
+      "actual_size": "19.5 x 34.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x35x2-merv-11"
+    },
+    {
+      "parent_model": "AF20x35x2-M8",
+      "size": "20x35x2",
+      "merv": "8",
+      "actual_size": "19.5 x 34.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x35x2-merv-8"
+    },
+    {
+      "parent_model": "AF20x36x1-M13",
+      "size": "20x36x1",
+      "merv": "13",
+      "actual_size": "19.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x36x1-merv-13"
+    },
+    {
+      "parent_model": "AF20x36x1-M11",
+      "size": "20x36x1",
+      "merv": "11",
+      "actual_size": "19.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x36x1-merv-11"
+    },
+    {
+      "parent_model": "AF20x36x1-M8",
+      "size": "20x36x1",
+      "merv": "8",
+      "actual_size": "19.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x36x1-merv-8"
+    },
+    {
+      "parent_model": "AF20x40x1-M13",
+      "size": "20x40x1",
+      "merv": "13",
+      "actual_size": "19.5 x 39.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x40x1-merv-13"
+    },
+    {
+      "parent_model": "AF20x40x1-M11",
+      "size": "20x40x1",
+      "merv": "11",
+      "actual_size": "19.5 x 39.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x40x1-merv-11"
+    },
+    {
+      "parent_model": "AF20x40x1-M8",
+      "size": "20x40x1",
+      "merv": "8",
+      "actual_size": "19.5 x 39.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x40x1-merv-8"
+    },
+    {
+      "parent_model": "AF21.5x23.25x1A-M8",
+      "size": "21.5x23.25x1",
+      "merv": "8",
+      "actual_size": "21.5 x 23.25 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-21.5x23.25x1-merv-8"
+    },
+    {
+      "parent_model": "AF21.5x24x1A-M8",
+      "size": "21.5x24x1",
+      "merv": "8",
+      "actual_size": "21.5 x 24 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-21.5x24x1-merv-8"
+    },
+    {
+      "parent_model": "AF21x21x1-M13",
+      "size": "21x21x1",
+      "merv": "13",
+      "actual_size": "20.5 x 20.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-21x21x1-merv-13"
+    },
+    {
+      "parent_model": "AF21x21x1-M11",
+      "size": "21x21x1",
+      "merv": "11",
+      "actual_size": "20.5 x 20.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-21x21x1-merv-11"
+    },
+    {
+      "parent_model": "AF21x21x1-M8",
+      "size": "21x21x1",
+      "merv": "8",
+      "actual_size": "20.5 x 20.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-21x21x1-merv-8"
+    },
+    {
+      "parent_model": "AF21x22x1-M8",
+      "size": "21x22x1",
+      "merv": "8",
+      "actual_size": "20.5 x 21.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-21x22x1-merv-8"
+    },
+    {
+      "parent_model": "AF21x23x1A-M13",
+      "size": "21x23x1",
+      "merv": "13",
+      "actual_size": "21 x 23 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-21x23x1-merv-13"
+    },
+    {
+      "parent_model": "AF21x23x1A-M11",
+      "size": "21x23x1",
+      "merv": "11",
+      "actual_size": "21 x 23 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-21x23x1-merv-11"
+    },
+    {
+      "parent_model": "AF21x23x1A-M8",
+      "size": "21x23x1",
+      "merv": "8",
+      "actual_size": "21 x 23 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-21x23x1-merv-8"
+    },
+    {
+      "parent_model": "AF21x24x1A-M8",
+      "size": "21x24x1",
+      "merv": "8",
+      "actual_size": "21 x 24 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-21x24x1-merv-8"
+    },
+    {
+      "parent_model": "AF22x22x1-M8",
+      "size": "22x22x1",
+      "merv": "8",
+      "actual_size": "21.5 x 21.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-22x22x1-merv-8"
+    },
+    {
+      "parent_model": "AF22x23.5x1A-M8",
+      "size": "22x23.5x1",
+      "merv": "8",
+      "actual_size": "22 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-22x23.5x1-merv-8"
+    },
+    {
+      "parent_model": "AF22x23x1A-M8",
+      "size": "22x23x1",
+      "merv": "8",
+      "actual_size": "22 x 23 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-22x23x1-merv-8"
+    },
+    {
+      "parent_model": "AF22x24x1-M13",
+      "size": "22x24x1",
+      "merv": "13",
+      "actual_size": "21.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-22x24x1-merv-13"
+    },
+    {
+      "parent_model": "AF22x24x1-M11",
+      "size": "22x24x1",
+      "merv": "11",
+      "actual_size": "21.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-22x24x1-merv-11"
+    },
+    {
+      "parent_model": "AF22x24x1-M8",
+      "size": "22x24x1",
+      "merv": "8",
+      "actual_size": "21.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-22x24x1-merv-8"
+    },
+    {
+      "parent_model": "AF22x37x2-M8",
+      "size": "22x37x2",
+      "merv": "8",
+      "actual_size": "21.5 x 36.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-22x37x2-merv-8"
+    },
+    {
+      "parent_model": "AF23x23x1A-M8",
+      "size": "23x23x1",
+      "merv": "8",
+      "actual_size": "23 x 23 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-23x23x1-merv-8"
+    },
+    {
+      "parent_model": "AF24x24x1-M13",
+      "size": "24x24x1",
+      "merv": "13",
+      "actual_size": "23.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x24x1-merv-13"
+    },
+    {
+      "parent_model": "AF24x24x1-M11",
+      "size": "24x24x1",
+      "merv": "11",
+      "actual_size": "23.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x24x1-merv-11"
+    },
+    {
+      "parent_model": "AF24x24x1-M8",
+      "size": "24x24x1",
+      "merv": "8",
+      "actual_size": "23.5 x 23.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x24x1-merv-8"
+    },
+    {
+      "parent_model": "AF24x24x2N-M13",
+      "size": "24x24x2",
+      "merv": "13",
+      "actual_size": "23.38 x 23.38 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x24x2-merv-13"
+    },
+    {
+      "parent_model": "AF24x24x2N-M11",
+      "size": "24x24x2",
+      "merv": "11",
+      "actual_size": "23.38 x 23.38 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x24x2-merv-11"
+    },
+    {
+      "parent_model": "AF24x24x2N-M8",
+      "size": "24x24x2",
+      "merv": "8",
+      "actual_size": "23.38 x 23.38 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x24x2-merv-8"
+    },
+    {
+      "parent_model": "AF24x24x4N-M13",
+      "size": "24x24x4",
+      "merv": "13",
+      "actual_size": "23.38 x 23.38 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x24x4-merv-13"
+    },
+    {
+      "parent_model": "AF24x24x4N-M11",
+      "size": "24x24x4",
+      "merv": "11",
+      "actual_size": "23.38 x 23.38 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x24x4-merv-11"
+    },
+    {
+      "parent_model": "AF24x30x0.5-M13",
+      "size": "24x30x0.5",
+      "merv": "13",
+      "actual_size": "23.5 x 29.5 x 0.5",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x30x0.5-merv-13"
+    },
+    {
+      "parent_model": "AF24x30x0.5-M11",
+      "size": "24x30x0.5",
+      "merv": "11",
+      "actual_size": "23.5 x 29.5 x 0.5",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x30x0.5-merv-11"
+    },
+    {
+      "parent_model": "AF24x30x0.5-M8",
+      "size": "24x30x0.5",
+      "merv": "8",
+      "actual_size": "23.5 x 29.5 x 0.5",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x30x0.5-merv-8"
+    },
+    {
+      "parent_model": "AF24x30x1-M13",
+      "size": "24x30x1",
+      "merv": "13",
+      "actual_size": "23.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x30x1-merv-13"
+    },
+    {
+      "parent_model": "AF24x30x1-M11",
+      "size": "24x30x1",
+      "merv": "11",
+      "actual_size": "23.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x30x1-merv-11"
+    },
+    {
+      "parent_model": "AF24x30x1-M8",
+      "size": "24x30x1",
+      "merv": "8",
+      "actual_size": "23.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x30x1-merv-8"
+    },
+    {
+      "parent_model": "AF24x30x2-M8",
+      "size": "24x30x2",
+      "merv": "8",
+      "actual_size": "23.5 x 29.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x30x2-merv-8"
+    },
+    {
+      "parent_model": "AF24x36x1-M13",
+      "size": "24x36x1",
+      "merv": "13",
+      "actual_size": "23.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x36x1-merv-13"
+    },
+    {
+      "parent_model": "AF24x36x1-M11",
+      "size": "24x36x1",
+      "merv": "11",
+      "actual_size": "23.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x36x1-merv-11"
+    },
+    {
+      "parent_model": "AF24x36x1-M8",
+      "size": "24x36x1",
+      "merv": "8",
+      "actual_size": "23.5 x 35.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x36x1-merv-8"
+    },
+    {
+      "parent_model": "AF24X40X1-M8",
+      "size": "24x40x1",
+      "merv": "8",
+      "actual_size": "23.5 x 39.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x40x1-merv-8"
+    },
+    {
+      "parent_model": "AF25x25x1-M8",
+      "size": "25x25x1",
+      "merv": "8",
+      "actual_size": "24.5 x 24.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-25x25x1-merv-8"
+    },
+    {
+      "parent_model": "AF25x25x2-M8",
+      "size": "25x25x2",
+      "merv": "8",
+      "actual_size": "24.5 x 24.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-25x25x2-merv-8"
+    },
+    {
+      "parent_model": "AF25X30x1-M13",
+      "size": "25x30x1",
+      "merv": "13",
+      "actual_size": "24.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-25x30x1-merv-13"
+    },
+    {
+      "parent_model": "AF25x30x1-M11",
+      "size": "25x30x1",
+      "merv": "11",
+      "actual_size": "24.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-25x30x1-merv-11"
+    },
+    {
+      "parent_model": "AF25X30x1-M8",
+      "size": "25x30x1",
+      "merv": "8",
+      "actual_size": "24.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-25x30x1-merv-8"
+    },
+    {
+      "parent_model": "AF25x32x1-CO",
+      "size": "25x32x1",
+      "merv": "carbon",
+      "actual_size": "24.5 x 31.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-25x32x1-odor"
+    },
+    {
+      "parent_model": "AF25x32x1-M13",
+      "size": "25x32x1",
+      "merv": "13",
+      "actual_size": "24.5 x 31.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-25x32x1-merv-13"
+    },
+    {
+      "parent_model": "AF25x32x1-M11",
+      "size": "25x32x1",
+      "merv": "11",
+      "actual_size": "24.5 x 31.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-25x32x1-merv-11"
+    },
+    {
+      "parent_model": "AF25x32x1-M8",
+      "size": "25x32x1",
+      "merv": "8",
+      "actual_size": "24.5 x 31.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-25x32x1-merv-8"
+    },
+    {
+      "parent_model": "AF28x30x1-M8",
+      "size": "28x30x1",
+      "merv": "8",
+      "actual_size": "27.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-28x30x1-merv-8"
+    },
+    {
+      "parent_model": "AF28x30x2-M8",
+      "size": "28x30x2",
+      "merv": "8",
+      "actual_size": "27.5 x 29.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-28x30x2-merv-8"
+    },
+    {
+      "parent_model": "AF30x30x1-CO",
+      "size": "30x30x1",
+      "merv": "carbon",
+      "actual_size": "29.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x30x1-odor"
+    },
+    {
+      "parent_model": "AF30x30x1-M13",
+      "size": "30x30x1",
+      "merv": "13",
+      "actual_size": "29.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x30x1-merv-13"
+    },
+    {
+      "parent_model": "AF30x30x1-M11",
+      "size": "30x30x1",
+      "merv": "11",
+      "actual_size": "29.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x30x1-merv-11"
+    },
+    {
+      "parent_model": "AF30x30x1-M8",
+      "size": "30x30x1",
+      "merv": "8",
+      "actual_size": "29.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x30x1-merv-8"
+    },
+    {
+      "parent_model": "AF30x30x2-M13",
+      "size": "30x30x2",
+      "merv": "13",
+      "actual_size": "29.5 x 29.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x30x2-merv-13"
+    },
+    {
+      "parent_model": "AF30x30x2-M11",
+      "size": "30x30x2",
+      "merv": "11",
+      "actual_size": "29.5 x 29.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x30x2-merv-11"
+    },
+    {
+      "parent_model": "AF30x30x2-M8",
+      "size": "30x30x2",
+      "merv": "8",
+      "actual_size": "29.5 x 29.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x30x2-merv-8"
+    },
+    {
+      "parent_model": "AF30x30x4-M13",
+      "size": "30x30x4",
+      "merv": "13",
+      "actual_size": "29.5 x 29.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x30x4-merv-13"
+    },
+    {
+      "parent_model": "AF30x30x4-M11",
+      "size": "30x30x4",
+      "merv": "11",
+      "actual_size": "29.5 x 29.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x30x4-merv-11"
+    },
+    {
+      "parent_model": "AF30x30x4-M8",
+      "size": "30x30x4",
+      "merv": "8",
+      "actual_size": "29.5 x 29.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x30x4-merv-8"
+    },
+    {
+      "parent_model": "AF30x32x2-M8",
+      "size": "30x32x2",
+      "merv": "8",
+      "actual_size": "29.5 x 31.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x32x2-merv-8"
+    },
+    {
+      "parent_model": "AF30x36x1A-M13",
+      "size": "30x36x1",
+      "merv": "13",
+      "actual_size": "30 x 36 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x36x1-merv-13"
+    },
+    {
+      "parent_model": "AF30x36x1A-M11",
+      "size": "30x36x1",
+      "merv": "11",
+      "actual_size": "30 x 36 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x36x1-merv-11"
+    },
+    {
+      "parent_model": "AF30x36x1A-M8",
+      "size": "30x36x1",
+      "merv": "8",
+      "actual_size": "30 x 36 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x36x1-merv-8"
+    },
+    {
+      "parent_model": "AF30x36x2-M8",
+      "size": "30x36x2",
+      "merv": "8",
+      "actual_size": "29.5 x 35.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-30x36x2-merv-8"
+    },
+    {
+      "parent_model": "AF6x14x1-M8",
+      "size": "6x14x1",
+      "merv": "8",
+      "actual_size": "5.5 x 13.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-6x14x1-merv-8"
+    },
+    {
+      "parent_model": "AF6x30x1-M8",
+      "size": "6x30x1",
+      "merv": "8",
+      "actual_size": "5.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-6x30x1-merv-8"
+    },
+    {
+      "parent_model": "AF8x12x1-M8",
+      "size": "8x12x1",
+      "merv": "8",
+      "actual_size": "7.5 x 11.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-8x12x1-merv-8"
+    },
+    {
+      "parent_model": "AF8x14x1A-M8",
+      "size": "8x14x1",
+      "merv": "8",
+      "actual_size": "8 x 14 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-8x14x1-merv-8"
+    },
+    {
+      "parent_model": "AF8x24x1A-M13",
+      "size": "8x24x1",
+      "merv": "13",
+      "actual_size": "8 x 24 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-8x24x1-merv-13"
+    },
+    {
+      "parent_model": "AF8x24x1A-M11",
+      "size": "8x24x1",
+      "merv": "11",
+      "actual_size": "8 x 24 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-8x24x1-merv-11"
+    },
+    {
+      "parent_model": "AF8x24x1A-M8",
+      "size": "8x24x1",
+      "merv": "8",
+      "actual_size": "8 x 24 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-8x24x1-merv-8"
+    },
+    {
+      "parent_model": "AF8x30x1-M8",
+      "size": "8x30x1",
+      "merv": "8",
+      "actual_size": "7.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-8x30x1-merv-8"
+    },
+    {
+      "parent_model": "AF8x8x1A-M13",
+      "size": "8x8x1",
+      "merv": "13",
+      "actual_size": "8 x 8 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-8x8x1-merv-13"
+    },
+    {
+      "parent_model": "AF8x8x1A-M11",
+      "size": "8x8x1",
+      "merv": "11",
+      "actual_size": "8 x 8 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-8x8x1-merv-11"
+    },
+    {
+      "parent_model": "AF8x8x1A-M8",
+      "size": "8x8x1",
+      "merv": "8",
+      "actual_size": "8 x 8 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-8x8x1-merv-8"
+    },
+    {
+      "parent_model": "AF9x11.38x1A-M8",
+      "size": "9x11.38x1",
+      "merv": "8",
+      "actual_size": "9 x 11.38 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-9x11.38x1-merv-8"
+    },
+    {
+      "parent_model": "AF9x11x1A-M8",
+      "size": "9x11x1",
+      "merv": "8",
+      "actual_size": "9 x 11 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-9x11x1-merv-8"
+    },
+    {
+      "parent_model": "AF10x30x1N-M13",
+      "size": "10x30x1",
+      "merv": "13",
+      "actual_size": "9.5 x 29.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-10x30x1-merv-13"
+    },
+    {
+      "parent_model": "AF24x24x4N-M8",
+      "size": "24x24x4",
+      "merv": "8",
+      "actual_size": "23.375 x 23.375 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x24x4-merv-8"
+    },
+    {
+      "parent_model": "AF16x25x5-HW-M8",
+      "size": "16x25x5",
+      "merv": "8",
+      "actual_size": "15.88 x 24.88 x 4.38",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x5-merv-8"
+    },
+    {
+      "parent_model": "AF16X25X5-HW-M13",
+      "size": "16x25x5",
+      "merv": "13",
+      "actual_size": "15.88 x 24.88 x 4.38",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x25x5-merv-13"
+    },
+    {
+      "parent_model": "AF25x25x2-CO",
+      "size": "25x25x2",
+      "merv": "carbon",
+      "actual_size": "24.5 x 24.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-25x25x2-odor"
+    },
+    {
+      "parent_model": "AF24X40X1-M13",
+      "size": "24x40x1",
+      "merv": "13",
+      "actual_size": "23.5 x 39.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x40x1-merv-13"
+    },
+    {
+      "parent_model": "AF24X40X1-M11",
+      "size": "24x40x1",
+      "merv": "11",
+      "actual_size": "23.5 x 39.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-24x40x1-merv-11"
+    },
+    {
+      "parent_model": "AF12x14x1-M13",
+      "size": "12x14x1",
+      "merv": "13",
+      "actual_size": "11.5 x 13.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x14x1-merv-13"
+    },
+    {
+      "parent_model": "AF12x14x1-M11",
+      "size": "12x14x1",
+      "merv": "11",
+      "actual_size": "11.5 x 13.5 x .75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-12x14x1-merv-11"
+    },
+    {
+      "parent_model": "AF20x25x2-CO",
+      "size": "20x25x2",
+      "merv": "carbon",
+      "actual_size": "19.5 x 24.5 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x2-odor"
+    },
+    {
+      "parent_model": "AF20X25X5-HW-M13",
+      "size": "20x25x5",
+      "merv": "13",
+      "actual_size": "19.875 x 24.75 x 4.25",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x5-merv-13"
+    },
+    {
+      "parent_model": "AF20X25X5-HW-M8",
+      "size": "20x25x5",
+      "merv": "8",
+      "actual_size": "19.875 x 24.75 x 4.25",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x5-merv-8"
+    },
+    {
+      "parent_model": "AF17x10x2-M8",
+      "size": "17x10x2",
+      "merv": "8",
+      "actual_size": "9.5 x 16.375 x 1.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-17x10x2-merv-8"
+    },
+    {
+      "parent_model": "AF25x37x4A-M8",
+      "size": "25x37x4",
+      "merv": "8",
+      "actual_size": "25 x 37 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-25x37x4-merv-8"
+    },
+    {
+      "parent_model": "AF20x25x4-CO",
+      "size": "20x25x4",
+      "merv": "carbon",
+      "actual_size": "19.5 x 24.5 x 3.75",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x25x4-odor"
+    },
+    {
+      "parent_model": "AF16x20x5-CAR-M8",
+      "size": "16x20x5",
+      "merv": "8",
+      "actual_size": "15.5 x 19.88 x 4.25",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x20x5-merv-8"
+    },
+    {
+      "parent_model": "AF16x20x5-CAR-M13",
+      "size": "16x20x5",
+      "merv": "13",
+      "actual_size": "15.5 x 19.88 x 4.25",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x20x5-merv-13"
+    },
+    {
+      "parent_model": "AF16x20x5-CAR-M11",
+      "size": "16x20x5",
+      "merv": "11",
+      "actual_size": "15.5 x 19.88 x 4.25",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-16x20x5-merv-11"
+    },
+    {
+      "parent_model": "AF19x20x5-CAR-M8",
+      "size": "19x20x5",
+      "merv": "8",
+      "actual_size": "19.06 x 19.81 x 4.25",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x20x5-merv-8"
+    },
+    {
+      "parent_model": "AF19x20x5-CAR-M13",
+      "size": "19x20x5",
+      "merv": "13",
+      "actual_size": "19.06 x 19.81 x 4.25",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x20x5-merv-13"
+    },
+    {
+      "parent_model": "AF19x20x5-CAR-M11",
+      "size": "19x20x5",
+      "merv": "11",
+      "actual_size": "19.06 x 19.81 x 4.25",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-19x20x5-merv-11"
+    },
+    {
+      "parent_model": "AF20x20x5-HW-M8",
+      "size": "20x20x5",
+      "merv": "8",
+      "actual_size": "19.68 x 19.93 x 4.37",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x5-merv-8"
+    },
+    {
+      "parent_model": "AF20X20X5-HW-M13",
+      "size": "20x20x5",
+      "merv": "13",
+      "actual_size": "19.68 x 19.93 x 4.37",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x5-merv-13"
+    },
+    {
+      "parent_model": "AF20X20X5-HW-CO",
+      "size": "20x20x5",
+      "merv": "carbon",
+      "actual_size": "19.68 x 19.93 x 4.37",
+      "filterKingUrl": "https://filterking.com/air-filter-sizes-20x20x5-odor"
+    }
+  ]
+}

@@ -95,8 +95,8 @@ assert(
     !/free shipping/i.test(JSON.stringify(homeDoc.jsonLd ?? [])),
   "homepage FAQ JSON-LD must say 2–3 day delivery, not free shipping",
 );
-assert(!FULL_CATALOG, "VITE_FULL_CATALOG / FULL_CATALOG must be false — checkout is the XLS");
-assert(SELLABLE_ONLY, "checkout allowlist is SELLABLE_ONLY");
+assert(!FULL_CATALOG, "VITE_FULL_CATALOG / FULL_CATALOG must be false — never sell the full archive");
+assert(SELLABLE_ONLY, "checkout allowlist is SELLABLE_ONLY (live Filter King stock)");
 {
   const parents = (SELLABLE as { skus: Array<{ parentModel: string; size: string; merv: number; isCarbon?: boolean; actualWidth?: number; actualLength?: number; actualDepth?: number }> }).skus;
   const parentSet = new Set(parents.map((s) => s.parentModel));
@@ -123,7 +123,11 @@ assert(
 );
 assert(
   FILTER_SIZES.length < ALL_FILTER_SIZES.length,
-  `shop catalog is the XLS (${FILTER_SIZES.length}), not the full archive (${ALL_FILTER_SIZES.length})`,
+  `shop catalog is live Filter King stock (${FILTER_SIZES.length}), not the full archive (${ALL_FILTER_SIZES.length})`,
+);
+assert(
+  FILTER_SIZES.length > 100,
+  `shop should list Filter King stock sizes, got ${FILTER_SIZES.length}`,
 );
 assert(
   THICKNESSES.join(",") === "0.5,1,2,4,5",
@@ -207,15 +211,15 @@ for (const type of mervTypesForSize("20x25x1")) {
   assert(Math.abs(total6 - unit6 * 6) < 0.02, `${type.name} pack total mismatch`);
 }
 
-assert(getFilterSize("20x25x4"), "20x25x4 must be shoppable on the XLS");
+assert(getFilterSize("20x25x4"), "20x25x4 must be shoppable from Filter King stock");
 assert(getArchivedFilterSize("20x25x4"), "20x25x4 must stay in the archived catalog");
 const fourteen = findProductVariant("14x25x1", 8);
-assert(fourteen?.inStock, "14x25x1 MERV 8 is on the Model Pricing XLS");
-assert(!findProductVariant("14x25x1", 11)?.inStock, "14x25x1 MERV 11 is off-XLS — quote, not Stripe");
-assert(findProductVariant("16x25x4", 8)?.inStock, "16x25x4 MERV 8 is on the XLS");
+assert(fourteen?.inStock, "14x25x1 MERV 8 is in Filter King stock");
+assert(!findProductVariant("14x25x1", 11)?.inStock, "14x25x1 MERV 11 is off-stock — quote, not Stripe");
+assert(findProductVariant("16x25x4", 8)?.inStock, "16x25x4 MERV 8 is in Filter King stock");
 assert(
   mervTypesForSize("14x25x1").map((t) => t.key).join(",") === "8",
-  "14x25x1 XLS line is MERV 8 only",
+  "14x25x1 stock line is MERV 8 only",
 );
 
 let sellableCount = 0;
@@ -225,6 +229,7 @@ for (const size of FILTER_SIZES) {
     if (!variant?.inStock) continue;
     sellableCount += 1;
     assert(variant.filterKingUrl?.includes("filterking.com"), `${size.slug} needs a Filter King URL`);
+    assert(variant.parentModel, `${size.slug} ${type.name} needs parentModel`);
     const list = variant.price;
     assert(list > 0, `${size.slug} ${type.name} list must be positive`);
     for (const qty of [1, 2, 4, 6, 12]) {
@@ -260,7 +265,14 @@ for (const type of MERV_TYPES) {
     `${type.shortLabel} liveFromPrice $${liveFromPrice(type.key)} must be 20x25x1 qty 1 $${flagship.toFixed(2)}`,
   );
 }
-assert(sellableCount > 200, `XLS sellable SKUs too small: ${sellableCount}`);
+assert(
+  sellableCount >= 280 && sellableCount <= 320,
+  `live Filter King stock should be ~294 unique size×MERV SKUs after cut collapse, got ${sellableCount}`,
+);
+
+const apiOnly = findProductVariant("14x24x1", 13);
+assert(apiOnly?.inStock, "14x24x1 MERV 13 is Filter King stock not on the sheet — still cart");
+assert(apiOnly?.parentModel === "AF14x24x1-M13", "14x24x1 MERV 13 parent comes from stock");
 
 const sizePages = sitemapPaths().filter((p) => p.path.startsWith("/sizes/")).length;
 assert(sizePages === FILTER_SIZES.length, `sitemap size pages ${sizePages} must match shop catalog`);

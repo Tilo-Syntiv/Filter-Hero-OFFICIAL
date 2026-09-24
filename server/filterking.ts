@@ -66,13 +66,16 @@ export async function fetchAllParentModels(): Promise<FilterKingParentModel[]> {
     headers: { Authorization: `Bearer ${access}`, Accept: "application/json" },
   });
   const json = (await res.json()) as {
+    success?: boolean;
+    message?: string;
     sku_items?: FilterKingParentModel[];
-    data?: FilterKingParentModel[];
+    data?: FilterKingParentModel[] | { sku_items?: FilterKingParentModel[] };
   };
-  if (!res.ok) {
-    throw new Error(`Filter King catalog failed (${res.status})`);
+  if (!res.ok || json.success === false) {
+    throw new Error(`Filter King catalog failed (${res.status}${json.message ? `: ${json.message}` : ""})`);
   }
   if (Array.isArray(json.sku_items)) return json.sku_items;
   if (Array.isArray(json.data)) return json.data;
+  if (json.data && Array.isArray(json.data.sku_items)) return json.data.sku_items;
   return [];
 }

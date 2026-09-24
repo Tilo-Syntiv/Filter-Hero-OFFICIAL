@@ -28,14 +28,14 @@ function CatalogBody() {
   return (
     <div className="space-y-6">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Sellable SKUs" value={data.skuCount} />
+        <StatCard label="Stock SKUs" value={data.skuCount} />
         <StatCard label="Sizes on sale" value={data.sizeCount} />
-        <StatCard label="Archive sizes" value={data.archivedSizeCount} />
         <StatCard
-          label="Mode"
-          value={data.sellableOnly ? "Sheet" : "Full"}
-          hint="FULL_CATALOG env flag"
+          label="Live stock rows"
+          value={data.stockCount ?? data.skuCount}
+          hint={data.stockSyncedAt ? `Synced ${data.stockSyncedAt}` : "Bootstrap catalog"}
         />
+        <StatCard label="Archive sizes" value={data.archivedSizeCount} />
       </div>
 
       <AdminPanel
@@ -51,7 +51,7 @@ function CatalogBody() {
         </p>
       </AdminPanel>
 
-      <AdminPanel title="Sellable catalog">
+      <AdminPanel title="Live stock catalog">
         <div className="mb-4">
           <AdminSearch
             value={query}
@@ -80,8 +80,9 @@ function CatalogBody() {
           </AdminTable>
         )}
         <p className="mt-3 text-xs text-muted-foreground">
-          Showing {data.products.length} of {data.matched}. Contractor sheet is the catalog.
-          Stripe / Klaviyo / Supabase update with <code>pnpm sync:catalog</code>.
+          Showing {data.products.length} of {data.matched}. Cart follows the live supplier
+          parent-model stock (auto-refresh every 15 minutes). Stripe and Supabase identity
+          update with <code>pnpm sync:catalog</code>.
         </p>
       </AdminPanel>
     </div>
