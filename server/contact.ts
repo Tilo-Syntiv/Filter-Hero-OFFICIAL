@@ -5,6 +5,7 @@ import { recordLeadInCrm } from "./crm/intake";
 import { dataFile } from "./data-store";
 import { sendContactReceipt, sendLeadAlert } from "./mailer";
 import { resendSendsShopperReceipt } from "../shared/email-channels";
+import { recordConstantContactOptIn } from "./constant-contact/contacts";
 import { isHoneypotTripped, shouldEnforceTurnstile, verifyTurnstile } from "./security";
 
 function leadsPath() {
@@ -77,6 +78,19 @@ export async function submitContact(raw: unknown, ip?: string) {
     }
   } catch (err) {
     console.error("[contact] crm failed after save", err);
+  }
+  if (lead.marketingConsent) {
+    try {
+      await recordConstantContactOptIn({
+        email: lead.email,
+        name: lead.name,
+        phone: lead.phone,
+        marketingConsent: true,
+        intent: lead.intent,
+      });
+    } catch (err) {
+      console.error("[constant-contact] lead opt-in failed", err);
+    }
   }
   try {
     const staff = await sendLeadAlert(lead);

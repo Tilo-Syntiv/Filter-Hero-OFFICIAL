@@ -26,7 +26,8 @@ export type ShopperMessage =
   | "abandoned_checkout"
   | "post_purchase_nurture"
   | "replenish"
-  | "winback";
+  | "winback"
+  | "back_in_stock";
 
 export const EMAIL_OWNER: Record<ShopperMessage, EmailChannel> = {
   staff_lead_alert: "resend",
@@ -41,6 +42,8 @@ export const EMAIL_OWNER: Record<ShopperMessage, EmailChannel> = {
   post_purchase_nurture: "none",
   replenish: "none",
   winback: "none",
+  /** Shopper asked to be told when a specific size × MERV returns — Resend only. */
+  back_in_stock: "resend",
 };
 
 /** CRM records work. It is never a sender — a third mailbox re-opens FH-171. */
@@ -49,4 +52,17 @@ export const CRM_SENDS_MAIL = false;
 /** Resend may email the shopper for quote/support only. Clock saves are staff-only. */
 export function resendSendsShopperReceipt(intent: ContactIntent): boolean {
   return intent === "quote" || intent === "support";
+}
+
+/**
+ * Constant Contact stores an explicit opt-in. It does not send the receipt.
+ * Stripe still sends the payment receipt. Resend still sends quote, support,
+ * and order mail. Clock saves never join the list.
+ */
+export function constantContactMayRecord(input: {
+  marketingConsent?: boolean;
+  intent?: ContactIntent;
+}): boolean {
+  if (input.intent === "reminder") return false;
+  return input.marketingConsent === true;
 }

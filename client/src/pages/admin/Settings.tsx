@@ -254,9 +254,12 @@ function SettingsBody() {
           ) : (
             <p className="text-muted-foreground">
               Connect once with the Constant Contact user that created the FILTER HERO app.
-              Shopper receipts stay on Resend. Marketing flows are parked.
             </p>
           )}
+          <p className="text-muted-foreground">
+            Checkout, quote, and support opt-ins are saved on the Filter Hero list. Stripe sends
+            the payment receipt. Resend sends the order, quote, and support mail.
+          </p>
           {data.constantContact.needsReauthorize ? (
             <p className="font-semibold text-destructive">
               {constantContactMessage(

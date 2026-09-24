@@ -29,6 +29,7 @@
     "verify:intuit-oauth": "tsx scripts/verify-intuit-oauth.ts",
     "connect:intuit": "tsx scripts/connect-intuit.ts",
     "connect:constant-contact": "tsx scripts/connect-constant-contact.ts",
+    "verify:constant-contact": "tsx scripts/verify-constant-contact.ts",
     "setup:intuit-live": "tsx scripts/setup-intuit-live.ts",
     "setup:stripe-webhook": "tsx scripts/setup-stripe-webhook.ts",
     "sync:catalog": "tsx scripts/sync-catalog.ts",

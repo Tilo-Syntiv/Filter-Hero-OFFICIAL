@@ -7,6 +7,7 @@ import { readStripeTaxReadiness } from "../../shared/stripe-tax";
 import { adminLimiter, publicError } from "../security";
 import { loadSiteConfig, saveSiteConfig } from "./config";
 import { intuitOAuth } from "../intuit/oauth";
+import { constantContactLiveCheck, recordConstantContactOptIn } from "../constant-contact/contacts";
 import { constantContactOAuth } from "../constant-contact/oauth";
 import { STATE_COOKIE as CC_STATE_COOKIE } from "../constant-contact/routes";
 import {
@@ -278,6 +279,49 @@ export function adminRouter(): Router {
 
   router.get("/constant-contact/status", (_req, res) => {
     sendData(res, constantContactOAuth.status());
+  });
+
+  router.get("/constant-contact/health", async (_req, res) => {
+    try {
+      sendData(res, await constantContactLiveCheck());
+    } catch (err) {
+      const { status, body } = publicError(
+        err,
+        { code: "constant_contact_health_failed", message: "Could not reach Constant Contact." },
+        "[constant-contact] health",
+      );
+      res.status(status).json({ ok: false, ...body });
+    }
+  });
+
+  router.post("/constant-contact/opt-in", async (req, res) => {
+    const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+    const staffEmail = req.staff?.email?.toLowerCase() || "";
+    if (!email || email !== staffEmail) {
+      res.status(400).json({
+        ok: false,
+        error: "That check can only save the signed-in staff address.",
+        code: "constant_contact_opt_in_scope",
+      });
+      return;
+    }
+    try {
+      sendData(
+        res,
+        await recordConstantContactOptIn({
+          email,
+          name: typeof req.body?.name === "string" ? req.body.name : undefined,
+          marketingConsent: true,
+        }),
+      );
+    } catch (err) {
+      const { status, body } = publicError(
+        err,
+        { code: "constant_contact_opt_in_failed", message: "Could not save that address." },
+        "[constant-contact] opt-in",
+      );
+      res.status(status).json({ ok: false, ...body });
+    }
   });
 
   router.post("/constant-contact/connect", (req, res) => {

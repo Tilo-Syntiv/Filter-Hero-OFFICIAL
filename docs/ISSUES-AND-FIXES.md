@@ -14,19 +14,33 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-374**
+Next id: **FH-375**
+
+---
+
+### FH-374 — Opt-ins never reached the connected Constant Contact account
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** The Constant Contact account was authorized, but checkout, quote, and support opt-ins were only stored on the lead or Stripe metadata. Nothing called the Constant Contact API.
+- **Do NOT:** Record a Filter Clock `intent=reminder` opt-in. Do not send a receipt, welcome, abandon, or replenish from Constant Contact. Stripe keeps the payment receipt. Resend keeps order, quote, and support mail. Do not fail checkout or the contact form when Constant Contact is down.
+- **Do:** Explicit consent on checkout, quote, or support is `POST /contacts/sign_up_form` onto the Filter Hero list. The list is `CONSTANT_CONTACT_LIST_ID` or the list named Filter Hero. Tokens stay in `DATA_DIR`.
+- **Files:** `server/constant-contact/contacts.ts`, `server/contact.ts`, `server/stripe.ts`, `shared/email-channels.ts`
+- **Verify:** `pnpm verify:constant-contact`. Staff `GET /api/admin/constant-contact/health` returns the Filter Hero account and a list id.
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
 
 ---
 
 ### FH-373 — Constant Contact callback was missing on the live shop
-- **Status:** mitigated
+- **Status:** fixed
 - **Area:** other
 - **Symptom:** Admin Connect could not finish. `GET /api/constant-contact/oauth/callback` on filterhero.net was 404, so Constant Contact had nowhere to return the login. Keys were already on Railway and the API key was accepted. No refresh token was stored, so the account stayed unauthorized.
 - **Do NOT:** `railway up` a dirty working tree over this service. Do not point the Railway source at `Tilo-Syntiv/FILTER-HERO`. Do not send welcome, abandon, or replenish from Constant Contact. Shopper receipts stay on Resend. Do not put the client secret in a `VITE_` var.
 - **Do:** Production source is `Tilo-Syntiv/Filter-Hero-OFFICIAL` `main`. Callback is `https://filterhero.net/api/constant-contact/oauth/callback`. A bare hit redirects to `/admin/settings?constantcontact=csrf`. Staff finishes the account from Settings → Connect, signed in as the Constant Contact user that owns the FILTER HERO app. Tokens stay in `DATA_DIR/constant-contact-oauth.json`.
 - **Files:** `server/constant-contact/routes.ts`, `server/constant-contact/oauth.ts`, `server/index.ts`, `client/src/pages/admin/Settings.tsx`
-- **Verify:** `pnpm connect:constant-contact` prints “client accepted” and the production redirect. `GET https://filterhero.net/api/constant-contact/oauth/callback` is 302 to the settings page. After Connect, Settings shows “Account authorized” and the organization name.
+- **Verify:** `pnpm verify:constant-contact`. `pnpm connect:constant-contact` prints “client accepted”. `GET https://filterhero.net/api/constant-contact/oauth/callback` is 302 to settings. Staff `GET /api/admin/settings` shows `connected: true`, organization Filter Hero, `info@filterhero.net`, scopes `account_read offline_access campaign_data contact_data`.
 - **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
 
 ---
 

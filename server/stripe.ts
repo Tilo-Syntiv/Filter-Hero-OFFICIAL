@@ -26,6 +26,7 @@ import { recordPurchaseOnAccount } from "./account";
 import { closeDealsOnPurchase } from "./crm/intake";
 import { dataFile } from "./data-store";
 import { sendOrderConfirmation } from "./mailer";
+import { recordConstantContactOptIn } from "./constant-contact/contacts";
 import { stripeCheckoutBrandingSettings } from "../shared/stripe-checkout-brand";
 
 const SESSION_ID = /^cs_(test|live)_[A-Za-z0-9]+$/;
@@ -587,6 +588,18 @@ export async function handleStripeWebhook(
       ...orderFromCheckoutSession(session),
     };
     await persistPaidOrder(stored);
+    if (session.metadata?.marketingConsent === "1" && stored.customerEmail) {
+      try {
+        await recordConstantContactOptIn({
+          email: stored.customerEmail,
+          name: session.customer_details?.name,
+          phone: stored.phone,
+          marketingConsent: true,
+        });
+      } catch (err) {
+        console.error("[constant-contact] checkout opt-in failed", err);
+      }
+    }
   }
 
   if (event.type === "invoice.paid") {
