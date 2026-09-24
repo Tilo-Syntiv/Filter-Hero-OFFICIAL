@@ -13,17 +13,20 @@ import {
   Wind,
 } from "lucide-react";
 import {
+  AUTO_DELIVERY_INTERVALS,
   MERV_TYPES,
   PACK_QTYS,
   PACK_TIERS,
+  deliveryLabel,
   findProductVariant,
   getFilterSize,
   mervTypesForSize,
-  packTotal,
   productGalleryFor,
   packShotSrc,
   sellableMervPhrase,
+  shopperUnitPrice,
   unitPriceForQty,
+  type DeliveryMode,
   type Product,
 } from "@shared/products";
 import {
@@ -82,6 +85,7 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
   const [hoverKey, setHoverKey] = useState<PreferredMerv | null>(null);
   const [qty, setQty] = useState(6);
   const [shot, setShot] = useState(0);
+  const [delivery, setDelivery] = useState<DeliveryMode>("once");
   const pickQty = (n: number) => setQty(Math.min(qtyMax, Math.max(qtyMin, n)));
 
   useEffect(() => {
@@ -131,17 +135,29 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
     if (variant) trackViewedProduct(variant);
   }, [variant]);
 
-  const unitPrice = variant ? unitPriceForQty(variant.price, qty, variant) : 0;
-  const total = variant ? packTotal(variant.price, qty, variant) : 0;
+  const listUnit = variant ? unitPriceForQty(variant.price, qty, variant) : 0;
+  const unitPrice = variant
+    ? shopperUnitPrice(variant.price, qty, variant, delivery)
+    : 0;
+  const total = Math.round(unitPrice * qty * 100) / 100;
   const savePct =
-    variant && variant.price > 0 ? Math.round((1 - unitPrice / variant.price) * 100) : 0;
+    variant && variant.price > 0 ? Math.round((1 - listUnit / variant.price) * 100) : 0;
+  const subscribeSave =
+    delivery !== "once" && listUnit > 0
+      ? Math.round((1 - unitPrice / listUnit) * 100)
+      : 0;
   const packRung = PACK_TIERS.reduce(
     (current, next) => (qty >= next.minQty ? next.minQty : current),
     PACK_TIERS[0].minQty,
   );
   const saveVsSingle =
     variant && qty > 1
-      ? Math.max(0, Math.round((variant.price * qty - total) * 100) / 100)
+      ? Math.max(
+          0,
+          Math.round(
+            (shopperUnitPrice(variant.price, 1, variant, delivery) * qty - total) * 100,
+          ) / 100,
+        )
       : 0;
   const bestValueQty = variant
     ? PACK_TIERS.reduce((best, tier) => {
@@ -157,8 +173,12 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
     if (!variant || !variant.inStock) return;
     const active = document.activeElement;
     if (active instanceof HTMLElement) active.blur();
-    addItem(variant, qty);
-    toast.success(`Added ${qty}× ${variant.size} (${selectedType.name})`);
+    addItem(variant, qty, delivery);
+    toast.success(
+      delivery === "once"
+        ? `Added ${qty}× ${variant.size} (${selectedType.name})`
+        : `Added ${qty}× ${variant.size} · ${deliveryLabel(delivery)} (10% off)`,
+    );
   };
 
   const inCatalog = Boolean(sizeMeta);
@@ -543,6 +563,39 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
                 </div>
 
                 <div className="pdp-checkout">
+                  <div className="mb-4">
+                    <h2 className="section-label !text-mesh">3 · Delivery</h2>
+                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      <button
+                        type="button"
+                        className={`rounded-xl border px-3 py-2 text-left text-sm font-semibold ${
+                          delivery === "once"
+                            ? "border-navy bg-navy text-white"
+                            : "border-border bg-white text-navy"
+                        }`}
+                        onClick={() => setDelivery("once")}
+                      >
+                        Buy once
+                      </button>
+                      {AUTO_DELIVERY_INTERVALS.map((days) => (
+                        <button
+                          key={days}
+                          type="button"
+                          className={`rounded-xl border px-3 py-2 text-left text-sm font-semibold ${
+                            delivery === days
+                              ? "border-navy bg-navy text-white"
+                              : "border-border bg-white text-navy"
+                          }`}
+                          onClick={() => setDelivery(days)}
+                        >
+                          Every {days}d
+                          <span className="mt-0.5 block text-[0.65rem] font-bold opacity-80">
+                            10% off
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="mb-4 flex items-end justify-between gap-3">
                     <div>
                       <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.16em] text-muted-foreground">
@@ -553,6 +606,7 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         ${unitPrice.toFixed(2)} per filter
+                        {subscribeSave > 0 ? ` · ${subscribeSave}% auto-delivery` : ""}
                         {saveVsSingle > 0 ? ` · save $${saveVsSingle.toFixed(2)} vs singles` : ""}
                       </p>
                     </div>
@@ -564,7 +618,9 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
                     onClick={handleAdd}
                   >
                     <ShoppingCart className="h-4 w-4" />
-                    Add {qty} to cart
+                    {delivery === "once"
+                      ? `Add ${qty} to cart`
+                      : `Add ${qty} · auto every ${delivery} days`}
                   </Button>
                 </div>
               </div>
@@ -680,6 +736,7 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
           <div>
             <p className="text-[0.62rem] font-extrabold uppercase tracking-[0.12em] text-white/85">
               {qty} × {selectedType.name}
+              {delivery === "once" ? "" : ` · every ${delivery}d`}
             </p>
             <p className="text-lg font-extrabold text-white">${total.toFixed(2)}</p>
           </div>

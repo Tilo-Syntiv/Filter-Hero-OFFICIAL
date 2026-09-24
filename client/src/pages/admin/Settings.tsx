@@ -5,11 +5,14 @@ import { AdminError, AdminLoading, AdminPanel, StatusDot } from "./ui";
 import { Button } from "@/components/ui/button";
 import {
   connectKlaviyoStripe,
+  disconnectConstantContact,
   disconnectIntuit,
   getAdminSettings,
+  startConstantContactConnect,
   startIntuitConnect,
 } from "@/lib/admin-api";
 import { staffMessageFor, type OauthErrorKind } from "@shared/intuit-oauth";
+import { staffMessageFor as constantContactMessage, type OauthErrorKind as ConstantContactKind } from "@shared/constant-contact-oauth";
 
 const OAUTH_KINDS = new Set<OauthErrorKind>([
   "expired_access_token",
@@ -19,6 +22,28 @@ const OAUTH_KINDS = new Set<OauthErrorKind>([
   "oauth_denied",
   "other",
 ]);
+
+const CC_KINDS = new Set<ConstantContactKind>([
+  "expired_access_token",
+  "expired_refresh_token",
+  "invalid_grant",
+  "invalid_client",
+  "csrf",
+  "oauth_denied",
+  "other",
+]);
+
+function constantContactNotice(): { tone: "ok" | "error"; text: string } | null {
+  const kind = new URLSearchParams(window.location.search).get("constantcontact");
+  if (!kind) return null;
+  if (kind === "connected") {
+    return { tone: "ok", text: "Constant Contact is connected." };
+  }
+  if (CC_KINDS.has(kind as ConstantContactKind)) {
+    return { tone: "error", text: constantContactMessage(kind as ConstantContactKind) };
+  }
+  return { tone: "error", text: "Constant Contact could not complete that request." };
+}
 
 function intuitNotice(): { tone: "ok" | "error"; text: string } | null {
   const kind = new URLSearchParams(window.location.search).get("intuit");
@@ -39,6 +64,7 @@ export default function AdminSettings() {
 function SettingsBody() {
   const { data, error, loading, reload } = useAdminLoad(getAdminSettings);
   const notice = useMemo(intuitNotice, []);
+  const ccNotice = useMemo(constantContactNotice, []);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState("");
   const [copiedUri, setCopiedUri] = useState(false);
@@ -68,6 +94,7 @@ function SettingsBody() {
     ["Supabase", data.integrations.supabase],
     ["Turnstile", data.integrations.turnstile],
     ["QuickBooks keys", data.integrations.intuit],
+    ["Constant Contact keys", data.integrations.constantContact],
   ] as const;
 
   const connectKlaviyo = async () => {
@@ -104,6 +131,31 @@ function SettingsBody() {
     }
   };
 
+  const connectConstantContact = async () => {
+    setBusy(true);
+    setActionError("");
+    try {
+      const next = await startConstantContactConnect();
+      window.location.assign(next.url);
+    } catch (err) {
+      setBusy(false);
+      setActionError(err instanceof Error ? err.message : "Could not start Constant Contact connect.");
+    }
+  };
+
+  const disconnectConstantContactAccount = async () => {
+    setBusy(true);
+    setActionError("");
+    try {
+      await disconnectConstantContact();
+      await reload();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Could not disconnect Constant Contact.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const disconnect = async () => {
     setBusy(true);
     setActionError("");
@@ -128,6 +180,17 @@ function SettingsBody() {
           }
         >
           {notice.text}
+        </p>
+      ) : null}
+      {ccNotice ? (
+        <p
+          className={
+            ccNotice.tone === "ok"
+              ? "rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-navy"
+              : "rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm font-semibold text-destructive"
+          }
+        >
+          {ccNotice.text}
         </p>
       ) : null}
       {actionError ? (
@@ -235,6 +298,57 @@ function SettingsBody() {
             QuickBooks should record the tax Stripe already collected. Do not let Automated Sales Tax
             recalculate the same sale.
           </p>
+        </div>
+      </AdminPanel>
+
+      <AdminPanel
+        title="Constant Contact"
+        action={
+          data.constantContact.connected ? (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={busy}
+              onClick={() => void disconnectConstantContactAccount()}
+            >
+              Disconnect
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              className="text-white"
+              disabled={busy || !data.constantContact.configured}
+              onClick={() => void connectConstantContact()}
+            >
+              {data.constantContact.needsReauthorize ? "Connect again" : "Connect"}
+            </Button>
+          )
+        }
+      >
+        <div className="space-y-2 text-sm">
+          <StatusDot ok={data.constantContact.configured} label="API key and client secret" />
+          <StatusDot ok={data.constantContact.connected} label="Account authorized" />
+          {data.constantContact.organizationName ? (
+            <p className="text-muted-foreground">
+              {data.constantContact.organizationName}
+              {data.constantContact.contactEmail ? ` · ${data.constantContact.contactEmail}` : ""}
+            </p>
+          ) : (
+            <p className="text-muted-foreground">
+              Connect once with the Constant Contact user that created the FILTER HERO app.
+              Shopper receipts stay on Resend. Welcome, abandon, and replenish stay on Klaviyo.
+            </p>
+          )}
+          {data.constantContact.needsReauthorize ? (
+            <p className="font-semibold text-destructive">
+              {constantContactMessage(
+                data.constantContact.lastError === "invalid_grant" ||
+                  data.constantContact.lastError === "invalid_client"
+                  ? data.constantContact.lastError
+                  : "expired_refresh_token",
+              )}
+            </p>
+          ) : null}
         </div>
       </AdminPanel>
 
@@ -360,6 +474,16 @@ function SettingsBody() {
           <li>
             <a className="font-semibold text-primary" href={data.links.resend} target="_blank" rel="noreferrer">
               Resend
+            </a>
+          </li>
+          <li>
+            <a
+              className="font-semibold text-primary"
+              href={data.links.constantContact}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Constant Contact
             </a>
           </li>
         </ul>

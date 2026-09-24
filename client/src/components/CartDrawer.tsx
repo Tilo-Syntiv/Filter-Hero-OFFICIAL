@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import MarketingOptIn from "@/components/MarketingOptIn";
 import { identifyShopper, rememberedEmail } from "@/lib/klaviyo";
+import { stashCheckoutContinuation } from "@/lib/checkout-queue";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSiteConfig } from "@/contexts/SiteConfigContext";
 import {
@@ -17,7 +18,14 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { FILTER_PRODUCT_IMAGE, getProductById, packShotSrc } from "@shared/products";
+import {
+  AUTO_DELIVERY_INTERVALS,
+  FILTER_PRODUCT_IMAGE,
+  deliveryLabel,
+  getProductById,
+  packShotSrc,
+  type DeliveryMode,
+} from "@shared/products";
 import { useCart } from "@/contexts/CartContext";
 import { stashQuoteHandoff } from "@/lib/quote-handoff";
 
@@ -26,8 +34,18 @@ type CartDrawerProps = {
 };
 
 export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
-  const { items, isOpen, closeCart, setQty, removeItem, subtotal, itemCount, cartSummaryText } =
-    useCart();
+  const {
+    items,
+    isOpen,
+    closeCart,
+    setQty,
+    setDelivery,
+    removeItem,
+    subtotal,
+    itemCount,
+    checkoutGroupCount,
+    cartSummaryText,
+  } = useCart();
   const { email: accountEmail } = useAccount();
   const { maintenanceMode, maintenanceMessage } = useSiteConfig();
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -64,14 +82,37 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
           items: items.map((i) => ({
             productId: i.productId,
             quantity: i.qty,
+            delivery: i.delivery,
           })),
           email: trimmed,
           marketingConsent,
         }),
       });
-      const data = (await res.json()) as { url?: string; error?: string };
+      const data = (await res.json()) as {
+        url?: string;
+        remainingItems?: Array<{
+          productId: number;
+          quantity: number;
+          delivery?: DeliveryMode;
+        }>;
+        groupLabel?: string;
+        groupsRemaining?: number;
+        error?: string;
+      };
       if (!res.ok || !data.url) {
         throw new Error(data.error || "Checkout failed");
+      }
+      stashCheckoutContinuation({
+        remainingItems: data.remainingItems ?? [],
+        email: trimmed,
+        marketingConsent,
+      });
+      if ((data.groupsRemaining ?? 0) > 0) {
+        toast.message(
+          `Next: ${data.groupLabel || "this payment"}. You’ll complete ${
+            (data.groupsRemaining ?? 0) + 1
+          } Stripe checkouts for mixed delivery schedules.`,
+        );
       }
       window.location.href = data.url;
     } catch (err) {
@@ -102,7 +143,9 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
             <span className="cart-count">{itemCount}</span>
           </DrawerTitle>
           <DrawerDescription className="text-xs leading-snug text-white/70">
-            Checkout with Stripe, or request a quote.
+            {checkoutGroupCount > 1
+              ? `Mixed schedules need ${checkoutGroupCount} Stripe payments.`
+              : "Checkout with Stripe, or request a quote."}
           </DrawerDescription>
         </DrawerHeader>
 
@@ -118,7 +161,7 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
                 ? packShotSrc(product.merv, Boolean(product.isCarbon))
                 : FILTER_PRODUCT_IMAGE;
               return (
-                <div key={item.productId} className="cart-line">
+                <div key={item.lineKey} className="cart-line">
                   <img
                     src={shot}
                     alt={`${item.size} ${item.name}`}
@@ -127,6 +170,26 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
                   <div className="min-w-0">
                     <p className="cart-line-size break-words">{item.size}</p>
                     <p className="cart-line-name">{item.name}</p>
+                    <label className="mt-1.5 block text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">
+                      Delivery
+                      <select
+                        className="mt-0.5 block w-full rounded-md border border-border bg-white px-2 py-1 text-xs font-semibold normal-case tracking-normal text-navy"
+                        value={String(item.delivery)}
+                        onChange={(event) => {
+                          const v = event.target.value;
+                          const next: DeliveryMode =
+                            v === "once" ? "once" : (Number(v) as 30 | 60 | 90);
+                          setDelivery(item.lineKey, next);
+                        }}
+                      >
+                        <option value="once">Buy once</option>
+                        {AUTO_DELIVERY_INTERVALS.map((days) => (
+                          <option key={days} value={days}>
+                            {deliveryLabel(days)} · 10% off
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                   </div>
                   <div className="cart-line-meta">
                     <p className="cart-line-price">
@@ -137,7 +200,7 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
                       <div className="pdp-stepper-ctrl">
                         <button
                           type="button"
-                          onClick={() => setQty(item.productId, item.qty - 1)}
+                          onClick={() => setQty(item.lineKey, item.qty - 1)}
                           aria-label="Decrease quantity"
                         >
                           <Minus className="h-4 w-4" strokeWidth={2.5} />
@@ -147,7 +210,7 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
                         </span>
                         <button
                           type="button"
-                          onClick={() => setQty(item.productId, item.qty + 1)}
+                          onClick={() => setQty(item.lineKey, item.qty + 1)}
                           aria-label="Increase quantity"
                         >
                           <Plus className="h-4 w-4" strokeWidth={2.5} />
@@ -156,7 +219,7 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
                       <button
                         type="button"
                         className="cart-line-remove"
-                        onClick={() => removeItem(item.productId)}
+                        onClick={() => removeItem(item.lineKey)}
                         aria-label="Remove item"
                       >
                         <Trash2 className="h-4 w-4" />

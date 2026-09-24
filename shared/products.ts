@@ -8,6 +8,10 @@ import {
   liveUnitPrice,
   type Priceable,
 } from "./pricing/engine";
+import {
+  unitPriceForDelivery,
+  type DeliveryMode,
+} from "./delivery";
 
 export {
   FILTRETE_1INCH_QTY1,
@@ -26,6 +30,19 @@ export {
   ESTIMATED_UNDERCUT_RATIO,
   type Priceable,
 } from "./pricing/engine";
+
+export {
+  AUTO_DELIVERY_INTERVALS,
+  SUBSCRIBE_DISCOUNT,
+  cartLineKey,
+  deliveryLabel,
+  isAutoDeliveryInterval,
+  parseDeliveryMode,
+  subscribeUnitPrice,
+  unitPriceForDelivery,
+  type AutoDeliveryInterval,
+  type DeliveryMode,
+} from "./delivery";
 
 export type MervRating = 8 | 11 | 13;
 
@@ -161,7 +178,7 @@ function fallbackUnitPrice(listPrice: number, qty: number): number {
  * match the cheaper one. Otherwise 1-inch qty 1 is Filtrete; other rungs
  * are Filter King × 0.90, capped at the Filtrete single. Then match a
  * confirmed FilterBuy ticket if that ticket is cheaper. Never sell below
- * 35% gross margin on wholesale cost (FH-363). Higher qty never costs more
+ * 50% gross margin on wholesale cost (FH-363 / FH-365). Higher qty never costs more
  * per filter than a lower unlocked rung (FH-361). No ladder: PACK_TIERS on
  * listPrice.
  */
@@ -175,6 +192,16 @@ export function unitPriceForQty(
     if (live !== undefined) return live;
   }
   return fallbackUnitPrice(listPrice, qty);
+}
+
+/** One-time or subscribe (10% off) unit for a cart / Checkout line. */
+export function shopperUnitPrice(
+  listPrice: number,
+  qty: number,
+  product: Priceable | undefined,
+  delivery: DeliveryMode = "once",
+): number {
+  return unitPriceForDelivery(unitPriceForQty(listPrice, qty, product), delivery);
 }
 
 export function packTotal(

@@ -166,6 +166,21 @@ assert(props.last_order_sizes, "order sizes stored");
 assert(props[REPLENISH_DATE_PROPERTY] === "2026-12-03", "purchase sets sendable next_change_date");
 assert(props.change_interval_days === 90, "purchase interval from depth");
 
+const autoOrder = {
+  ...order,
+  id: "ord_auto",
+  sessionId: "cs_test_auto",
+  autoDelivery: true,
+  deliveryDays: 90 as const,
+  items: JSON.stringify([{ productId: items[0]?.productId, quantity: 1, delivery: 90 }]),
+};
+const autoProps = orderProfileProperties(autoOrder);
+assert(
+  !(REPLENISH_DATE_PROPERTY in autoProps),
+  "auto-delivery must not set sendable next_change_date",
+);
+assert(autoProps.auto_delivery === true, "auto-delivery flag on profile");
+
 const catalog = buildKlaviyoCatalog("https://filterhero.net");
 assert(catalog.items.length > 0, "catalog has SKUs");
 assert(catalog.items.length <= 400, `catalog is the wholesale sheet, not full archive (${catalog.items.length})`);

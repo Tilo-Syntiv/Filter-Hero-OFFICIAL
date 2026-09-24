@@ -14,7 +14,7 @@ export const ESTIMATED_UNDERCUT_RATIO = 0.88;
  * Shopper tickets are raised to clear this floor even when a competitor
  * undercut would have been cheaper (FH-363).
  */
-export const MIN_GROSS_MARGIN = 0.35;
+export const MIN_GROSS_MARGIN = 0.5;
 
 /**
  * Target / Lowe’s Filtrete 1-pack, 1-inch only. Same ticket across sizes.
@@ -137,7 +137,7 @@ function money(n: number): number {
 /**
  * Lowest sell unit that clears MIN_GROSS_MARGIN on this wholesale cost.
  * Ceil to the cent so (sell − cost) / sell is never slightly under the floor
- * after money() rounding (e.g. 4.00 / 0.65 → 6.1538 → $6.16, not $6.15).
+ * after money() rounding (e.g. 4.00 / 0.50 → 8.00 exactly; 4.82 / 0.50 → $9.64).
  */
 export function minSellForMargin(cost: number, margin = MIN_GROSS_MARGIN): number {
   if (!(cost > 0) || !(margin > 0) || margin >= 1) return money(cost);
@@ -357,8 +357,8 @@ function rawLiveUnitPrice(product: Priceable, qty: number): number | undefined {
 }
 
 /**
- * Pack unit. Same sources as rawLiveUnitPrice, then raise to the 35% gross
- * margin floor (FH-363), then carry the cheapest unlocked lower rung forward
+ * Pack unit. Same sources as rawLiveUnitPrice, then raise to the 50% gross
+ * margin floor (FH-363 / FH-365), then carry the cheapest unlocked lower rung forward
  * so a higher qty never costs more per filter (FH-341 / FH-361). Does not
  * invent Filtrete tickets — it only keeps a deal the shopper already unlocked,
  * then never sells below the wholesale margin floor.

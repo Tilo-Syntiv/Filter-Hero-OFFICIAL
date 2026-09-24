@@ -112,6 +112,16 @@ record(
   sellable.count === sellable.skus.length,
   `count=${sellable.count} rows=${sellable.skus.length}`,
 );
+{
+  const keys = sellable.skus.map(
+    (s) => `${s.size.toLowerCase()}|${(s as { isCarbon?: boolean }).isCarbon ? "carbon" : s.merv}`,
+  );
+  record(
+    "sellable:unique-size-merv",
+    new Set(keys).size === keys.length,
+    `keys=${keys.length} unique=${new Set(keys).size}`,
+  );
+}
 const missingSellable = sellable.skus.filter((sku) => !getFilterSize(sku.size));
 record(
   "sellable:sizes-in-catalog",

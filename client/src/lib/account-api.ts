@@ -77,6 +77,9 @@ export const saveAccountFilter = (productId: number, notes?: string) =>
 export const removeAccountFilter = (id: string) =>
   accountFetch<{ id: string }>(`/filters/${id}`, { method: "DELETE" });
 
+export const openBillingPortal = () =>
+  accountFetch<{ url: string }>("/billing-portal", { method: "POST" });
+
 export function formatOrderTotal(amount: number | null, currency: string | null): string {
   if (amount === null) return "—";
   return (amount / 100).toLocaleString("en-US", {

@@ -14,7 +14,46 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-364**
+Next id: **FH-367**
+
+---
+
+### FH-366 — Automatic delivery (Stripe Billing) + 10% subscribe
+- **Status:** fixed
+- **Area:** cart
+- **Symptom:** Shop had only one-time Checkout. Replenish was email-only. Mixed cadences could not check out in one cart.
+- **Do NOT:** Mix one-time and subscription line items in one Checkout Session. Do not claw the 10% subscribe cut back to the 50% margin floor. Do not set `next_change_date` / enroll Klaviyo replenish on auto-delivery orders. Do not pass `payment_method_types`. Do not use a second mail sender for renewals.
+- **Do:** Per-line Buy once or Every 30/60/90 days. Subscribe unit = one-time × 0.90 on every qty. Cart splits groups (once → 30 → 60 → 90); success page chains remaining sessions. `invoice.paid` with `subscription_cycle` writes renewal orders. Account “Manage delivery” opens Stripe Customer Portal. Webhook must include `invoice.paid` and `customer.subscription.deleted`.
+- **Files:** `shared/delivery.ts`, `shared/products.ts`, `server/stripe.ts`, `server/klaviyo.ts`, `server/account-routes.ts`, `client/src/contexts/CartContext.tsx`, `client/src/pages/SizeDetail.tsx`, `client/src/components/CartDrawer.tsx`, `client/src/pages/CheckoutSuccess.tsx`, `client/src/pages/account/Account.tsx`, `docs/STRIPE-FULL-BUILD.md`, `scripts/verify-store.ts`, `scripts/verify-klaviyo.ts`
+- **Verify:** `pnpm verify:store`. `pnpm verify:klaviyo`. Live webhook events include `invoice.paid`. PDP → auto 90 → cart 10% off → Checkout `mode=subscription`. Account portal opens for a customer with a subscription.
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-365 — One-time gross margin floor raised to 50%
+- **Status:** fixed
+- **Area:** pricing
+- **Symptom:** Auto-delivery will take a full 5% off every ladder. A 35% one-time floor left no cushion; after 5% off, floor-priced packs sat near ~31% or required clawing the discount back.
+- **Do NOT:** Drop the competitive ladder. Do not claw subscribe 5% back up to `minSellForMargin`. Do not leave any qty rung (1/2/4/6/12) under 50% on one-time sell. Do not round the floor with `money(cost / 0.50)` alone when ceil-to-cent is required for other margin targets.
+- **Do:** `MIN_GROSS_MARGIN = 0.50` in `shared/pricing/engine.ts`. Every sellable one-time rung clears `(sell − cost) / sell ≥ 50%`. Subscribe (when built) is `oneTime × 0.90` with no clawback (~44% on floor-priced rungs).
+- **Files:** `shared/pricing/engine.ts`, `shared/products.ts`, `scripts/verify-store.ts`
+- **Verify:** `pnpm verify:store`. Flagship 20x25x1 MERV 8: qty 1 $9.99, qty 6/12 $9.64. Carbon qty 1 $30.72. 20x20x1 MERV 8 qty 12 $8.84. 16x25x1 MERV 8 qty 12 $8.00. Sellable scan: 0 rungs under 50%.
+- **Added:** 2026-09-23
+- **Fixed:** 2026-09-23
+
+---
+
+### FH-364 — Same size page mixed undersize and exact wholesale cuts
+- **Status:** fixed
+- **Area:** catalog
+- **Symptom:** Model Pricing lists both nominal undersize and exact (`A`) parents for one slug. Cheapest-wins per MERV could put MERV 8 on 20.5×20.5 and MERV 11 on 21×21 under `/sizes/21x21x1` — two products, one URL. Sheet “duplicates” looked sellable when they were not.
+- **Do NOT:** Pick cheapest per MERV independently when actual cuts disagree. Do not put both A and non-A on the cart for the same size. Do not hard-code catalog length `293` in smoke (count follows `sellable-skus.json`).
+- **Do:** `build-sellable-skus.ts` picks one actual-cut family per nominal size (most ratings covered, then lowest total wholesale), then cheapest within that family. Canonicalize actual dims. Verify unique parents, unique size×MERV, one actual per size. Ghost sheet parents stay off checkout.
+- **Files:** `scripts/build-sellable-skus.ts`, `shared/sellable-skus.json`, `scripts/verify-store.ts`, `scripts/verify-json.ts`, `scripts/smoke-site.ts`
+- **Verify:** `pnpm exec tsx scripts/build-sellable-skus.ts` → unique SKUs, no mixed actuals. `pnpm verify:store`. `pnpm verify:json` (`sellable:unique-size-merv`).
+- **Added:** 2026-09-22
+- **Fixed:** 2026-09-22
 
 ---
 
@@ -23,7 +62,7 @@ Next id: **FH-364**
 - **Area:** pricing
 - **Symptom:** Competitive ladders (Filtrete beat, Filter King × 0.90, FilterBuy match) could price a pack unit below the wholesale margin floor. Example: 20x25x1 MERV 8 cost $4.82 → qty 12 competitive ~$5.88 (~18% margin). ~232 sellable rungs were under 35% before the floor.
 - **Do NOT:** Drop the competitive ladder. Do not invent Filtrete tickets. Do not round the floor with `money(cost / 0.65)` alone — that can land a hair under 35% after cents (use ceil-to-cent). Do not exempt qty 12 from the floor to stay “cheapest.”
-- **Do:** After each competitive rung, raise to `minSellForMargin(wholesale)` so `(sell − cost) / sell ≥ 35%`, then carry the cheapest unlocked stair forward (FH-361). Same floor for every qty on a SKU when cost is fixed. Cart, Stripe, JSON-LD, and Klaviyo use `liveUnitPrice`.
+- **Do:** After each competitive rung, raise to `minSellForMargin(wholesale)` so `(sell − cost) / sell ≥ 35%`, then carry the cheapest unlocked stair forward (FH-361). Same floor for every qty on a SKU when cost is fixed. Cart, Stripe, JSON-LD, and Klaviyo use `liveUnitPrice`. Superseded floor level: **FH-365** raised the constant to 50%.
 - **Files:** `shared/pricing/engine.ts`, `shared/products.ts`, `scripts/verify-store.ts`, `shared/sellable-skus.json` (cost source)
 - **Verify:** `pnpm verify:store`. Flagship 20x25x1 MERV 8: qty 1 $9.99, qty 6 $7.49, qty 12 $7.42. Carbon qty 1 $23.64 (Filtrete odor $16.70 under cost). 20x20x1 MERV 8 qty 12 $6.80. 16x25x1 MERV 8 qty 12 $6.16. Sellable scan: 0 rungs under 35%.
 - **Added:** 2026-09-22
@@ -97,6 +136,7 @@ Next id: **FH-364**
 - **Files:** `shared/stripe-accounts.ts`, `scripts/setup-stripe-webhook.ts`, `docs/STRIPE-FULL-BUILD.md`
 - **Verify:** Checkout shows the Filter Hero logo. Railway `STRIPE_SECRET_KEY` starts with `sk_live_`. Live webhook `https://filterhero.net/api/stripe/webhook` enabled. `pnpm verify:stripe-books`. `pnpm verify:env`.
 - **Added:** 2026-09-21
+- **Rechecked:** 2026-09-23 — Live shop bundle still contains `pk_test_` and not `pk_live_`. QuickBooks production OAuth is up; books still wait on FH-305.
 
 ---
 
@@ -795,7 +835,7 @@ Next id: **FH-364**
 - **Files:** `shared/stripe-accounts.ts`, `scripts/setup-stripe-webhook.ts`, README Production
 - **Verify:** Railway `STRIPE_SECRET_KEY` starts with `sk_live_`. Dashboard → FILTER HERO live → Webhooks shows `https://filterhero.net/api/stripe/webhook` enabled. A live Checkout session is `livemode: true`.
 - **Added:** 2026-09-20
-- **Rechecked:** 2026-09-21 — Railway production still `sk_test_` / `pk_test_`. Stripe MCP session is FILTER HERO test only.
+- **Rechecked:** 2026-09-23 — Railway `STRIPE_SECRET_KEY` is still test mode. Live bundle `index-CedjvRr5.js` contains `pk_test_` and not `pk_live_`. Stripe MCP is still FILTER HERO test only. Intuit on Railway is production (`INTUIT_ENVIRONMENT=production`, redirect `https://filterhero.net/api/intuit/oauth/callback`). A bare callback 302s to `/admin/settings?intuit=csrf`. Signed-out `/api/admin/intuit/status` is 401 JSON. Live QuickBooks still cannot book shop sales until Checkout is `livemode: true`.
 
 ---
 
@@ -1818,6 +1858,7 @@ Next id: **FH-364**
 - **Verify:** Live callback `GET /api/intuit/oauth/callback` 302s to `/admin/settings?intuit=csrf` (not SPA HTML). `/api/admin/intuit/status` is 401 JSON when signed out. Intuit Production Redirect URIs lists `https://filterhero.net/api/intuit/oauth/callback`. Staff Settings → Connect authorizes the real company.
 - **Added:** 2026-09-16
 - **Fixed:** 2026-09-16
+- **Rechecked:** 2026-09-23 — Production Intuit keys, environment, and redirect URI are on Railway. `GET /api/intuit/oauth/callback` 302s to `/admin/settings?intuit=csrf`. Signed-out status is 401 JSON. `pnpm verify:intuit-oauth` and `pnpm verify:intuit-discovery` pass. The company token on `/data` was not readable (no Railway SSH key). Staff still has to Connect the real company from Settings. Shop charges stay on Stripe test keys (FH-305), so the QuickBooks Stripe Connector has no live sales to post.
 
 ---
 

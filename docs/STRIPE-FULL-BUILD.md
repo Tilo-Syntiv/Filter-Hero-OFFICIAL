@@ -8,13 +8,13 @@ This is not a generic Stripe tutorial. It is the exact architecture in this repo
 
 ## 1. What this shop actually is
 
-Filter Hero sells HVAC pleated filters. Shoppers pick a size and MERV on the site, add a pack to the cart, and pay on **Stripe-hosted Checkout**. There is no Stripe.js Payment Element, no PaymentIntent created by the browser, no subscription, no Connect marketplace, no Terminal.
+Filter Hero sells HVAC pleated filters. Shoppers pick a size and MERV on the site, add a pack to the cart (one-time or automatic delivery every 30 / 60 / 90 days), and pay on **Stripe-hosted Checkout**. There is no Stripe.js Payment Element, no PaymentIntent created by the browser, no Connect marketplace, no Terminal. Automatic delivery uses Checkout `mode: subscription` plus Billing renewals (`invoice.paid`).
 
 Stripe’s job in this project is narrow:
 
 | Stripe does | Stripe does not |
 |---|---|
-| Hosted Checkout Session (`mode: payment`) | Embedded card form |
+| Hosted Checkout Session (`mode: payment` or `mode: subscription`) | Embedded card form |
 | Collect US shipping + phone | Freight calculation (rate is `$0` today) |
 | Stripe Tax on the hosted page | Recalculate tax in QuickBooks |
 | Create/reuse a Customer | Own the shopper login |
@@ -404,7 +404,11 @@ Why each field exists:
 
 | Field | Why |
 |---|---|
-| `mode: payment` | One-time filter sale. No subscriptions. |
+| `mode: payment` | One-time filter sale. |
+| `mode: subscription` | Automatic delivery every 30 / 60 / 90 days (`price_data.recurring.interval = day`). 10% off list; no clawback to the 50% one-time floor (FH-366). |
+| Cart split | One Checkout Session per delivery group. Mixed carts chain on `/checkout/success`. |
+| Renewals | `invoice.paid` with `billing_reason = subscription_cycle` → `orders.json` + Placed Order. Skip Klaviyo `next_change_date`. |
+| Portal | `/api/account/billing-portal` → Stripe Customer Portal (cancel, card, shipping). |
 | `success_url` with `{CHECKOUT_SESSION_ID}` | Success page can ask Stripe if it is actually paid. |
 | `shipping_address_collection` US | Cannot ship without a deliverable address (FH-120). Checkout requires a shipping rate when this is on. |
 | `$0` `shipping_rate_data` labeled **Shipping** | Contiguous-US fulfillment. Stripe still prints **Free** next to a zero amount (FH-254, open). |
@@ -705,7 +709,7 @@ Checkout stays on Stripe. QBO is the ledger.
 Do these in this order. Skipping ownership (step 1) recreates FH-294 / FH-305.
 
 1. Two Stripe accounts: live shop vs local sandbox. Encode the live account id. Refuse to put the production webhook URL on any other account.
-2. Hosted Checkout Sessions, `mode: payment`. No `payment_method_types`.
+2. Hosted Checkout Sessions, `mode: payment` or `mode: subscription`. No `payment_method_types`.
 3. Register `/api/stripe/webhook` with `express.raw` **before** JSON.
 4. Local `stripe listen`. Production Dashboard endpoint. Two different `whsec_` values.
 5. Gate `automatic_tax` on Tax Settings `active`. Registrations in the Dashboard.

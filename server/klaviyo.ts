@@ -2,9 +2,11 @@ import {
   getProductById,
   packShotSrc,
   sellableSheetProducts,
+  shopperUnitPrice,
   unitPriceForQty,
   type Product,
 } from "../shared/products";
+import { parseDeliveryMode } from "../shared/delivery";
 import { BRAND_NAME } from "../shared/const";
 import {
   CLOCK_NEXT_CHANGE_PROPERTY,
@@ -252,9 +254,10 @@ export function klaviyoLineFromProduct(
   product: Product,
   quantity: number,
   origin = siteOrigin(),
+  delivery: import("../shared/delivery").DeliveryMode = "once",
 ): KlaviyoLine {
   const qty = Math.min(50, Math.max(1, quantity));
-  const unit = unitPriceForQty(product.price, qty, product);
+  const unit = shopperUnitPrice(product.price, qty, product, delivery);
   const cats = categoriesForProduct(product);
   return {
     ProductID: String(product.id),
@@ -283,7 +286,14 @@ export function linesFromCheckoutItems(
   for (const item of items) {
     const product = getProductById(item.productId);
     if (!product) continue;
-    lines.push(klaviyoLineFromProduct(product, item.quantity, origin));
+    lines.push(
+      klaviyoLineFromProduct(
+        product,
+        item.quantity,
+        origin,
+        parseDeliveryMode(item.delivery),
+      ),
+    );
   }
   return lines;
 }
@@ -293,17 +303,25 @@ export function parseCheckoutItems(raw: string | undefined): CheckoutItem[] {
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map((row) => {
-        if (!row || typeof row !== "object") return null;
-        const rec = row as { productId?: unknown; quantity?: unknown };
-        const productId = Number(rec.productId);
-        const quantity = Number(rec.quantity);
-        if (!Number.isInteger(productId) || productId < 1) return null;
-        if (!Number.isInteger(quantity) || quantity < 1) return null;
-        return { productId, quantity };
-      })
-      .filter((row): row is CheckoutItem => row !== null);
+    const out: CheckoutItem[] = [];
+    for (const row of parsed) {
+      if (!row || typeof row !== "object") continue;
+      const rec = row as {
+        productId?: unknown;
+        quantity?: unknown;
+        delivery?: unknown;
+      };
+      const productId = Number(rec.productId);
+      const quantity = Number(rec.quantity);
+      if (!Number.isInteger(productId) || productId < 1) continue;
+      if (!Number.isInteger(quantity) || quantity < 1) continue;
+      out.push({
+        productId,
+        quantity,
+        delivery: parseDeliveryMode(rec.delivery),
+      });
+    }
+    return out;
   } catch {
     return [];
   }
@@ -633,16 +651,27 @@ export function orderProfileProperties(order: StoredOrder): Record<string, unkno
   const sizes = uniqueStrings(products.map((product) => product.size));
   const interval = intervalDaysForSize(sizes[0]);
   const paidAt = order.paidAt || new Date().toISOString();
-  return {
+  const autoDelivery =
+    order.autoDelivery === true ||
+    items.some((item) => parseDeliveryMode(item.delivery) !== "once");
+  const props: Record<string, unknown> = {
     last_order_at: paidAt,
     last_order_value: order.amountTotal != null ? order.amountTotal / 100 : undefined,
     last_order_sizes: sizes,
     filter_sizes: sizes,
     preferred_merv: products[0] ? mervKeyForProduct(products[0]) : undefined,
-    [REPLENISH_DATE_PROPERTY]: nextChangeDateIso(paidAt, interval),
-    change_interval_days: interval,
+    change_interval_days: order.deliveryDays ?? interval,
     stripe_customer_id: order.customerId,
   };
+  // Auto-delivery already ships on a schedule — do not enroll Klaviyo replenish.
+  if (!autoDelivery) {
+    props[REPLENISH_DATE_PROPERTY] = nextChangeDateIso(paidAt, interval);
+  }
+  if (autoDelivery) {
+    props.auto_delivery = true;
+    if (order.deliveryDays) props.auto_delivery_days = order.deliveryDays;
+  }
+  return props;
 }
 
 export async function syncPlacedOrder(order: StoredOrder): Promise<void> {

@@ -47,6 +47,7 @@ import { createCheckoutSession, getCheckoutSessionStatus, handleStripeWebhook } 
 import { adminRouter } from "./admin/routes";
 import { isCheckoutPaused, publicSiteConfig } from "./admin/config";
 import { intuitRouter } from "./intuit/routes";
+import { constantContactRouter } from "./constant-contact/routes";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,6 +58,9 @@ const checkoutBodySchema = z.object({
       z.object({
         productId: z.number().int().positive(),
         quantity: z.number().int().min(1).max(50),
+        delivery: z
+          .union([z.literal("once"), z.literal(30), z.literal(60), z.literal(90)])
+          .optional(),
       }),
     )
     .min(1)
@@ -282,7 +286,13 @@ Sitemap: ${absoluteUrl(siteUrl, "/sitemap.xml")}
         res.status(500).json({ error: "No checkout URL returned" });
         return;
       }
-      res.json({ url: session.url });
+      res.json({
+        url: session.url,
+        remainingItems: session.remainingItems,
+        groupLabel: session.groupLabel,
+        groupCount: session.groupCount,
+        groupsRemaining: session.groupsRemaining,
+      });
     } catch (err) {
       const { status, body } = publicError(
         err,
@@ -373,6 +383,7 @@ Sitemap: ${absoluteUrl(siteUrl, "/sitemap.xml")}
   app.use("/api/account", accountRouter());
   app.use("/api/admin", adminRouter());
   app.use("/api/intuit", intuitRouter());
+  app.use("/api/constant-contact", constantContactRouter());
   app.use("/api", apiNotFound);
 
   const sendDocument = (req: express.Request, res: express.Response, indexPath: string) => {

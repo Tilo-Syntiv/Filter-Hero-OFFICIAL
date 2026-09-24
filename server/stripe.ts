@@ -1,7 +1,18 @@
 import fs from "node:fs";
 import { nanoid } from "nanoid";
 import Stripe from "stripe";
-import { catalogStripeProductId, getProductById, unitPriceForQty } from "../shared/products";
+import {
+  AUTO_DELIVERY_INTERVALS,
+  deliveryLabel,
+  isAutoDeliveryInterval,
+  parseDeliveryMode,
+  type DeliveryMode,
+} from "../shared/delivery";
+import {
+  catalogStripeProductId,
+  getProductById,
+  shopperUnitPrice,
+} from "../shared/products";
 import {
   mappedStripeProductId,
   stripeKeyIsLive,
@@ -27,6 +38,8 @@ const SESSION_ID = /^cs_(test|live)_[A-Za-z0-9]+$/;
 const META_MAX = 490;
 const stripeProductCache = new Map<number, string | null>();
 
+const GROUP_ORDER: DeliveryMode[] = ["once", ...AUTO_DELIVERY_INTERVALS];
+
 function ordersPath() {
   return dataFile("orders.json");
 }
@@ -50,7 +63,12 @@ export function getStripe(): Stripe | null {
   return new Stripe(key);
 }
 
-export type CheckoutItem = { productId: number; quantity: number };
+export type CheckoutItem = {
+  productId: number;
+  quantity: number;
+  /** once | 30 | 60 | 90 — default once */
+  delivery?: DeliveryMode;
+};
 
 export type StoredOrder = {
   id: string;
@@ -69,6 +87,10 @@ export type StoredOrder = {
   taxStatus: string | null;
   paidAt: string;
   confirmationSentAt?: string | null;
+  /** True when this charge is automatic delivery (first or renewal). */
+  autoDelivery?: boolean;
+  deliveryDays?: number | null;
+  subscriptionId?: string | null;
 };
 
 export function listAllOrders(): StoredOrder[] {
@@ -90,9 +112,14 @@ export function listOrdersForEmail(email: string): StoredOrder[] {
 }
 
 export function compactItemsMeta(items: CheckoutItem[]): string {
-  const raw = JSON.stringify(items);
+  const normalized = items.map((item) => ({
+    productId: item.productId,
+    quantity: item.quantity,
+    delivery: parseDeliveryMode(item.delivery),
+  }));
+  const raw = JSON.stringify(normalized);
   if (raw.length <= META_MAX) return raw;
-  return JSON.stringify(items.slice(0, 8));
+  return JSON.stringify(normalized.slice(0, 8));
 }
 
 export function orderFromCheckoutSession(
@@ -110,6 +137,12 @@ export function orderFromCheckoutSession(
     typeof session.payment_intent === "string"
       ? session.payment_intent
       : session.payment_intent?.id ?? null;
+  const delivery = parseDeliveryMode(session.metadata?.delivery);
+  const autoDelivery = session.metadata?.autoDelivery === "1" || delivery !== "once";
+  const subscriptionId =
+    typeof session.subscription === "string"
+      ? session.subscription
+      : session.subscription?.id ?? null;
 
   return {
     sessionId: session.id,
@@ -126,15 +159,21 @@ export function orderFromCheckoutSession(
     items: session.metadata?.items ?? "[]",
     taxStatus: session.total_details?.amount_tax != null ? "recorded" : null,
     paidAt: new Date().toISOString(),
+    autoDelivery,
+    deliveryDays: isAutoDeliveryInterval(delivery) ? delivery : null,
+    subscriptionId,
   };
 }
 
 function lineLabel(
   product: NonNullable<ReturnType<typeof getProductById>>,
+  delivery: DeliveryMode,
 ): string {
-  return product.isCarbon
+  const base = product.isCarbon
     ? `${product.name} (Carbon) — ${product.size}`
     : `${product.name} — ${product.size} MERV ${product.merv}`;
+  if (delivery === "once") return base;
+  return `${base} · ${deliveryLabel(delivery)}`;
 }
 
 export async function findCustomerIdByEmail(
@@ -169,29 +208,80 @@ async function existingCatalogProductId(
   return null;
 }
 
-export async function createCheckoutSession(
-  items: CheckoutItem[],
-  clientUrl: string,
-  shopper?: { email?: string; marketingConsent?: boolean },
-) {
-  const stripe = getStripe();
-  if (!stripe) {
-    throw new Error("Stripe is not configured. Set STRIPE_SECRET_KEY in .env");
+export function normalizeCheckoutItems(items: CheckoutItem[]): CheckoutItem[] {
+  const byKey = new Map<string, CheckoutItem>();
+  for (const item of items) {
+    const delivery = parseDeliveryMode(item.delivery);
+    if (item.quantity < 1 || item.quantity > 50) {
+      throw new Error(`Invalid quantity for product ${item.productId}`);
+    }
+    const product = getProductById(item.productId);
+    if (!product) throw new Error(`Unknown product: ${item.productId}`);
+    if (!product.inStock) throw new Error(`Out of stock: ${product.size}`);
+    const key = `${item.productId}:${delivery}`;
+    const prev = byKey.get(key);
+    byKey.set(key, {
+      productId: item.productId,
+      delivery,
+      quantity: Math.min(50, (prev?.quantity ?? 0) + item.quantity),
+    });
   }
+  return Array.from(byKey.values());
+}
 
+export function splitCheckoutGroups(items: CheckoutItem[]): {
+  current: CheckoutItem[];
+  remaining: CheckoutItem[];
+  delivery: DeliveryMode;
+} {
+  const normalized = normalizeCheckoutItems(items);
+  for (const delivery of GROUP_ORDER) {
+    const current = normalized.filter(
+      (item) => parseDeliveryMode(item.delivery) === delivery,
+    );
+    if (current.length === 0) continue;
+    const remaining = normalized.filter(
+      (item) => parseDeliveryMode(item.delivery) !== delivery,
+    );
+    return { current, remaining, delivery };
+  }
+  throw new Error("Cart is empty");
+}
+
+function shippingOptions(): Stripe.Checkout.SessionCreateParams.ShippingOption[] {
+  return [
+    {
+      shipping_rate_data: {
+        type: "fixed_amount",
+        fixed_amount: { amount: 0, currency: "usd" },
+        display_name: "Shipping",
+        tax_behavior: "exclusive",
+        tax_code: SHIPPING_TAX_CODE,
+      },
+    },
+  ];
+}
+
+async function buildLineItems(
+  stripe: Stripe,
+  items: CheckoutItem[],
+  delivery: DeliveryMode,
+): Promise<Stripe.Checkout.SessionCreateParams.LineItem[]> {
   const taxCode = productTaxCode();
   const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
   for (const item of items) {
     const product = getProductById(item.productId);
     if (!product) throw new Error(`Unknown product: ${item.productId}`);
-    if (!product.inStock) throw new Error(`Out of stock: ${product.size}`);
-    if (item.quantity < 1 || item.quantity > 50) {
-      throw new Error(`Invalid quantity for product ${item.productId}`);
-    }
-
-    const unit = unitPriceForQty(product.price, item.quantity, product);
+    const unit = shopperUnitPrice(product.price, item.quantity, product, delivery);
     const catalogProductId = await existingCatalogProductId(stripe, product.id);
+    const recurring =
+      delivery === "once"
+        ? undefined
+        : ({
+            interval: "day" as const,
+            interval_count: delivery,
+          } satisfies Stripe.Checkout.SessionCreateParams.LineItem.PriceData.Recurring);
 
     line_items.push({
       quantity: item.quantity,
@@ -199,17 +289,22 @@ export async function createCheckoutSession(
         currency: "usd",
         unit_amount: Math.round(unit * 100),
         tax_behavior: "exclusive",
+        ...(recurring ? { recurring } : {}),
         ...(catalogProductId
           ? { product: catalogProductId }
           : {
               product_data: {
-                name: lineLabel(product),
-                description: "HVAC pleated filter",
+                name: lineLabel(product, delivery),
+                description:
+                  delivery === "once"
+                    ? "HVAC pleated filter"
+                    : `HVAC pleated filter · automatic delivery every ${delivery} days`,
                 tax_code: taxCode,
                 metadata: {
                   productId: String(product.id),
                   size: product.size,
                   merv: String(product.merv),
+                  delivery: String(delivery),
                 },
               },
             }),
@@ -218,8 +313,35 @@ export async function createCheckoutSession(
   }
 
   if (line_items.length === 0) throw new Error("Cart is empty");
+  return line_items;
+}
 
-  const itemsMeta = compactItemsMeta(items);
+export type CheckoutStartResult = {
+  url: string;
+  sessionId: string;
+  remainingItems: CheckoutItem[];
+  groupLabel: string;
+  groupCount: number;
+  groupsRemaining: number;
+};
+
+/**
+ * Starts Checkout for the first delivery group in the cart (once → 30 → 60 → 90).
+ * Remaining groups are returned so the client can chain sessions after success.
+ */
+export async function createCheckoutSession(
+  items: CheckoutItem[],
+  clientUrl: string,
+  shopper?: { email?: string; marketingConsent?: boolean },
+): Promise<CheckoutStartResult> {
+  const stripe = getStripe();
+  if (!stripe) {
+    throw new Error("Stripe is not configured. Set STRIPE_SECRET_KEY in .env");
+  }
+
+  const { current, remaining, delivery } = splitCheckoutGroups(items);
+  const line_items = await buildLineItems(stripe, current, delivery);
+  const itemsMeta = compactItemsMeta(current);
   const email = shopper?.email?.trim().toLowerCase();
   const customerId = email ? await findCustomerIdByEmail(stripe, email) : null;
   const tax = await readStripeTaxReadiness(stripe);
@@ -229,26 +351,22 @@ export async function createCheckoutSession(
     );
   }
 
+  const autoDelivery = delivery !== "once";
+  const mode = autoDelivery ? "subscription" : "payment";
+  const groupLabel = deliveryLabel(delivery);
+  const remainingGroupCount = GROUP_ORDER.filter((d) =>
+    remaining.some((item) => parseDeliveryMode(item.delivery) === d),
+  ).length;
+
   const session = await stripe.checkout.sessions.create({
-    mode: "payment",
+    mode,
     line_items,
     success_url: `${clientUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${clientUrl}/checkout/cancel`,
     branding_settings: stripeCheckoutBrandingSettings(),
     shipping_address_collection: { allowed_countries: ["US"] },
-    shipping_options: [
-      {
-        shipping_rate_data: {
-          type: "fixed_amount",
-          fixed_amount: { amount: 0, currency: "usd" },
-          display_name: "Shipping",
-          tax_behavior: "exclusive",
-          tax_code: SHIPPING_TAX_CODE,
-        },
-      },
-    ],
+    shipping_options: shippingOptions(),
     phone_number_collection: { enabled: true },
-    invoice_creation: { enabled: true },
     automatic_tax: { enabled: tax.automaticTax },
     ...(customerId
       ? {
@@ -260,19 +378,38 @@ export async function createCheckoutSession(
           },
         }
       : {
-          customer_creation: "always",
+          ...(mode === "payment" ? { customer_creation: "always" as const } : {}),
           ...(email ? { customer_email: email } : {}),
         }),
     metadata: {
       items: itemsMeta,
+      delivery: String(delivery),
+      ...(autoDelivery ? { autoDelivery: "1" } : {}),
       ...(email ? { email } : {}),
       ...(shopper?.marketingConsent ? { marketingConsent: "1" } : {}),
     },
-    payment_intent_data: {
-      metadata: { items: itemsMeta },
-    },
-    // stripe 17 types omit branding_settings; API accepts it on hosted Checkout.
-  } as Stripe.Checkout.SessionCreateParams);
+    ...(mode === "payment"
+      ? {
+          invoice_creation: { enabled: true },
+          payment_intent_data: {
+            metadata: {
+              items: itemsMeta,
+              delivery: String(delivery),
+            },
+          },
+        }
+      : {
+          subscription_data: {
+            metadata: {
+              items: itemsMeta,
+              delivery: String(delivery),
+              autoDelivery: "1",
+            },
+          },
+        }),
+  } as unknown as Stripe.Checkout.SessionCreateParams);
+
+  if (!session.url) throw new Error("No checkout URL returned");
 
   if (email && session.url) {
     try {
@@ -280,7 +417,7 @@ export async function createCheckoutSession(
         email,
         sessionId: session.id,
         checkoutUrl: session.url,
-        items,
+        items: current,
         marketingConsent: shopper?.marketingConsent,
       });
     } catch (err) {
@@ -288,7 +425,154 @@ export async function createCheckoutSession(
     }
   }
 
-  return session;
+  return {
+    url: session.url,
+    sessionId: session.id,
+    remainingItems: remaining,
+    groupLabel,
+    groupCount: 1 + remainingGroupCount,
+    groupsRemaining: remainingGroupCount,
+  };
+}
+
+async function persistPaidOrder(stored: StoredOrder): Promise<void> {
+  ensureOrdersFile();
+  const orders = JSON.parse(fs.readFileSync(ordersPath(), "utf-8")) as StoredOrder[];
+  const existing = orders.find(
+    (order) =>
+      order.sessionId === stored.sessionId ||
+      (stored.invoiceId && order.invoiceId === stored.invoiceId),
+  );
+  const row: StoredOrder = existing
+    ? Object.assign(existing, stored, { id: existing.id })
+    : stored;
+  if (!existing) orders.push(row);
+  writeOrders(orders);
+
+  try {
+    await syncPlacedOrder(row);
+  } catch (err) {
+    console.error("[stripe webhook] klaviyo Placed Order failed", err);
+  }
+  try {
+    if (!row.confirmationSentAt) {
+      const mail = await sendOrderConfirmation(row);
+      if (mail.sent) {
+        row.confirmationSentAt = new Date().toISOString();
+        writeOrders(orders);
+      }
+    }
+  } catch (err) {
+    console.error("[stripe webhook] resend order confirmation failed", err);
+  }
+  try {
+    await recordPurchaseOnAccount(row);
+  } catch (err) {
+    console.error("[stripe webhook] account attach failed", err);
+  }
+  if (row.customerEmail) {
+    try {
+      await closeDealsOnPurchase({
+        email: row.customerEmail,
+        amount: row.amountTotal !== null ? row.amountTotal / 100 : undefined,
+        stripeCustomerId: row.customerId ?? undefined,
+      });
+    } catch (err) {
+      console.error("[stripe webhook] crm close failed", err);
+    }
+  }
+}
+
+async function orderFromSubscriptionInvoice(
+  stripe: Stripe,
+  invoice: Stripe.Invoice,
+): Promise<StoredOrder | null> {
+  const subscriptionRef = invoice.subscription;
+  const subscriptionId =
+    typeof subscriptionRef === "string"
+      ? subscriptionRef
+      : subscriptionRef && typeof subscriptionRef === "object" && "id" in subscriptionRef
+        ? String((subscriptionRef as { id: string }).id)
+        : null;
+  if (!subscriptionId) return null;
+
+  let itemsMeta = invoice.subscription_details?.metadata?.items
+    ?? invoice.metadata?.items
+    ?? "";
+  let deliveryRaw =
+    invoice.subscription_details?.metadata?.delivery
+    ?? invoice.metadata?.delivery
+    ?? "90";
+
+  try {
+    const sub = await stripe.subscriptions.retrieve(subscriptionId);
+    itemsMeta = sub.metadata?.items || itemsMeta;
+    deliveryRaw = sub.metadata?.delivery || deliveryRaw;
+  } catch (err) {
+    console.warn("[stripe webhook] subscription retrieve failed", err);
+  }
+
+  const delivery = parseDeliveryMode(deliveryRaw);
+  const customerId =
+    typeof invoice.customer === "string"
+      ? invoice.customer
+      : invoice.customer?.id ?? null;
+
+  let customerEmail: string | null = invoice.customer_email ?? null;
+  let phone: string | null = null;
+  let shipping: Stripe.Checkout.Session.ShippingDetails | null = null;
+
+  if (customerId) {
+    try {
+      const customer = await stripe.customers.retrieve(customerId);
+      if (customer && !("deleted" in customer && customer.deleted)) {
+        customerEmail = customer.email ?? customerEmail;
+        phone = customer.phone ?? null;
+        if (customer.shipping) {
+          shipping = {
+            name: customer.shipping.name ?? undefined,
+            phone: customer.shipping.phone ?? undefined,
+            address: customer.shipping.address
+              ? {
+                  line1: customer.shipping.address.line1 ?? undefined,
+                  line2: customer.shipping.address.line2 ?? undefined,
+                  city: customer.shipping.address.city ?? undefined,
+                  state: customer.shipping.address.state ?? undefined,
+                  postal_code: customer.shipping.address.postal_code ?? undefined,
+                  country: customer.shipping.address.country ?? undefined,
+                }
+              : undefined,
+          } as Stripe.Checkout.Session.ShippingDetails;
+        }
+      }
+    } catch {
+      // keep invoice email
+    }
+  }
+
+  return {
+    id: nanoid(),
+    sessionId: `inv_${invoice.id}`,
+    amountSubtotal: invoice.subtotal ?? null,
+    amountTax: invoice.tax ?? null,
+    amountTotal: invoice.amount_paid ?? invoice.total ?? null,
+    currency: invoice.currency ?? null,
+    customerId,
+    invoiceId: invoice.id,
+    paymentIntentId:
+      typeof invoice.payment_intent === "string"
+        ? invoice.payment_intent
+        : invoice.payment_intent?.id ?? null,
+    customerEmail,
+    shipping,
+    phone,
+    items: itemsMeta || "[]",
+    taxStatus: invoice.tax != null ? "recorded" : null,
+    paidAt: new Date((invoice.status_transitions?.paid_at ?? Date.now() / 1000) * 1000).toISOString(),
+    autoDelivery: true,
+    deliveryDays: isAutoDeliveryInterval(delivery) ? delivery : null,
+    subscriptionId,
+  };
 }
 
 export async function handleStripeWebhook(
@@ -321,50 +605,30 @@ export async function handleStripeWebhook(
         console.warn("[stripe webhook] session retrieve failed; using event payload", err);
       }
     }
-    ensureOrdersFile();
-    const orders = JSON.parse(fs.readFileSync(ordersPath(), "utf-8")) as StoredOrder[];
-    const existing = orders.find((order) => order.sessionId === session.id);
-    const stored: StoredOrder = existing ?? {
+    const stored: StoredOrder = {
       id: nanoid(),
       ...orderFromCheckoutSession(session),
     };
-    if (!existing) {
-      orders.push(stored);
-      writeOrders(orders);
+    await persistPaidOrder(stored);
+  }
+
+  if (event.type === "invoice.paid") {
+    const invoice = event.data.object as Stripe.Invoice;
+    // First subscription invoice is already recorded via checkout.session.completed.
+    if (invoice.billing_reason !== "subscription_cycle") {
+      return { received: true };
     }
     try {
-      await syncPlacedOrder(stored);
+      const stored = await orderFromSubscriptionInvoice(stripe, invoice);
+      if (stored) await persistPaidOrder(stored);
     } catch (err) {
-      console.error("[stripe webhook] klaviyo Placed Order failed", err);
+      console.error("[stripe webhook] subscription renewal order failed", err);
     }
-    try {
-      if (!stored.confirmationSentAt) {
-        const mail = await sendOrderConfirmation(stored);
-        if (mail.sent) {
-          stored.confirmationSentAt = new Date().toISOString();
-          writeOrders(orders);
-        }
-      }
-    } catch (err) {
-      console.error("[stripe webhook] resend order confirmation failed", err);
-    }
-    try {
-      await recordPurchaseOnAccount(stored);
-    } catch (err) {
-      console.error("[stripe webhook] account attach failed", err);
-    }
-    if (stored.customerEmail) {
-      try {
-        await closeDealsOnPurchase({
-          email: stored.customerEmail,
-          amount:
-            stored.amountTotal !== null ? stored.amountTotal / 100 : undefined,
-          stripeCustomerId: stored.customerId ?? undefined,
-        });
-      } catch (err) {
-        console.error("[stripe webhook] crm close failed", err);
-      }
-    }
+  }
+
+  if (event.type === "customer.subscription.deleted") {
+    const sub = event.data.object as Stripe.Subscription;
+    console.info("[stripe webhook] subscription canceled", sub.id);
   }
 
   if (event.type === "checkout.session.expired") {
@@ -404,5 +668,34 @@ export async function getCheckoutSessionStatus(sessionId: string) {
     amountTax: session.total_details?.amount_tax ?? 0,
     amountTotal: session.amount_total,
     currency: session.currency,
+    autoDelivery: session.metadata?.autoDelivery === "1",
+    delivery: parseDeliveryMode(session.metadata?.delivery),
   };
+}
+
+export async function createBillingPortalSession(
+  customerId: string,
+  returnUrl: string,
+): Promise<{ url: string }> {
+  const stripe = getStripe();
+  if (!stripe) throw new Error("Stripe is not configured");
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: returnUrl,
+  });
+  if (!session.url) throw new Error("No portal URL returned");
+  return { url: session.url };
+}
+
+export async function createBillingPortalForEmail(
+  email: string,
+  returnUrl: string,
+): Promise<{ url: string }> {
+  const stripe = getStripe();
+  if (!stripe) throw new Error("Stripe is not configured");
+  const customerId = await findCustomerIdByEmail(stripe, email.trim().toLowerCase());
+  if (!customerId) {
+    throw new Error("No Stripe customer found for this account yet. Place an order first.");
+  }
+  return createBillingPortalSession(customerId, returnUrl);
 }

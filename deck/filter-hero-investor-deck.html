@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Filter Hero — Investor Deck</title>
+<link rel="icon" href="../client/public/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --navy:#203868;
+  --burgundy:#7F2328;
+  --ice:#8EB0D8;
+  --mesh:#3A66A3;
+  --deep:#141E30;
+  --canvas:#F6F7F9;
+  --border:#D0D8E4;
+  --muted:#5C6B80;
+  --white:#FFFFFF;
+  --secondary:#E8EDF4;
+  --padX: clamp(3rem, 6.5vw, 7.5rem);
+  --padY: clamp(1.8rem, 4vh, 3.2rem);
+  --display:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif;
+  --body:'Manrope','Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--body);color:var(--deep);background:var(--deep);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+/* ============ carousel ============ */
+#stage{position:fixed;inset:0;overflow:hidden}
+.slide{
+  position:absolute;inset:0;padding:var(--padY) var(--padX);
+  display:flex;flex-direction:column;justify-content:center;overflow:hidden;
+  opacity:0;pointer-events:none;z-index:1;
+  transform:translateX(3.5rem) scale(.985);
+  transition:opacity .38s ease, transform .52s cubic-bezier(.22,1,.36,1);
+}
+.slide.active{opacity:1;pointer-events:auto;transform:none;z-index:3}
+.slide.leaving{opacity:0;transform:translateX(-3.5rem) scale(.985);z-index:2}
+body.rev .slide{transform:translateX(-3.5rem) scale(.985)}
+body.rev .slide.active{transform:none}
+body.rev .slide.leaving{transform:translateX(3.5rem) scale(.985)}
+.slide-inner{width:100%;max-width:1260px;margin:0 auto;transform-origin:center center}
+
+/* ============ chrome ============ */
+.nav-btn{
+  position:fixed;top:50%;transform:translateY(-50%);z-index:40;
+  width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.14);color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1;
+  backdrop-filter:blur(10px);transition:background .2s,opacity .2s,transform .2s;
+}
+.nav-btn:hover{background:rgba(255,255,255,.28)}
+.nav-btn:active{transform:translateY(-50%) scale(.93)}
+.nav-btn[disabled]{opacity:.22;cursor:default}
+#prev{left:1.1rem}
+#next{right:1.1rem}
+body.light-slide .nav-btn{border-color:var(--border);background:rgba(255,255,255,.9);color:var(--navy);box-shadow:0 6px 20px -10px rgba(20,30,48,.4)}
+body.light-slide .nav-btn:hover{background:#fff}
+
+#dots{
+  position:fixed;left:50%;bottom:1.1rem;transform:translateX(-50%);z-index:40;
+  display:flex;gap:7px;align-items:center;padding:.5rem .8rem;border-radius:999px;
+  background:rgba(20,30,48,.42);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(10px);
+}
+body.light-slide #dots{background:rgba(255,255,255,.86);border-color:var(--border)}
+#dots button{width:7px;height:7px;border-radius:50%;border:none;cursor:pointer;padding:0;background:rgba(255,255,255,.34);transition:all .25s}
+body.light-slide #dots button{background:#C3CEDD}
+#dots button.on{width:22px;border-radius:999px;background:var(--ice)}
+body.light-slide #dots button.on{background:var(--navy)}
+
+#counter{position:fixed;right:1.3rem;bottom:1.3rem;z-index:40;font-family:var(--display);font-size:.74rem;font-weight:800;letter-spacing:.09em;color:rgba(255,255,255,.62)}
+body.light-slide #counter{color:var(--muted)}
+#bar{position:fixed;top:0;left:0;height:3px;z-index:50;background:linear-gradient(90deg,var(--burgundy),var(--mesh),var(--ice));transition:width .45s cubic-bezier(.22,1,.36,1)}
+
+/* ============ backgrounds ============ */
+.dark{background:var(--deep);color:#EEF3FA}
+.navy{background:var(--navy);color:#EEF3FA}
+.gradient{
+  background:
+    radial-gradient(1100px 620px at 82% 16%, rgba(58,102,163,.42), transparent 62%),
+    radial-gradient(760px 520px at 6% 90%, rgba(127,35,40,.34), transparent 60%),
+    linear-gradient(140deg,#141E30 0%,#1A3058 48%,#203868 100%);
+  color:#EEF3FA;
+}
+.light{background:var(--canvas)}
+.tint{background:linear-gradient(170deg,#FFFFFF 0%,var(--canvas) 55%,var(--secondary) 100%)}
+
+/* ============ type ============ */
+.eyebrow{font-family:var(--display);font-size:.7rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--burgundy);margin-bottom:.75rem;display:flex;align-items:center;gap:.65rem}
+.eyebrow::after{content:"";height:1px;width:44px;background:currentColor;opacity:.4}
+.dark .eyebrow,.navy .eyebrow,.gradient .eyebrow{color:var(--ice)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(2.5rem,5.2vw,4.7rem);line-height:1.02;letter-spacing:-.035em}
+h2{font-family:var(--display);font-weight:800;font-size:clamp(1.7rem,3vw,2.7rem);line-height:1.08;letter-spacing:-.028em;margin-bottom:.65rem}
+h3{font-family:var(--display);font-weight:700;font-size:.95rem;letter-spacing:-.01em;margin-bottom:.28rem}
+.lede{font-size:clamp(.92rem,1.05vw,1.05rem);color:var(--muted);max-width:58ch;line-height:1.52}
+.dark .lede,.navy .lede,.gradient .lede{color:#B9C8DC}
+.statement{font-family:var(--display);font-weight:800;font-size:clamp(1.8rem,3.4vw,3rem);line-height:1.12;letter-spacing:-.03em;max-width:22ch}
+.hl{color:var(--burgundy)}
+.dark .hl,.navy .hl,.gradient .hl{color:var(--ice)}
+.small{font-size:.77rem;color:var(--muted);line-height:1.42}
+.dark .small,.navy .small,.gradient .small{color:#9BAFC9}
+.kicker{font-family:var(--display);font-weight:800;font-size:.66rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.dark .kicker,.navy .kicker,.gradient .kicker{color:#9FB4CE}
+
+/* ============ layout ============ */
+.split{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(1.6rem,3.2vw,3.4rem);align-items:center}
+.split.wide-left{grid-template-columns:1.3fr .7fr}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:.85rem}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem}
+.stack{display:flex;flex-direction:column;gap:.8rem}
+.mt{margin-top:1.4rem}
+.mt-s{margin-top:.8rem}
+
+/* ============ cards ============ */
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1rem 1.15rem;box-shadow:0 1px 2px rgba(20,30,48,.04),0 10px 24px -18px rgba(20,30,48,.28)}
+.dark .card,.navy .card,.gradient .card{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);box-shadow:none}
+.card p{font-size:.82rem;color:var(--muted);line-height:1.45}
+.dark .card p,.navy .card p,.gradient .card p{color:#AFC0D6}
+.card.accent{border-left:3px solid var(--burgundy)}
+.card.accent-ice{border-left:3px solid var(--ice)}
+
+.stat{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:.9rem 1.05rem;box-shadow:0 10px 24px -20px rgba(20,30,48,.3)}
+.dark .stat,.navy .stat,.gradient .stat{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);box-shadow:none}
+.stat .n{font-family:var(--display);font-weight:800;font-size:clamp(1.4rem,2.35vw,2.1rem);line-height:1;letter-spacing:-.035em;color:var(--navy)}
+.dark .stat .n,.navy .stat .n,.gradient .stat .n{color:var(--white)}
+.stat .l{font-size:.72rem;color:var(--muted);margin-top:.35rem;line-height:1.32}
+.dark .stat .l,.navy .stat .l,.gradient .stat .l{color:#A8BAD2}
+
+.chip{display:inline-flex;align-items:center;gap:.42rem;font-family:var(--display);font-size:.71rem;font-weight:700;letter-spacing:.03em;border:1px solid var(--border);border-radius:999px;padding:.3rem .75rem;background:var(--white);color:var(--navy)}
+.dark .chip,.navy .chip,.gradient .chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:#DCE6F3}
+.chip .dot{width:6px;height:6px;border-radius:50%;background:#2BA36B;flex:none}
+.chips{display:flex;flex-wrap:wrap;gap:.45rem}
+
+.pill-ask{display:inline-flex;align-items:baseline;gap:.7rem;background:var(--burgundy);color:#fff;border-radius:12px;padding:.7rem 1.25rem;font-family:var(--display);font-weight:800;letter-spacing:-.02em}
+.pill-ask .amt{font-size:1.6rem;line-height:1}
+.pill-ask .sub{font-size:.73rem;font-weight:600;opacity:.85}
+
+.logo-chip{display:inline-block;background:var(--white);border-radius:11px;padding:.5rem .8rem;box-shadow:0 12px 30px -18px rgba(0,0,0,.7)}
+.logo-chip img{height:36px;width:auto;display:block}
+
+/* ============ lists / tables ============ */
+ul.ticks{list-style:none;display:flex;flex-direction:column;gap:.45rem}
+ul.ticks li{position:relative;padding-left:1.35rem;font-size:.86rem;line-height:1.42}
+ul.ticks li::before{content:"";position:absolute;left:0;top:.5em;width:7px;height:7px;border-radius:50%;background:var(--burgundy)}
+.dark ul.ticks li::before,.navy ul.ticks li::before,.gradient ul.ticks li::before{background:var(--ice)}
+ul.crosses{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+ul.crosses li{position:relative;padding-left:1.45rem;font-size:.86rem}
+ul.crosses li::before{content:"\00d7";position:absolute;left:0;top:-.14em;font-size:1.1rem;font-weight:700;color:var(--burgundy)}
+.dark ul.crosses li::before,.navy ul.crosses li::before,.gradient ul.crosses li::before{color:var(--ice)}
+
+table{border-collapse:collapse;width:100%;font-size:.82rem}
+th{font-family:var(--display);font-size:.63rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:.35rem .55rem;border-bottom:1px solid var(--border)}
+td{padding:.4rem .55rem;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.dark th,.navy th,.gradient th{color:#93A6C0;border-color:rgba(255,255,255,.16)}
+.dark td,.navy td,.gradient td{border-color:rgba(255,255,255,.1)}
+tr.total td{font-weight:800;border-top:2px solid var(--navy);border-bottom:none;padding-top:.5rem}
+.dark tr.total td,.navy tr.total td,.gradient tr.total td{border-top-color:var(--ice)}
+
+/* ============ media ============ */
+.shot{width:100%;border-radius:15px;display:block;object-fit:cover;border:1px solid var(--border);box-shadow:0 24px 54px -34px rgba(20,30,48,.55)}
+.dark .shot,.navy .shot,.gradient .shot{border-color:rgba(255,255,255,.14)}
+.shot.wide{aspect-ratio:16/10}
+.shot.bare{border:none;box-shadow:none;background:transparent;object-fit:contain}
+
+/* ============ scenarios ============ */
+.scn{border-radius:15px;padding:1rem 1.1rem;border:1px solid var(--border);background:var(--white);display:flex;flex-direction:column;gap:.55rem}
+.scn.worst{border-top:4px solid #9CA9BD}
+.scn.base{border-top:4px solid var(--mesh);box-shadow:0 22px 48px -34px rgba(32,56,104,.6)}
+.scn.best{border-top:4px solid var(--burgundy)}
+.scn .tag{font-family:var(--display);font-size:.64rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.scn .rev{font-family:var(--display);font-weight:800;font-size:1.7rem;letter-spacing:-.035em;line-height:1;color:var(--navy)}
+.scn .rows{display:flex;flex-direction:column;gap:.2rem;font-size:.76rem;color:var(--muted)}
+.scn .rows div{display:flex;justify-content:space-between;gap:.8rem}
+.scn .rows b{color:var(--deep);font-variant-numeric:tabular-nums}
+.scn .payoff{margin-top:auto;padding-top:.5rem;border-top:1px solid var(--border);font-size:.73rem;color:var(--muted)}
+.scn .payoff b{display:block;font-family:var(--display);font-size:1.15rem;color:var(--navy);letter-spacing:-.02em;margin-top:.08rem}
+
+/* ============ tranche ============ */
+.tranche{display:flex;gap:.7rem}
+.tranche .step{flex:1;border-radius:12px;padding:.75rem .9rem;background:var(--secondary);border:1px solid var(--border)}
+.tranche .step .amt{font-family:var(--display);font-weight:800;font-size:1.2rem;letter-spacing:-.03em;color:var(--navy)}
+.tranche .step .when{font-size:.72rem;color:var(--muted);margin-top:.28rem;line-height:1.35}
+.tranche .step .no{font-family:var(--display);font-size:.62rem;font-weight:800;letter-spacing:.13em;color:var(--burgundy);text-transform:uppercase}
+
+.rule{height:1px;background:var(--border);margin:.9rem 0}
+.dark .rule,.navy .rule,.gradient .rule{background:rgba(255,255,255,.14)}
+.flow{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
+.flow .node{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:.45rem .75rem;font-size:.78rem;font-weight:600;font-family:var(--display)}
+.dark .flow .node,.navy .flow .node,.gradient .flow .node{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16)}
+.flow .arrow{color:var(--burgundy);font-weight:800}
+.dark .flow .arrow,.navy .flow .arrow,.gradient .flow .arrow{color:var(--ice)}
+
+@media (max-width:1000px){
+  .split,.split.wide-left{grid-template-columns:1fr}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .grid-3{grid-template-columns:1fr}
+  .tranche{flex-direction:column}
+  .hide-sm{display:none}
+}
+
+/* ============ print ============ */
+@page{size:13.333in 7.5in;margin:0}
+@media print{
+  html,body{height:auto;overflow:visible;background:#fff}
+  #prev,#next,#dots,#counter,#bar{display:none !important}
+  #stage{position:static;overflow:visible}
+  .slide{position:relative;inset:auto;opacity:1 !important;transform:none !important;pointer-events:auto;height:7.5in;page-break-after:always;break-after:page;padding:.5in .65in}
+  .slide:last-child{page-break-after:auto;break-after:auto}
+  .slide-inner{transform:none !important}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .shot{box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div id="bar"></div>
+<button class="nav-btn" id="prev" aria-label="Previous slide">&#10094;</button>
+<button class="nav-btn" id="next" aria-label="Next slide">&#10095;</button>
+<div id="dots"></div>
+<div id="counter"><span id="cur">1</span>/10</div>
+
+<div id="stage">
+
+<!-- ===== 1 COVER ===== -->
+<section class="slide gradient" data-theme="dark">
+  <div class="slide-inner split">
+    <div>
+      <span class="logo-chip" style="margin-bottom:1.5rem"><img src="../client/public/logo.png" alt="Filter Hero" /></span>
+      <div class="eyebrow">Investor Brief &middot; September 2026</div>
+      <h1>The customers<br />already know<br />my name.</h1>
+      <p class="lede mt-s" style="max-width:44ch">
+        A live air-filter store attached to my HVAC service company and its 8,497 verified homeowners.
+      </p>
+      <div class="mt" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+        <div class="pill-ask"><span class="amt">$60,000</span><span class="sub">zero interest &middot; principal only</span></div>
+        <span class="chip"><span class="dot"></span>filterhero.net is live</span>
+      </div>
+    </div>
+    <div class="hide-sm" style="text-align:right">
+      <img src="../client/public/hero/pack-merv11.png" alt="Filter Hero MERV 11 pack" class="shot bare" style="max-height:56vh;margin-left:auto" />
+    </div>
+  </div>
+</section>
+
+<!-- ===== 2 NOT STARTING FROM ZERO ===== -->
+<section class="slide tint" data-theme="light">
+  <div class="slide-inner">
+    <div class="eyebrow">Why this one works</div>
+    <div class="split" style="align-items:start">
+      <div>
+        <h2>I am not starting from zero.</h2>
+        <p class="lede">
+          Most online stores spend year one buying strangers. I start with 8,497 people who have
+          already paid me.
+        </p>
+        <div class="grid-2 mt-s">
+          <div class="stat"><div class="n">8,497</div><div class="l">Homeowners in my AC company's list</div></div>
+          <div class="stat"><div class="n">100%</div><div class="l">Have an email and a verified street address</div></div>
+          <div class="stat"><div class="n">53%</div><div class="l">Contribution margin</div></div>
+          <div class="stat"><div class="n">$300</div><div class="l">Total overhead per month</div></div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:1.05rem;margin-bottom:.4rem">Filters get forgotten, and forgetting is expensive.</h3>
+        <p class="lede">
+          The coil ices, airflow collapses, the repair bill arrives. In South Florida the system runs
+          eleven months a year, so it happens faster here.
+        </p>
+        <div class="card mt-s accent">
+          <table>
+            <tr><td>Replacement filter</td><td class="num" style="color:var(--mesh)">$9.99</td></tr>
+            <tr><td>Coil cleaning</td><td class="num">$150&ndash;$400</td></tr>
+            <tr><td>Blower motor</td><td class="num">$450&ndash;$1,200</td></tr>
+            <tr><td>Compressor</td><td class="num" style="color:var(--burgundy)">$1,800&ndash;$3,000+</td></tr>
+          </table>
+        </div>
+        <p class="lede mt-s">
+          Filters get replaced every 30 to 90 days, forever. The technician who services the system
+          is the person who says which filter to buy. <strong>That is me.</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3 THE LIST ===== -->
+<section class="slide light" data-theme="light">
+  <div class="slide-inner">
+    <div class="eyebrow">Channel one</div>
+    <div class="split wide-left" style="align-items:start">
+      <div>
+        <h2>8,497 homeowners. Already mine.</h2>
+        <p class="lede">
+          Exported from my AC company's database, cleaned and deduplicated. Not leads. People who let
+          me into their homes and paid me.
+        </p>
+        <div class="card mt-s">
+          <div class="kicker" style="margin-bottom:.45rem">Where they are</div>
+          <svg viewBox="0 0 700 272" width="100%" style="max-height:30vh" role="img" aria-label="Contacts by city">
+            <g font-family="Manrope, sans-serif" font-size="12">
+              <g fill="#5C6B80" text-anchor="end">
+                <text x="128" y="20">Miami</text>
+                <text x="128" y="52">Fort Lauderdale</text>
+                <text x="128" y="84">Hollywood</text>
+                <text x="128" y="116">Homestead</text>
+                <text x="128" y="148">Pembroke Pines</text>
+                <text x="128" y="180">Hialeah</text>
+                <text x="128" y="212">Miami Beach</text>
+                <text x="128" y="244">Miramar</text>
+              </g>
+              <g>
+                <rect x="142" y="8"   width="440" height="16" rx="4" fill="#203868"/>
+                <rect x="142" y="40"  width="102" height="16" rx="4" fill="#3A66A3"/>
+                <rect x="142" y="72"  width="87"  height="16" rx="4" fill="#3A66A3"/>
+                <rect x="142" y="104" width="71"  height="16" rx="4" fill="#3A66A3"/>
+                <rect x="142" y="136" width="38"  height="16" rx="4" fill="#8EB0D8"/>
+                <rect x="142" y="168" width="31"  height="16" rx="4" fill="#8EB0D8"/>
+                <rect x="142" y="200" width="29"  height="16" rx="4" fill="#8EB0D8"/>
+                <rect x="142" y="232" width="27"  height="16" rx="4" fill="#8EB0D8"/>
+              </g>
+              <g fill="#141E30" font-weight="700" font-size="12">
+                <text x="594" y="20">3,157</text>
+                <text x="256" y="52">735</text>
+                <text x="241" y="84">625</text>
+                <text x="225" y="116">509</text>
+                <text x="192" y="148">272</text>
+                <text x="185" y="180">219</text>
+                <text x="183" y="212">211</text>
+                <text x="181" y="244">193</text>
+              </g>
+            </g>
+          </svg>
+          <p class="small" style="margin-top:.3rem">Plus Boca Raton, Coral Gables, Plantation, Pompano Beach and 40 more.</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="stat"><div class="n">100%</div><div class="l">Have an email on file</div></div>
+        <div class="stat"><div class="n">100%</div><div class="l">Have a street address &mdash; direct mail works</div></div>
+        <div class="stat"><div class="n">7,380</div><div class="l">Unique emails; the rest are shared households</div></div>
+        <div class="stat"><div class="n">0</div><div class="l">Flagged do-not-service</div></div>
+        <div class="stat"><div class="n">8,472</div><div class="l">Located in Florida</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4 TWO MORE DOORS ===== -->
+<section class="slide navy" data-theme="dark">
+  <div class="slide-inner">
+    <div class="eyebrow">Channels two and three</div>
+    <h2>Two more doors nobody else has.</h2>
+    <div class="grid-2 mt" style="gap:1.5rem;align-items:start">
+      <div class="stack">
+        <div class="card accent-ice">
+          <h3>The service call</h3>
+          <p>An online store competes for attention. A technician standing at the open return vent does
+          not. The recommendation happens at the equipment, with the dirty filter in the customer's hand.
+          Acquisition cost is zero &mdash; the visit is already paid for.</p>
+        </div>
+        <div class="flow">
+          <span class="node">Service call</span><span class="arrow">&rarr;</span>
+          <span class="node">Filter shown</span><span class="arrow">&rarr;</span>
+          <span class="node">Size recorded</span><span class="arrow">&rarr;</span>
+          <span class="node">Recurring order</span>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card accent-ice">
+          <h3>The building managers</h3>
+          <p>Years of service work built direct relationships with building managers and maintenance
+          supervisors from Boca Raton to Florida City, both coasts. When a unit fails, they call me.
+          Routing filter orders through Filter Hero is a favor between contacts, not a cold call.</p>
+        </div>
+        <div class="card">
+          <div class="kicker" style="margin-bottom:.35rem">What one property is worth</div>
+          <table>
+            <tr><td>80 units &times; 4 changes per year</td><td class="num">320 filters</td></tr>
+            <tr><td>Blended bulk ticket</td><td class="num">$11.25</td></tr>
+            <tr class="total"><td>Annual revenue</td><td class="num">$3,600</td></tr>
+          </table>
+          <p class="small" style="margin-top:.4rem">Most managers run more than one property, so a single relationship carries $7,000&ndash;$10,000 a year.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 5 ALREADY BUILT ===== -->
+<section class="slide dark" data-theme="dark">
+  <div class="slide-inner">
+    <div class="eyebrow">Status</div>
+    <h2>Already built. Already live.</h2>
+    <p class="lede">None of the $60,000 pays for construction.</p>
+    <div class="grid-4 mt">
+      <div class="stat"><div class="n">293</div><div class="l">Sellable SKUs ready for checkout</div></div>
+      <div class="stat"><div class="n">153</div><div class="l">Sizes available to add to cart</div></div>
+      <div class="stat"><div class="n">9,958</div><div class="l">Sizes in the finder archive</div></div>
+      <div class="stat"><div class="n">38</div><div class="l">HVAC brands, 166 OEM codes</div></div>
+    </div>
+    <div class="grid-4 mt">
+      <div class="card accent-ice"><h3>Find it by size</h3><p>Three dropdowns, no part numbers.</p></div>
+      <div class="card accent-ice"><h3>Find it by equipment</h3><p>38 brands mapped to their filter sizes.</p></div>
+      <div class="card accent-ice"><h3>Filter Clock</h3><p>Builds a replacement schedule and exports it to a calendar.</p></div>
+      <div class="card accent-ice"><h3>Quote anything else</h3><p>Off-catalog and bulk sizes route to a staff quote pipeline.</p></div>
+    </div>
+    <div class="mt-s" style="display:flex;gap:1.4rem;flex-wrap:wrap;align-items:center">
+      <span class="kicker">Eight live integrations</span>
+      <div class="chips">
+        <span class="chip"><span class="dot"></span>Stripe</span>
+        <span class="chip"><span class="dot"></span>Klaviyo</span>
+        <span class="chip"><span class="dot"></span>Resend</span>
+        <span class="chip"><span class="dot"></span>Supabase</span>
+        <span class="chip"><span class="dot"></span>Railway</span>
+        <span class="chip"><span class="dot"></span>QuickBooks</span>
+        <span class="chip"><span class="dot"></span>Turnstile</span>
+        <span class="chip"><span class="dot"></span>Fulfillment API</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 6 NO TEAM, NO INVENTORY ===== -->
+<section class="slide light" data-theme="light">
+  <div class="slide-inner">
+    <div class="eyebrow">Cost structure</div>
+    <div class="split" style="align-items:center">
+      <div>
+        <h2>No team. No inventory.<br />$300 a month.</h2>
+        <p class="lede">
+          I studied marketing, AI, and automation, and I run all three myself. Strategy, copy, SEO,
+          email, content, order flow, the storefront, the API, the admin, the CRM &mdash; all mine.
+        </p>
+        <div class="grid-2 mt-s">
+          <div class="stat"><div class="n">$0</div><div class="l">Agencies, freelancers, contractors</div></div>
+          <div class="stat"><div class="n">$0</div><div class="l">Paid advertising &mdash; all marketing is organic</div></div>
+        </div>
+        <p class="lede mt-s">
+          Your capital goes to reaching customers, not to building something that already exists.
+        </p>
+      </div>
+      <div>
+        <div class="card accent" style="background:var(--secondary)">
+          <div class="kicker" style="margin-bottom:.45rem">Dropship &mdash; product is never bought before it is sold</div>
+          <ul class="crosses">
+            <li>No inventory purchased up front</li>
+            <li>No warehouse and no lease</li>
+            <li>No employees and no payroll</li>
+            <li>No agency retainers</li>
+          </ul>
+        </div>
+        <p class="statement mt" style="max-width:16ch;font-size:clamp(1.5rem,2.6vw,2.2rem)">
+          <span class="hl">$3,600 a year</span> in total fixed cost.
+        </p>
+        <p class="lede mt-s">
+          A business that cheap to operate cannot run out of money and default. It can run at low
+          volume indefinitely and keep paying.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 7 UNIT ECONOMICS ===== -->
+<section class="slide tint" data-theme="light">
+  <div class="slide-inner">
+    <div class="eyebrow">Unit economics</div>
+    <div class="split" style="align-items:center">
+      <div>
+        <h2>Matched on price.<br />Still 53% margin.</h2>
+        <p class="lede">
+          My pricing engine matches whoever is cheapest on that size &mdash; Filtrete, Filter King,
+          FilterBuy &mdash; automatically, per size and per rating. Nobody undercuts me, because I am
+          already at the floor. Then I deliver it in 2&ndash;3 days; the cheapest ticket in this market
+          is usually a shelf you have to drive to.
+        </p>
+        <table class="mt-s">
+          <thead><tr><th>Product (20&times;25&times;1)</th><th class="num">Cost</th><th class="num">Retail</th><th class="num">Margin</th></tr></thead>
+          <tbody>
+            <tr><td>MERV 8</td><td class="num">$4.82</td><td class="num">$9.99</td><td class="num">51.8%</td></tr>
+            <tr><td>MERV 11</td><td class="num">$6.05</td><td class="num">$13.49</td><td class="num">55.2%</td></tr>
+            <tr><td>MERV 13</td><td class="num">$6.20</td><td class="num">$22.99</td><td class="num">73.0%</td></tr>
+            <tr class="total"><td>Average, 199 costed 1&Prime; SKUs</td><td class="num"></td><td class="num"></td><td class="num">58.5%</td></tr>
+          </tbody>
+        </table>
+        <p class="small mt-s">Those retail figures are not my markup &mdash; they are the lowest price found in the market, matched. After fulfillment and payment fees, contribution margin is <strong>53%</strong>.</p>
+      </div>
+      <div>
+        <div class="card">
+          <div class="kicker" style="margin-bottom:.5rem">Cost versus retail, per filter</div>
+          <svg viewBox="0 0 460 320" width="100%" style="max-height:42vh" role="img" aria-label="Cost versus retail by MERV rating">
+            <g font-family="Manrope, sans-serif" font-size="12">
+              <g stroke="#E8EDF4" stroke-width="1">
+                <line x1="52" y1="61.2"  x2="440" y2="61.2"/>
+                <line x1="52" y1="113.4" x2="440" y2="113.4"/>
+                <line x1="52" y1="165.6" x2="440" y2="165.6"/>
+                <line x1="52" y1="217.8" x2="440" y2="217.8"/>
+              </g>
+              <line x1="52" y1="270" x2="440" y2="270" stroke="#D0D8E4" stroke-width="1"/>
+              <g fill="#5C6B80" font-size="11" text-anchor="end">
+                <text x="44" y="65">$20</text>
+                <text x="44" y="117">$15</text>
+                <text x="44" y="169">$10</text>
+                <text x="44" y="221">$5</text>
+                <text x="44" y="273">$0</text>
+              </g>
+              <rect x="86"  y="165.7" width="74" height="54.0"  rx="3" fill="#3A66A3"/>
+              <rect x="86"  y="219.7" width="74" height="50.3"  rx="3" fill="#C3CEDD"/>
+              <text x="123" y="157" text-anchor="middle" fill="#141E30" font-weight="800" font-size="13">$9.99</text>
+              <text x="123" y="290" text-anchor="middle" fill="#5C6B80" font-size="11">MERV 8</text>
+              <text x="123" y="305" text-anchor="middle" fill="#3A66A3" font-weight="700" font-size="11">51.8%</text>
+
+              <rect x="196" y="129.2" width="74" height="77.6" rx="3" fill="#3A66A3"/>
+              <rect x="196" y="206.8" width="74" height="63.2" rx="3" fill="#C3CEDD"/>
+              <text x="233" y="120" text-anchor="middle" fill="#141E30" font-weight="800" font-size="13">$13.49</text>
+              <text x="233" y="290" text-anchor="middle" fill="#5C6B80" font-size="11">MERV 11</text>
+              <text x="233" y="305" text-anchor="middle" fill="#3A66A3" font-weight="700" font-size="11">55.2%</text>
+
+              <rect x="306" y="30"    width="74" height="175.3" rx="3" fill="#7F2328"/>
+              <rect x="306" y="205.3" width="74" height="64.7"  rx="3" fill="#C3CEDD"/>
+              <text x="343" y="21" text-anchor="middle" fill="#141E30" font-weight="800" font-size="13">$22.99</text>
+              <text x="343" y="290" text-anchor="middle" fill="#5C6B80" font-size="11">MERV 13</text>
+              <text x="343" y="305" text-anchor="middle" fill="#7F2328" font-weight="700" font-size="11">73.0%</text>
+            </g>
+          </svg>
+          <div class="chips">
+            <span class="chip"><span class="dot" style="background:#3A66A3"></span>Gross margin</span>
+            <span class="chip"><span class="dot" style="background:#C3CEDD"></span>Wholesale cost</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 8 SCENARIOS ===== -->
+<section class="slide light" data-theme="light">
+  <div class="slide-inner">
+    <div class="eyebrow">Twelve-month projections</div>
+    <h2>Worst case, base case, best case.</h2>
+    <p class="lede">Three channels stacked: the house list, commercial accounts, and organic search. Every input is printed so the math can be checked rather than trusted.</p>
+    <div class="grid-3 mt" style="align-items:stretch">
+      <div class="scn worst">
+        <div class="tag">Worst case</div>
+        <div class="rev">$46,520</div>
+        <p class="small">Mail underperforms and the network yields few accounts. Milestones are missed, so <strong>only $20,000 is ever drawn.</strong></p>
+        <div class="rows">
+          <div><span>List conversion</span><b>2% &middot; 170</b></div>
+          <div><span>Orders per year</span><b>2</b></div>
+          <div><span>Residential</span><b>$23,120</b></div>
+          <div><span>Commercial (3)</span><b>$14,400</b></div>
+          <div><span>Organic</span><b>$9,000</b></div>
+          <div><span>Net profit</span><b>$21,056</b></div>
+        </div>
+        <div class="payoff">Full repayment of $20,000<b>Month 24</b></div>
+      </div>
+      <div class="scn base">
+        <div class="tag" style="color:var(--mesh)">Base case</div>
+        <div class="rev">$186,700</div>
+        <p class="small">Direct mail performs to normal warm-list rates and the network converts a reasonable share of known properties.</p>
+        <div class="rows">
+          <div><span>List conversion</span><b>5% &middot; 425</b></div>
+          <div><span>Orders per year</span><b>3</b></div>
+          <div><span>Residential</span><b>$86,700</b></div>
+          <div><span>Commercial (10)</span><b>$72,000</b></div>
+          <div><span>Organic</span><b>$28,000</b></div>
+          <div><span>Net profit</span><b>$95,351</b></div>
+        </div>
+        <div class="payoff">Full repayment of $60,000<b>Month 19</b></div>
+      </div>
+      <div class="scn best">
+        <div class="tag" style="color:var(--burgundy)">Best case</div>
+        <div class="rev">$512,300</div>
+        <p class="small">The warm list converts at the rate a serviced relationship should produce and the commercial network opens at scale.</p>
+        <div class="rows">
+          <div><span>List conversion</span><b>10% &middot; 850</b></div>
+          <div><span>Orders per year</span><b>3.5</b></div>
+          <div><span>Residential</span><b>$202,300</b></div>
+          <div><span>Commercial (25)</span><b>$240,000</b></div>
+          <div><span>Organic</span><b>$70,000</b></div>
+          <div><span>Net profit</span><b>$267,919</b></div>
+        </div>
+        <div class="payoff">Full repayment of $60,000<b>Month 9</b></div>
+      </div>
+    </div>
+    <p class="small mt-s">Shared inputs: 8,497 contacts &middot; $68 average order &middot; 53% contribution margin &middot; $300/month overhead &middot; six-month ramp.</p>
+  </div>
+</section>
+
+<!-- ===== 9 FUNDS + TERMS ===== -->
+<section class="slide tint" data-theme="light">
+  <div class="slide-inner">
+    <div class="eyebrow">The deal</div>
+    <h2>Where the $60,000 goes, and how it comes back.</h2>
+    <div class="split mt-s" style="align-items:start">
+      <div>
+        <table>
+          <thead><tr><th>Use of funds</th><th class="num">Amount</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Direct mail to the list</strong><div class="small">Three drops, each postcard printed with that home's filter size</div></td><td class="num">$18,000</td></tr>
+            <tr><td><strong>Working capital</strong><div class="small">Order float for net-30 commercial accounts</div></td><td class="num">$15,000</td></tr>
+            <tr><td><strong>Organic and email scaling</strong><div class="small">Sending tiers, content, landing pages</div></td><td class="num">$9,000</td></tr>
+            <tr><td><strong>B2B seeding kits</strong><div class="small">Samples for 50 target properties</div></td><td class="num">$7,500</td></tr>
+            <tr><td><strong>Business setup</strong><div class="small">Insurance, entity, accounting, reserve</div></td><td class="num">$5,500</td></tr>
+            <tr><td><strong>Repayment reserve</strong><div class="small">Guarantees the monthly floor during ramp</div></td><td class="num">$5,000</td></tr>
+            <tr class="total"><td>Total</td><td class="num">$60,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <p class="lede">Released in thirds, so you are never exposed to the full amount unless the business has proven it can sell.</p>
+        <div class="tranche mt-s">
+          <div class="step"><div class="no">Tranche 1</div><div class="amt">$20,000</div><div class="when">At signing</div></div>
+          <div class="step"><div class="no">Tranche 2</div><div class="amt">$20,000</div><div class="when">100 paid orders and 3 commercial accounts</div></div>
+          <div class="step"><div class="no">Tranche 3</div><div class="amt">$20,000</div><div class="when">300 orders, 8 accounts, one profitable month</div></div>
+        </div>
+        <div class="card mt-s">
+          <div class="kicker" style="margin-bottom:.4rem">Repayment</div>
+          <table>
+            <tr><td>Interest</td><td class="num">None</td></tr>
+            <tr><td>Monthly payment</td><td class="num">Greater of $750 or 50% of net profit</td></tr>
+            <tr><td>Obligation ends</td><td class="num">At the amount actually drawn</td></tr>
+            <tr><td>Reporting</td><td class="num">Monthly, from Stripe and QuickBooks</td></tr>
+          </table>
+        </div>
+        <div class="card mt-s accent">
+          <div class="kicker" style="margin-bottom:.5rem">Months to full repayment</div>
+          <svg viewBox="0 0 520 150" width="100%" style="max-height:19vh" role="img" aria-label="Months to full repayment by scenario">
+            <g font-family="Manrope, sans-serif" font-size="12">
+              <g fill="#5C6B80" text-anchor="end" font-size="11">
+                <text x="86" y="26">Best</text>
+                <text x="86" y="76">Base</text>
+                <text x="86" y="126">Worst</text>
+              </g>
+              <rect x="98" y="12"  width="160" height="22" rx="4" fill="#8EB0D8"/>
+              <rect x="98" y="62"  width="338" height="22" rx="4" fill="#3A66A3"/>
+              <rect x="98" y="112" width="427" height="22" rx="4" fill="#7F2328"/>
+              <g font-weight="800" font-size="12">
+                <text x="268" y="28" fill="#141E30">9 months &middot; $60,000</text>
+                <text x="330" y="78" text-anchor="end" fill="#FFFFFF">19 months &middot; $60,000</text>
+                <text x="419" y="128" text-anchor="end" fill="#FFFFFF">24 months &middot; $20,000 drawn</text>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 10 RISK + ASK ===== -->
+<section class="slide gradient" data-theme="dark">
+  <div class="slide-inner split" style="align-items:start">
+    <div>
+      <div class="eyebrow">Risk, honestly</div>
+      <h2>The real risk, and what contains it.</h2>
+      <p class="lede">
+        Marketing spend cannot be resold the way inventory can. If the mail campaign and the
+        commercial outreach both fail, about $27,000 is spent with nothing to liquidate.
+        That is the honest downside.
+      </p>
+      <div class="stack mt-s">
+        <div class="card accent-ice"><h3>1 &middot; Tranche gating stops the bleeding</h3><p>Most of the budget sits in tranches 2 and 3, which only release after paying customers exist.</p></div>
+        <div class="card accent-ice"><h3>2 &middot; A $300 cost structure</h3><p>The business can run indefinitely at low volume and keep paying instead of defaulting.</p></div>
+        <div class="card accent-ice"><h3>3 &middot; An independent backstop</h3><p>My AC company keeps operating and covers the $750 monthly floor.</p></div>
+      </div>
+    </div>
+    <div class="card" style="padding:1.4rem">
+      <div class="kicker" style="margin-bottom:.7rem;color:var(--ice)">The ask</div>
+      <div class="pill-ask" style="margin-bottom:1rem"><span class="amt">$60,000</span><span class="sub">zero interest &middot; principal only</span></div>
+      <ul class="ticks">
+        <li>A finished store, live and taking payment today</li>
+        <li>8,497 homeowners who have already paid me</li>
+        <li>A commercial network built over years of service work</li>
+        <li>Matched to the cheapest price in the market, still 53% margin</li>
+        <li>Released in thirds, against proven milestones</li>
+        <li>Repaid from profit, reported monthly</li>
+      </ul>
+      <div class="rule"></div>
+      <span class="logo-chip" style="padding:.4rem .65rem"><img src="../client/public/logo.png" alt="Filter Hero" style="height:26px" /></span>
+      <p class="small" style="color:#C4D2E6;margin-top:.6rem">filterhero.net &middot; info@filterhero.net</p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage  = document.getElementById('stage');
+  var dots   = document.getElementById('dots');
+  var bar    = document.getElementById('bar');
+  var cur    = document.getElementById('cur');
+  var prevBtn= document.getElementById('prev');
+  var nextBtn= document.getElementById('next');
+  var i = 0, animating = false;
+
+  document.getElementById('counter').innerHTML = '<span id="cur">1</span>/' + slides.length;
+  cur = document.getElementById('cur');
+
+  slides.forEach(function(s, n){
+    var b = document.createElement('button');
+    b.setAttribute('aria-label', 'Go to slide ' + (n + 1));
+    b.addEventListener('click', function(){ go(n); });
+    dots.appendChild(b);
+  });
+  var dotEls = Array.prototype.slice.call(dots.children);
+
+  /* shrink a slide's content if it would ever exceed the viewport */
+  function fit(s){
+    var inner = s.querySelector('.slide-inner');
+    if(!inner) return;
+    inner.style.transform = '';
+    var cs = getComputedStyle(s);
+    var avail = s.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    var h = inner.scrollHeight;
+    if(h > avail && avail > 0){
+      inner.style.transform = 'scale(' + Math.max(avail / h, 0.62).toFixed(4) + ')';
+    }
+  }
+
+  function paint(){
+    cur.textContent = i + 1;
+    bar.style.width = ((i + 1) / slides.length * 100) + '%';
+    dotEls.forEach(function(d, n){ d.classList.toggle('on', n === i); });
+    document.body.classList.toggle('light-slide', slides[i].dataset.theme === 'light');
+    prevBtn.disabled = (i === 0);
+    nextBtn.disabled = (i === slides.length - 1);
+  }
+
+  function go(n){
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    if(n === i || animating) return;
+    animating = true;
+    document.body.classList.toggle('rev', n < i);
+    var out = slides[i];
+    out.classList.remove('active');
+    out.classList.add('leaving');
+    i = n;
+    var inEl = slides[i];
+    fit(inEl);
+    inEl.classList.add('active');
+    paint();
+    setTimeout(function(){ out.classList.remove('leaving'); animating = false; }, 520);
+  }
+
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if(k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' '){ e.preventDefault(); go(i + 1); }
+    else if(k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp'){ e.preventDefault(); go(i - 1); }
+    else if(k === 'Home'){ e.preventDefault(); go(0); }
+    else if(k === 'End'){ e.preventDefault(); go(slides.length - 1); }
+  });
+
+  prevBtn.addEventListener('click', function(){ go(i - 1); });
+  nextBtn.addEventListener('click', function(){ go(i + 1); });
+
+  var wheelLock = false;
+  stage.addEventListener('wheel', function(e){
+    if(Math.abs(e.deltaY) < 18 || wheelLock) return;
+    wheelLock = true;
+    go(i + (e.deltaY > 0 ? 1 : -1));
+    setTimeout(function(){ wheelLock = false; }, 620);
+  }, {passive:true});
+
+  var x0 = null;
+  stage.addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+  stage.addEventListener('touchend', function(e){
+    if(x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if(Math.abs(dx) > 55) go(i + (dx < 0 ? 1 : -1));
+    x0 = null;
+  }, {passive:true});
+
+  window.addEventListener('resize', function(){ slides.forEach(fit); });
+
+  window.addEventListener('beforeprint', function(){
+    slides.forEach(function(s){
+      s.classList.add('active');
+      var inner = s.querySelector('.slide-inner');
+      if(inner) inner.style.transform = '';
+    });
+  });
+  window.addEventListener('afterprint', function(){
+    slides.forEach(function(s, n){ s.classList.toggle('active', n === i); fit(s); });
+  });
+
+  window.addEventListener('load', function(){ slides.forEach(fit); });
+  slides[0].classList.add('active');
+  slides.forEach(fit);
+  paint();
+})();
+</script>
+
+</body>
+</html>

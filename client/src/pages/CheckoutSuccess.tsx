@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { ArrowRight, CheckCircle, CircleAlert, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import CartDrawer from "@/components/CartDrawer";
 import SiteHeader from "@/components/SiteHeader";
 import { BRAND_NAME } from "@/const";
 import { useCart } from "@/contexts/CartContext";
+import {
+  clearCheckoutContinuation,
+  readCheckoutContinuation,
+  stashCheckoutContinuation,
+} from "@/lib/checkout-queue";
 import { useSeo } from "@/hooks/useSeo";
 
-type ConfirmState = "checking" | "paid" | "unpaid" | "missing";
+type ConfirmState = "checking" | "continuing" | "paid" | "unpaid" | "missing";
 
 type SessionTotals = {
   amountSubtotal?: number | null;
@@ -57,12 +63,61 @@ export default function CheckoutSuccess() {
         };
         if (cancelled) return;
         if (res.ok && data.paid) {
-          clearCart();
           setTotals({
             amountSubtotal: data.amountSubtotal,
             amountTax: data.amountTax,
             amountTotal: data.amountTotal,
           });
+
+          const pending = readCheckoutContinuation();
+          if (pending && pending.remainingItems.length > 0) {
+            setState("continuing");
+            try {
+              const nextRes = await fetch("/api/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  items: pending.remainingItems,
+                  email: pending.email,
+                  marketingConsent: pending.marketingConsent,
+                }),
+              });
+              const nextData = (await nextRes.json()) as {
+                url?: string;
+                remainingItems?: typeof pending.remainingItems;
+                groupLabel?: string;
+                error?: string;
+              };
+              if (!nextRes.ok || !nextData.url) {
+                throw new Error(nextData.error || "Could not start the next delivery checkout.");
+              }
+              stashCheckoutContinuation({
+                remainingItems: nextData.remainingItems ?? [],
+                email: pending.email,
+                marketingConsent: pending.marketingConsent,
+              });
+              toast.message(
+                nextData.groupLabel
+                  ? `Next payment: ${nextData.groupLabel}`
+                  : "Continue to your next delivery schedule.",
+              );
+              window.location.href = nextData.url;
+              return;
+            } catch (err) {
+              clearCheckoutContinuation();
+              clearCart();
+              toast.error(
+                err instanceof Error
+                  ? err.message
+                  : "One payment worked. Finish the rest from your cart.",
+              );
+              setState("paid");
+              return;
+            }
+          }
+
+          clearCheckoutContinuation();
+          clearCart();
           setState("paid");
           return;
         }
@@ -78,10 +133,16 @@ export default function CheckoutSuccess() {
   }, [clearCart]);
 
   const copy =
-    state === "checking"
+    state === "checking" || state === "continuing"
       ? {
-          title: "Confirming your order",
-          body: "Hold on while we verify the payment with Stripe.",
+          title:
+            state === "continuing"
+              ? "Starting your next delivery checkout"
+              : "Confirming your order",
+          body:
+            state === "continuing"
+              ? "You have another delivery schedule in this order. Redirecting to Stripe…"
+              : "Hold on while we verify the payment with Stripe.",
         }
       : state === "paid"
         ? {
@@ -99,7 +160,7 @@ export default function CheckoutSuccess() {
             };
 
   const mark =
-    state === "checking" ? (
+    state === "checking" || state === "continuing" ? (
       <Loader2 className="h-8 w-8 animate-spin text-navy" />
     ) : state === "paid" ? (
       <CheckCircle className="h-8 w-8 text-navy" />
@@ -141,7 +202,7 @@ export default function CheckoutSuccess() {
               </div>
             </div>
           )}
-          {state !== "checking" && (
+          {state !== "checking" && state !== "continuing" && (
             <Button
               size="lg"
               className="hero-shop-btn hero-shop-btn-glow mt-6 w-full text-white"

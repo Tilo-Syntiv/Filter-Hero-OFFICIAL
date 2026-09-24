@@ -9,6 +9,8 @@ import { readStripeTaxReadiness } from "../../shared/stripe-tax";
 import { adminLimiter, publicError } from "../security";
 import { loadSiteConfig, saveSiteConfig } from "./config";
 import { intuitOAuth } from "../intuit/oauth";
+import { constantContactOAuth } from "../constant-contact/oauth";
+import { STATE_COOKIE as CC_STATE_COOKIE } from "../constant-contact/routes";
 import {
   analyticsSnapshot,
   buildOverview,
@@ -301,6 +303,53 @@ export function adminRouter(): Router {
         .join("; "),
     );
     sendData(res, { url: started.data.url });
+  });
+
+  router.get("/constant-contact/status", (_req, res) => {
+    sendData(res, constantContactOAuth.status());
+  });
+
+  router.post("/constant-contact/connect", (req, res) => {
+    let started;
+    try {
+      started = constantContactOAuth.startConnect(req.staff?.email);
+    } catch (err) {
+      const { status, body } = publicError(
+        err,
+        { code: "constant_contact_connect_failed", message: "Could not start Constant Contact connect." },
+        "[constant-contact] connect",
+      );
+      res.status(status).json({ ok: false, ...body });
+      return;
+    }
+    if (!started.ok) {
+      res.status(started.status).json({
+        ok: false,
+        error: started.message,
+        code: started.kind,
+      });
+      return;
+    }
+    const production = process.env.NODE_ENV === "production";
+    res.setHeader(
+      "Set-Cookie",
+      [
+        `${CC_STATE_COOKIE}=${encodeURIComponent(started.data.state)}`,
+        "Path=/",
+        "HttpOnly",
+        "SameSite=Lax",
+        "Max-Age=600",
+        production ? "Secure" : "",
+      ]
+        .filter(Boolean)
+        .join("; "),
+    );
+    sendData(res, { url: started.data.url });
+  });
+
+  router.post("/constant-contact/disconnect", (_req, res) => {
+    constantContactOAuth.disconnect();
+    sendData(res, { connected: false });
   });
 
   router.post("/intuit/disconnect", async (_req, res) => {

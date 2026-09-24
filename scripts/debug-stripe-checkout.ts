@@ -190,9 +190,9 @@ async function main() {
   check(product.inStock, "20x25x1 is in stock");
 
   console.log(`Creating Checkout Session for ${product.size} MERV ${product.merv} id=${product.id}…`);
-  let session: Stripe.Checkout.Session;
+  let started: Awaited<ReturnType<typeof createCheckoutSession>>;
   try {
-    session = await createCheckoutSession(
+    started = await createCheckoutSession(
       [{ productId: product.id, quantity: 1 }],
       process.env.CLIENT_URL || "http://localhost:3000",
     );
@@ -201,8 +201,9 @@ async function main() {
     throw err;
   }
 
+  const session = await stripe.checkout.sessions.retrieve(started.sessionId);
   check(Boolean(session.id) && isCheckoutSessionId(session.id), `session id ${session.id}`);
-  check(Boolean(session.url), "session has hosted url");
+  check(Boolean(started.url) && Boolean(session.url), "session has hosted url");
   check(session.mode === "payment", "mode=payment");
   check(
     session.automatic_tax?.enabled === tax.automaticTax,
@@ -296,11 +297,12 @@ async function main() {
   });
   const foundId = await findCustomerIdByEmail(stripe, reuseEmail);
   check(foundId === reuseCustomer.id, "findCustomerIdByEmail returns existing customer");
-  const reuseSession = await createCheckoutSession(
+  const reuseStarted = await createCheckoutSession(
     [{ productId: product.id, quantity: 1 }],
     process.env.CLIENT_URL || "http://localhost:3000",
     { email: reuseEmail },
   );
+  const reuseSession = await stripe.checkout.sessions.retrieve(reuseStarted.sessionId);
   const reuseCustomerId =
     typeof reuseSession.customer === "string"
       ? reuseSession.customer

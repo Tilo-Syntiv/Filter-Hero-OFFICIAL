@@ -134,4 +134,6 @@ server/data/leads.json
 server/data/orders.json
 server/data/intuit-oauth.json
 server/data/intuit-oauth-pending.json
+server/data/constant-contact-oauth.json
+server/data/constant-contact-oauth-pending.json
 !server/data/.gitkeep

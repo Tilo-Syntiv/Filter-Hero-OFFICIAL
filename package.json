@@ -28,6 +28,7 @@
     "verify:intuit-discovery": "tsx scripts/verify-intuit-discovery.ts",
     "verify:intuit-oauth": "tsx scripts/verify-intuit-oauth.ts",
     "connect:intuit": "tsx scripts/connect-intuit.ts",
+    "connect:constant-contact": "tsx scripts/connect-constant-contact.ts",
     "setup:intuit-live": "tsx scripts/setup-intuit-live.ts",
     "setup:stripe-webhook": "tsx scripts/setup-stripe-webhook.ts",
     "setup:klaviyo-stripe": "tsx scripts/setup-klaviyo-stripe.ts",

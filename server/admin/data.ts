@@ -20,6 +20,10 @@ import { getAccountDb, getDb } from "../db";
 import { listAllOrders, type StoredOrder } from "../stripe";
 import { loadSiteConfig } from "./config";
 import { intuitConfigFromEnv, intuitPublicStatus } from "../intuit/oauth";
+import {
+  constantContactConfigFromEnv,
+  constantContactPublicStatus,
+} from "../constant-contact/oauth";
 
 export type AdminOrderItem = {
   productId: number;
@@ -625,10 +629,17 @@ export function settingsSnapshot() {
       supabase: present(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL),
       turnstile: present(process.env.TURNSTILE_SECRET_KEY),
       intuit: present(process.env.INTUIT_CLIENT_ID) && present(process.env.INTUIT_CLIENT_SECRET),
+      constantContact:
+        present(process.env.CONSTANT_CONTACT_CLIENT_ID) &&
+        present(process.env.CONSTANT_CONTACT_CLIENT_SECRET),
     },
     intuit: {
       ...intuitPublicStatus(),
       redirectUri: intuitConfigFromEnv()?.redirectUri ?? null,
+    },
+    constantContact: {
+      ...constantContactPublicStatus(),
+      redirectUri: constantContactConfigFromEnv()?.redirectUri ?? null,
     },
     links: {
       stripe: "https://dashboard.stripe.com",
@@ -636,6 +647,7 @@ export function settingsSnapshot() {
       stripeTaxSettings: "https://dashboard.stripe.com/settings/tax",
       klaviyo: "https://www.klaviyo.com/dashboard",
       resend: "https://resend.com/emails",
+      constantContact: "https://app.constantcontact.com/pages/dma/portal/",
       supabase: (process.env.SUPABASE_URL || "").replace(/\/$/, "") + "/project/default",
     },
   };

@@ -455,6 +455,17 @@ export const getAdminSettings = () =>
       lastError: string | null;
       redirectUri: string | null;
     };
+    constantContact: {
+      configured: boolean;
+      connected: boolean;
+      needsReauthorize: boolean;
+      organizationName: string | null;
+      contactEmail: string | null;
+      connectedAt: string | null;
+      scope: string | null;
+      lastError: string | null;
+      redirectUri: string | null;
+    };
     links: Record<string, string>;
     stripeTax?: {
       configured: boolean;
@@ -492,6 +503,10 @@ export const startIntuitConnect = () =>
   adminFetch<{ url: string }>("/intuit/connect", { method: "POST" });
 export const disconnectIntuit = () =>
   adminFetch<{ connected: boolean }>("/intuit/disconnect", { method: "POST" });
+export const startConstantContactConnect = () =>
+  adminFetch<{ url: string }>("/constant-contact/connect", { method: "POST" });
+export const disconnectConstantContact = () =>
+  adminFetch<{ connected: boolean }>("/constant-contact/disconnect", { method: "POST" });
 export const getAdminMaintenance = () =>
   adminFetch<{
     maintenanceMode: boolean;

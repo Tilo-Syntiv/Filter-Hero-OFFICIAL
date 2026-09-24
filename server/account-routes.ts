@@ -12,6 +12,8 @@ import {
   updateProfile,
   type AccountResult,
 } from "./account";
+import { createBillingPortalForEmail } from "./stripe";
+import { siteOrigin } from "../shared/seo";
 
 /**
  * Shopper-facing account API. Every route sits behind `requireCustomer`.
@@ -86,6 +88,25 @@ export function accountRouter(): Router {
 
   router.delete("/filters/:id", async (req, res) => {
     sendJson(res, await removeFilter(actor(req), req.params.id));
+  });
+
+  router.post("/billing-portal", async (req, res) => {
+    try {
+      const email = actor(req).email;
+      const returnUrl = `${siteOrigin()}/account`;
+      const portal = await createBillingPortalForEmail(email, returnUrl);
+      res.json({ ok: true, data: portal });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Could not open delivery management.";
+      const status = /No Stripe customer/i.test(message) ? 404 : 502;
+      if (status === 502) console.error("[account] billing portal", err);
+      res.status(status).json({
+        ok: false,
+        error: status === 502 ? "Could not open delivery management." : message,
+        code: status === 404 ? "not_found" : "portal_failed",
+      });
+    }
   });
 
   return router;

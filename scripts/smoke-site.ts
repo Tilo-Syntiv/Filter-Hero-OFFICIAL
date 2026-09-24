@@ -151,9 +151,12 @@ assert(klaviyoCatalog.res.ok, `klaviyo catalog ${klaviyoCatalog.res.status}`);
 const feed = klaviyoCatalog.json as { items?: unknown[] };
 assert(Array.isArray(feed.items) && feed.items.length > 0, "klaviyo catalog.json must list items");
 if (!/^https:\/\/filterhero\.net/i.test(API)) {
+  const sellable = JSON.parse(
+    fs.readFileSync(path.join(ROOT, "shared", "sellable-skus.json"), "utf8"),
+  ) as { count: number };
   assert(
-    feed.items.length === 293,
-    `local catalog.json must be 293 Model Pricing SKUs, got ${feed.items.length}`,
+    feed.items.length === sellable.count,
+    `local catalog.json must match sellable-skus.json (${sellable.count}), got ${feed.items.length}`,
   );
 }
 

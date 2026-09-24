@@ -14,6 +14,7 @@ import { consumeStaffAuthPending } from "@/lib/staff-auth";
 import {
   formatOrderTotal,
   getAccount,
+  openBillingPortal,
   patchAccount,
   removeAccountFilter,
   type AccountOrder,
@@ -31,6 +32,7 @@ export default function AccountPage() {
   const [snapshot, setSnapshot] = useState<AccountSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   useEffect(() => {
     if (!ready) return;
@@ -106,6 +108,21 @@ export default function AccountPage() {
     toast.success(`Added ${product.size} to your cart.`);
   };
 
+  const manageDelivery = async () => {
+    setPortalLoading(true);
+    try {
+      const { url } = await openBillingPortal();
+      window.location.href = url;
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Could not open delivery management. Place an auto-delivery order first.",
+      );
+      setPortalLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
@@ -140,6 +157,24 @@ export default function AccountPage() {
         ) : (
           <>
             <ProfileCard profile={snapshot.profile} saving={saving} onSave={saveProfile} />
+            <section className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+              <h2 className="flex items-center gap-2 text-lg font-bold text-navy">
+                <Package className="h-4 w-4" />
+                Automatic delivery
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Cancel, update your card, or change the shipping address for scheduled filter
+                shipments.
+              </p>
+              <Button
+                className="mt-4"
+                variant="outline"
+                disabled={portalLoading}
+                onClick={() => void manageDelivery()}
+              >
+                {portalLoading ? "Opening…" : "Manage delivery"}
+              </Button>
+            </section>
             <FiltersCard filters={snapshot.filters} onRemove={dropFilter} onReorder={reorder} />
             <OrdersCard orders={snapshot.orders} />
           </>
