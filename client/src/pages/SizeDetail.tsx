@@ -20,6 +20,7 @@ import {
   deliveryLabel,
   findProductVariant,
   getFilterSize,
+  mervTypesForDisplay,
   mervTypesForSize,
   productGalleryFor,
   packShotSrc,
@@ -49,6 +50,7 @@ import LifeImage from "@/components/LifeImage";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useStock } from "@/contexts/StockContext";
+import BackInStockForm from "@/components/BackInStockForm";
 import { useCart } from "@/contexts/CartContext";
 import { getSiteUrl, useSeo } from "@/hooks/useSeo";
 import { BRAND_NAME } from "@/const";
@@ -76,7 +78,7 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
   const sizeMeta = getFilterSize(decoded);
   const { addItem } = useCart();
   const availableTypes = useMemo(
-    () => mervTypesForSize(decoded),
+    () => (getFilterSize(decoded) ? mervTypesForDisplay() : mervTypesForSize(decoded)),
     [decoded, stockCount],
   );
   const mervOptions = sellableMervPhrase(decoded);
@@ -434,6 +436,12 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
                       {availableTypes.map((t) => {
                         const active = t.key === mervKey;
                         const g = MERV_GUIDE[t.key];
+                        const typeVariant = findProductVariant(
+                          decoded,
+                          t.merv,
+                          t.isCarbon,
+                        );
+                        const typeInStock = Boolean(typeVariant?.inStock);
                         return (
                           <button
                             key={t.key}
@@ -448,7 +456,11 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
                               setHoverKey((current) => (current === t.key ? null : current))
                             }
                             aria-pressed={active}
-                            className={cn("pdp-merv", active && "pdp-merv-active")}
+                            className={cn(
+                              "pdp-merv",
+                              active && "pdp-merv-active",
+                              !typeInStock && "opacity-80",
+                            )}
                             style={{ "--merv-wash": t.badgeColor } as CSSProperties}
                           >
                             <span
@@ -465,7 +477,9 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
                               )}
                             </span>
                             <span className="pdp-merv-name">{t.name}</span>
-                            <span className="pdp-merv-for">{g.bestFor}</span>
+                            <span className="pdp-merv-for">
+                              {typeInStock ? g.bestFor : "Notify me"}
+                            </span>
                           </button>
                         );
                       })}
@@ -617,6 +631,16 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
                       ? `Add ${qty} to cart`
                       : `Add ${qty} · auto every ${delivery} days`}
                   </Button>
+                  {!variant?.inStock && (
+                    <div className="mt-4">
+                      <BackInStockForm
+                        size={decoded}
+                        merv={selectedType.merv}
+                        isCarbon={selectedType.isCarbon}
+                        label={selectedType.name}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -740,7 +764,7 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
             disabled={!variant?.inStock}
             onClick={handleAdd}
           >
-            Add to cart
+            {variant?.inStock ? "Add to cart" : "Unavailable"}
           </Button>
         </div>
       )}

@@ -273,6 +273,51 @@ export async function sendOrderConfirmation(order: OrderMail): Promise<MailResul
   return sendBuilt(mail, `order-confirmation/${order.sessionId}`);
 }
 
+export type BackInStockMail = {
+  id: string;
+  email: string;
+  size: string;
+  merv: 8 | 11 | 13;
+  isCarbon: boolean;
+};
+
+export function buildBackInStockAlert(alert: BackInStockMail): BuiltMail {
+  const label = alert.isCarbon ? "MERV 8 Carbon" : `MERV ${alert.merv}`;
+  const path = `/sizes/${encodeURIComponent(alert.size)}?merv=${alert.isCarbon ? "carbon" : alert.merv}`;
+  const href = `${emailOrigin()}${path}`;
+  const pack = `${emailOrigin()}${packShotSrc(alert.merv, alert.isCarbon)}`;
+  const title = `${alert.size} ${label} is back`;
+  const html = renderBrandedEmail({
+    title,
+    bodyHtml: `
+      <img src="${escapeEmailHtml(pack)}" alt="${escapeEmailHtml(label)}" width="200" style="display:block;margin:0 0 16px;max-width:200px;height:auto;border:0">
+      ${emailParagraph(`Good news — ${alert.size} ${label} is available again on Filter Hero.`)}
+      ${emailParagraph("This is the one-time alert you asked for. We will not email you again for this size unless you sign up once more.")}
+    `,
+    ctaHref: href,
+    ctaLabel: `Shop ${alert.size}`,
+  });
+  const text = [
+    title,
+    "",
+    `${alert.size} ${label} is available again on Filter Hero.`,
+    href,
+    "",
+    "This is the one-time alert you asked for.",
+  ].join("\n");
+  return {
+    to: alert.email,
+    replyTo: BRAND_EMAIL,
+    subject: `${alert.size} ${label} is back in stock`,
+    html,
+    text,
+  };
+}
+
+export async function sendBackInStockAlert(alert: BackInStockMail): Promise<MailResult> {
+  return sendBuilt(buildBackInStockAlert(alert), `back-in-stock/${alert.id}`);
+}
+
 export async function sendLeadEmail(lead: LeadMail): Promise<{ emailed: boolean }> {
   const staff = await sendLeadAlert(lead);
   if (resendSendsShopperReceipt(lead.intent)) {

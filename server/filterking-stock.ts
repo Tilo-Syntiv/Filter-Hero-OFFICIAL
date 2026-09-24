@@ -19,6 +19,7 @@ import {
 } from "../shared/stock";
 import { dataFile } from "./data-store";
 import { fetchAllParentModels, filterKingConfigured, type FilterKingParentModel } from "./filterking";
+import { notifyStockAlertsForKeys } from "./stock-alerts";
 
 const SYNC_MS = 15 * 60 * 1000;
 const STOCK_FILE = "filterking-stock.json";
@@ -148,6 +149,14 @@ export async function refreshFilterKingStock(): Promise<{ count: number; syncedA
   const at = new Date().toISOString();
   writeDisk(items, at);
   applyDiskItems(items, at, allParents);
+  try {
+    const { notified } = await notifyStockAlertsForKeys(stockKeys());
+    if (notified > 0) {
+      console.log(`[filterking-stock] emailed ${notified} back-in-stock alert(s)`);
+    }
+  } catch (err) {
+    console.warn("[filterking-stock] stock-alert notify failed", err);
+  }
   return { count: items.length, syncedAt: at };
 }
 

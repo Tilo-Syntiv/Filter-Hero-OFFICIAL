@@ -133,6 +133,7 @@ client/public/__manus__/
 server/data/leads.json
 server/data/orders.json
 server/data/filterking-stock.json
+server/data/stock-alerts.json
 server/data/intuit-oauth.json
 server/data/intuit-oauth-pending.json
 server/data/constant-contact-oauth.json

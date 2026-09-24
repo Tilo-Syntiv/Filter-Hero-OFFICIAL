@@ -14,7 +14,20 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-375**
+Next id: **FH-376**
+
+---
+
+### FH-375 — Back-in-stock email when a rating returns
+- **Status:** fixed
+- **Area:** catalog | contact
+- **Symptom:** Out-of-stock MERV chips only disabled Add to cart. Shoppers had no way to hear when Filter King stock brought that size × rating back. The honeypot field was also hardcoded to `""` in the JSON body, so the server never saw bot fills.
+- **Do NOT:** Send welcome, abandon, or replenish from this path. Do not use Klaviyo. Do not import mailer from `server/crm/`. Do not email repeatedly for the same signup. Do not hardcode `website: ""` in the fetch body.
+- **Do:** Catalog sizes show every MERV chip (`mervTypesForDisplay`); OOS chips say Notify me and open the email form. `POST /api/stock-alert` (Turnstile + bound honeypot, contact rate limit) saves to `DATA_DIR/stock-alerts.json`. After each Filter King stock sync, Resend sends one branded message and marks `notifiedAt`. Owner is `back_in_stock` in `shared/email-channels.ts`.
+- **Files:** `server/stock-alerts.ts`, `server/mailer.ts`, `server/filterking-stock.ts`, `server/index.ts`, `client/src/components/BackInStockForm.tsx`, `client/src/pages/SizeDetail.tsx`, `shared/email-channels.ts`
+- **Verify:** `pnpm verify:store`. Live `GET /api/catalog/stock` returns ~294 keys. `POST /api/stock-alert` without Turnstile returns `bot_check_failed` (not 404). On `/sizes/14x25x1` pick an OOS MERV → form appears. After a sync that restores that key, shopper gets one Resend email; `notifiedAt` is set.
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
 
 ---
 
@@ -1977,6 +1990,7 @@ Next id: **FH-375**
 - **Verify:** Intuit Development Redirect URIs lists that line. Settings → Connect signs in instead of the red connection problem.
 - **Added:** 2026-09-16
 - **Fixed:** 2026-09-16
+- **Rechecked:** 2026-09-24 — Production Redirect URIs now includes `https://filterhero.net/api/intuit/oauth/callback` (the OAuth playground URI is still there too). Development still lists `http://localhost:3001/api/intuit/oauth/callback`. Staff still has to Connect the company from `https://filterhero.net/admin/settings`.
 
 ---
 

@@ -37,6 +37,7 @@ import { isCheckoutPaused, publicSiteConfig } from "./admin/config";
 import { intuitRouter } from "./intuit/routes";
 import { constantContactRouter } from "./constant-contact/routes";
 import { catalogStockResponse, startFilterKingStockSync } from "./filterking-stock";
+import { submitStockAlert } from "./stock-alerts";
 import { stockKeyCount, stockSyncedAt } from "../shared/stock";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -291,6 +292,24 @@ Sitemap: ${absoluteUrl(siteUrl, "/sitemap.xml")}
         err,
         { code: "contact_failed", message: "Contact failed" },
         "[contact]",
+      );
+      res.status(status).json(body);
+    }
+  });
+
+  app.post("/api/stock-alert", contactLimiter, async (req, res) => {
+    try {
+      const result = await submitStockAlert(req.body, req.ip);
+      res.json(result);
+    } catch (err) {
+      if (err instanceof Error && err.message === "Could not verify that form.") {
+        res.status(400).json({ error: err.message, code: "bot_check_failed" });
+        return;
+      }
+      const { status, body } = publicError(
+        err,
+        { code: "stock_alert_failed", message: "Could not save that alert." },
+        "[stock-alert]",
       );
       res.status(status).json(body);
     }
