@@ -127,9 +127,10 @@ Brand colors belong on Stripe Branding, Klaviyo brand-library email defaults, an
 - Browser never queries Postgres. Service-role Express only. Never put `SUPABASE_SERVICE_ROLE_KEY` in a `VITE_` var.
 - RLS on, zero policies, FORCE RLS, grants revoked from `anon` / `authenticated` / `public`.
 - Staff: magic link + OTP, `STAFF_EMAILS`. Shopper: email + password. Guest checkout still works.
-- Quote → deal in `new`. Support → note, no deal. Reminder → nothing. Paid checkout → won.
-- Contact saves `leads.json` first, then fail-soft CRM. CRM never emails.
-- `CRM_DISABLE` must not kill accounts.
+- Quote → deal in `new`. Support → note, no deal. Reminder → nothing in CRM (Filter Clock → `non_customers` or existing `customer_profiles`). Paid checkout → won.
+- Contact saves `leads.json` first, then fail-soft CRM / person capture. CRM never emails.
+- `CRM_DISABLE` must not kill accounts or `non_customers`.
+- Full name + address + email + phone must land in Supabase (`customer_profiles` if they have an account, else `non_customers` with `status = not_an_actual_customer`).
 
 ---
 
@@ -228,7 +229,7 @@ Secrets never go in `VITE_` vars except publishable keys the browser must have (
 | `docs/ISSUES-AND-FIXES.md` | Every `FH-XXX` |
 | `shared/email-channels.ts` | Sender ownership in code |
 | `docs/STRIPE-FULL-BUILD.md` | Checkout + webhooks |
-| `archive/klaviyo/` | Parked marketing code (FH-369) |
+| `archive/klaviyo/` | Restore snapshot from the 2026-09-24 park. Live code is back in `server/`, `client/`, and `shared/`. |
 | `docs/RESEND-FULL-BUILD.md` | Transactional HTML |
 | `CRM FULL BUILD.md` | Staff Quotes pipeline, CRM sync, every CRM issue |
 | `docs/SUPABASE-AND-POSTGRES-FULL-BUILD.md` | Auth, CRM, RLS |

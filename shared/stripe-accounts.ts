@@ -1,7 +1,7 @@
 /**
  * Stripe account + webhook ownership. Shop fulfillment must not sit on the
- * sandbox key. Klaviyo charge/invoice URLs are classified so webhook setup
- * deletes them on every Stripe key (FH-370). Creating that endpoint is archived.
+ * sandbox key. The Klaviyo charge/invoice URL may stay on live FILTER HERO
+ * only (FH-380). Sandbox keys must not keep it.
  *
  * FILTER HERO live (`acct_1U9bqlQEENEs0Qmw`) is the only account that may
  * post `checkout.session.*` to filterhero.net. Local sandbox uses
@@ -25,6 +25,11 @@ export function isFilterHeroAccount(accountId: string | null | undefined): boole
 
 export function isFilterHeroSandboxAccount(accountId: string | null | undefined): boolean {
   return accountId === FILTER_HERO_SANDBOX_ACCOUNT_ID;
+}
+
+/** Native charge/invoice webhook is live FILTER HERO only. Never the sandbox. */
+export function klaviyoNativeWebhookAllowed(accountId: string | null | undefined): boolean {
+  return isFilterHeroAccount(accountId);
 }
 
 /** Production Checkout fulfillment is live FILTER HERO only. */
@@ -88,7 +93,7 @@ export function stripeWebhookHealth(input: {
     },
     klaviyo: {
       present: klaviyo,
-      conflict: klaviyo,
+      conflict: klaviyo && !klaviyoNativeWebhookAllowed(input.accountId),
     },
   };
 }

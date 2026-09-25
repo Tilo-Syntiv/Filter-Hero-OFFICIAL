@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import {
   ACCESS_SKEW_MS,
   CC_SCOPES,
@@ -8,14 +9,9 @@ import {
   parseTokenResponse,
   staffMessageFor,
 } from "../shared/constant-contact-oauth.ts";
-import {
-  constantContactLiveCheck,
-  phoneForConstantContact,
-  recordConstantContactOptIn,
-  splitPersonName,
-} from "../server/constant-contact/contacts.ts";
+import { constantContactLiveCheck } from "../server/constant-contact/contacts.ts";
 import { createConstantContactOAuth } from "../server/constant-contact/oauth.ts";
-import { constantContactMayRecord } from "../shared/email-channels.ts";
+import { EMAIL_OWNER } from "../shared/email-channels.ts";
 import type { PendingOauth, PendingStore, StoredConstantContactTokens, TokenStore } from "../server/constant-contact/store.ts";
 
 function assert(cond: unknown, message: string): asserts cond {
@@ -94,10 +90,11 @@ function formBody(init?: RequestInit): URLSearchParams {
 }
 
 async function main() {
-  assert(CC_SCOPES.includes("offline_access"), "offline_access is requested so Constant Contact returns a refresh token");
-  assert(CC_SCOPES.includes("account_read"), "account_read is requested");
-  assert(CC_SCOPES.includes("contact_data"), "contact_data is requested");
-  assert(CC_SCOPES.includes("campaign_data"), "campaign_data is requested");
+  const scopes = CC_SCOPES as readonly string[];
+  assert(scopes.includes("offline_access"), "offline_access is requested so Constant Contact returns a refresh token");
+  assert(scopes.includes("account_read"), "account_read is requested");
+  assert(!scopes.includes("contact_data"), "contact writes stay off the shop token");
+  assert(!scopes.includes("campaign_data"), "campaign sends stay off the shop token");
   const authorize = new URL(buildAuthorizeUrl({ clientId: "abc", redirectUri: config().redirectUri, state: "state-1" }));
   assert(authorize.origin + authorize.pathname === "https://authz.constantcontact.com/oauth2/default/v1/authorize", "authorize host is Constant Contact");
   assert(authorize.searchParams.get("redirect_uri") === config().redirectUri, "redirect uri is passed through");
@@ -178,7 +175,7 @@ async function main() {
 
   const connected = await csrfClient.completeCallback({ code: "auth-code", state: "state-legit", error: null });
   assert(connected.ok, "the matching state exchanges the code");
-  assert(tokenPosts === 1, "only the legitimate callback hits the token endpoint");
+  assert(Number(tokenPosts) === 1, "only the legitimate callback hits the token endpoint");
   assert(accountReads === 1, "a new connection reads the account summary");
   const status = csrfClient.status();
   assert(status.connected, "the account is connected");
@@ -257,54 +254,45 @@ async function main() {
   const unconfigured = missing.startConnect("info@filterhero.net");
   assert(!unconfigured.ok && unconfigured.status === 503, "missing API keys do not start a login");
 
-  assert(!constantContactMayRecord({ intent: "reminder", marketingConsent: true }), "clock saves stay off the list");
-  assert(!constantContactMayRecord({ marketingConsent: false }), "a missing opt-in is not recorded");
-  assert(constantContactMayRecord({ intent: "quote", marketingConsent: true }), "a quote opt-in is recorded");
-  assert(splitPersonName("Ada Lovelace").lastName === "Lovelace", "last name is kept");
-  assert(phoneForConstantContact("555-1212") === undefined, "a short phone is omitted");
-  assert(phoneForConstantContact("+1 (404) 555-1212") === "4045551212", "a US phone is kept");
-
-  let signupBody = "";
-  const optIn = await recordConstantContactOptIn(
-    { email: "ada@filterhero.net", name: "Ada Lovelace", phone: "4045551212", marketingConsent: true, intent: "quote" },
-    {
-      accessToken: async () => ({ ok: true, data: { accessToken: "access-live" } }),
-      readList: () => ({ listId: "list-1", name: "Filter Hero" }),
-      saveList: () => undefined,
-      listIdFromEnv: () => "",
-      fetch: async (input, init) => {
-        const url = String(input);
-        if (url.includes("/contacts/sign_up_form")) {
-          signupBody = String(init?.body || "");
-          return jsonResponse(201, { action: "created" });
-        }
-        return jsonResponse(404, {});
-      },
-    },
+  assert(EMAIL_OWNER.welcome === "klaviyo", "Klaviyo owns welcome");
+  assert(EMAIL_OWNER.abandoned_checkout === "klaviyo", "Klaviyo owns abandon");
+  assert(EMAIL_OWNER.replenish === "klaviyo", "Klaviyo owns replenish");
+  assert(EMAIL_OWNER.order_confirmation === "resend", "Constant Contact does not own the receipt");
+  assert(EMAIL_OWNER.stripe_receipt === "stripe", "Stripe still owns the payment receipt");
+  assert(
+    !Object.values(EMAIL_OWNER).includes("constant_contact"),
+    "no shopper message is assigned to Constant Contact",
   );
-  assert(optIn.ok && !optIn.skipped && optIn.action === "created", "an explicit opt-in is created");
-  assert(signupBody.includes("ada@filterhero.net"), "the opt-in posts the shopper email");
-  assert(signupBody.includes("list-1"), "the opt-in joins the Filter Hero list");
-
-  const clock = await recordConstantContactOptIn(
-    { email: "ada@filterhero.net", marketingConsent: true, intent: "reminder" },
-    { accessToken: async () => { throw new Error("clock must not call Constant Contact"); } },
-  );
-  assert(clock.ok && clock.skipped, "a clock save does not call Constant Contact");
+  for (const shopFile of [
+    "server/stripe.ts",
+    "server/contact.ts",
+    "server/klaviyo.ts",
+    "server/mailer.ts",
+    "client/src/App.tsx",
+    "client/src/contexts/CartContext.tsx",
+    "client/src/pages/SizeDetail.tsx",
+  ]) {
+    assert(
+      !fs.readFileSync(shopFile, "utf-8").includes("constant-contact"),
+      `${shopFile} does not call Constant Contact`,
+    );
+  }
 
   const live = await constantContactLiveCheck({
     accessToken: async () => ({ ok: true, data: { accessToken: "access-live" } }),
-    readList: () => ({ listId: "list-1", name: "Filter Hero" }),
-    saveList: () => undefined,
-    listIdFromEnv: () => "list-1",
     fetch: async (input) => {
-      if (String(input).includes("/account/summary")) {
+      const url = String(input);
+      assert(!url.includes("/contact_lists") && !url.includes("/contacts"), "a live check does not touch contacts or lists");
+      if (url.includes("/account/summary")) {
         return jsonResponse(200, { organization_name: "Filter Hero", contact_email: "info@filterhero.net" });
       }
       return jsonResponse(404, {});
     },
   });
-  assert(live.ok && live.organizationName === "Filter Hero" && live.listId === "list-1", "a live check reads the account and list");
+  assert(live.ok && live.organizationName === "Filter Hero", "a live check reads the account");
+  const contactsSource = fs.readFileSync("server/constant-contact/contacts.ts", "utf-8");
+  assert(!contactsSource.includes("sign_up_form"), "Constant Contact does not sign shoppers up");
+  assert(!contactsSource.includes("contact_lists"), "Constant Contact does not create marketing lists");
 
   console.log("Constant Contact OAuth checks passed.");
 }

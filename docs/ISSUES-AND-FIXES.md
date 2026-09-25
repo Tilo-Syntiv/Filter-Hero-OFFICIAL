@@ -14,7 +14,189 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-376**
+Next id: **FH-390**
+
+---
+
+### FH-389 — Filter Clock and identity captures had no Supabase home for guests
+- **Status:** fixed
+- **Area:** clock
+- **Symptom:** Filter Clock saves only hit `leads.json` + Klaviyo. Guests with no account were invisible in Supabase. Full name + address + email + phone from checkout could stay only in Stripe / `orders.json`.
+- **Do NOT:** Put Filter Clock into `crm_contacts` or open a deal (FH-131 / FH-387). Do not subscribe clock to the marketing list. Do not skip the `leads.json` append. Do not let `CRM_DISABLE` block `non_customers`.
+- **Do:** After the disk write, upsert `non_customers` with `status = not_an_actual_customer` when there is no `customer_profiles` row; otherwise attach cadence / blank PII on the account. Any capture of full name + address + email + phone writes to Supabase the same way (`storeIdentityBundle` on paid checkout).
+- **Files:** `supabase/migrations/0009_non_customers.sql`, `server/non-customers.ts`, `server/contact.ts`, `server/stripe.ts`, `.cursor/rules/supabase-person-capture.mdc`, `.cursor/rules/supabase-crm.mdc`, `RULES AND SKILLS.md`, `scripts/verify-supabase.ts`
+- **Verify:** `pnpm verify:supabase`
+- **Added:** 2026-09-25
+- **Fixed:** 2026-09-25
+
+---
+
+### FH-387 — Klaviyo profile ids were never stored on CRM contacts
+- **Status:** fixed
+- **Area:** contact
+- **Symptom:** `crm_contacts.klaviyo_profile_id` existed and the admin could read it, but identify, quotes, checkout, and paid orders never wrote the id back. Both live contacts had a null id.
+- **Do NOT:** Import Klaviyo from `server/crm/`. Do not import the CRM from `server/klaviyo.ts`. Do not create a CRM contact for Filter Clock or for identify when no contact exists. Do not drop `klaviyo_profile_id`. Clock guests land in `non_customers` (FH-389), not `crm_contacts`.
+- **Do:** Profile import returns the Klaviyo id. Contact, checkout, paid orders, and identify stamp it onto an existing CRM row. Clock and a bare identify do not insert a CRM contact.
+- **Files:** `server/klaviyo.ts`, `server/crm/contacts.ts`, `server/contact.ts`, `server/stripe.ts`, `server/index.ts`, `scripts/verify-supabase.ts`, `scripts/verify-klaviyo.ts`
+- **Verify:** `pnpm verify:supabase` and `pnpm verify:klaviyo`
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-388 — Hosted catalog mirror was one SKU behind the sheet
+- **Status:** fixed
+- **Area:** catalog
+- **Symptom:** `catalog_skus` had 293 rows and the Klaviyo catalog had 293 items. The Model Pricing sheet has 294 sellable SKUs. `pnpm verify:supabase` failed the count.
+- **Do NOT:** Write wholesale cost, API `unit_price`, or list price into `catalog_skus` or the Klaviyo catalog. Do not scrape filterking.com to fill the gap.
+- **Do:** Identity upsert only, from `sellableSheetProducts()`. Postgres and the Klaviyo catalog both match the sheet count.
+- **Files:** `scripts/lib/catalog-sync.ts`, `scripts/verify-supabase.ts`
+- **Verify:** `pnpm verify:supabase`
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-386 — Constant Contact shop token cannot do Klaviyo's jobs
+- **Status:** fixed
+- **Area:** contact
+- **Symptom:** The shop still had a Constant Contact twin of Klaviyo's list-join gate, name and phone builders for a contact write, and OAuth scopes `contact_data` and `campaign_data`. Those are the same jobs as Klaviyo identify, subscribe, and campaigns.
+- **Do NOT:** Request `contact_data` or `campaign_data` on the shop token. Do not add a Constant Contact subscribe, profile write, checkout event, browse note, catalog, or identify/track route. Do not assign a shopper message to `constant_contact`.
+- **Do:** The shop token asks only `account_read` and `offline_access`. Admin connect and the account ping stay. Klaviyo owns welcome, abandon, post-purchase, replenish, win-back, and the onsite events. Stripe owns the payment receipt. Resend owns order, quote, support, staff, and back-in-stock mail. Constant Contact's own Stripe contact sync, SMS, and QuickBooks stay in that dashboard.
+- **Files:** `shared/constant-contact-oauth.ts`, `shared/email-channels.ts`, `server/constant-contact/contacts.ts`, `scripts/verify-constant-contact.ts`
+- **Verify:** `pnpm verify:constant-contact` and `pnpm verify:klaviyo`
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-385 — Constant Contact no longer joins the marketing list
+- **Status:** fixed
+- **Area:** contact
+- **Symptom:** The admin opt-in and the account health check still created or joined the Filter Hero list. That list was the welcome job Klaviyo owns. Settings and the admin footer still said Constant Contact sends the series.
+- **Do NOT:** Add a Constant Contact signup, list create, checkout enroll, browse note, or automation install. Do not send welcome, abandon, replenish, or win-back from Resend.
+- **Do:** Constant Contact connects and reads the account only. Klaviyo owns the marketing list and the five series. Stripe owns the payment receipt. Resend owns order, quote, support, staff, and back-in-stock mail.
+- **Files:** `server/constant-contact/contacts.ts`, `server/admin/routes.ts`, `client/src/pages/admin/Settings.tsx`, `client/src/pages/admin/AdminShell.tsx`
+- **Verify:** `pnpm verify:constant-contact`
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-384 — Constant Contact marketing series wiring is removed
+- **Status:** fixed
+- **Area:** contact
+- **Symptom:** Checkout, expired sessions, paid orders, browse notes, and `pnpm setup:constant-contact` still contained the Constant Contact copies of the Klaviyo series. A guard only skipped them.
+- **Do NOT:** Put those list joins, date fields, browse notes, or automation install back on Constant Contact. Do not send welcome, abandon, nurture, replenish, or win-back from Resend or Successfully Paid.
+- **Do:** Klaviyo owns that series. Stripe owns the payment receipt. Resend owns order, quote, support, staff, and back-in-stock mail. Constant Contact keeps its OAuth connect only.
+- **Files:** `server/constant-contact/marketing.ts`, `scripts/setup-constant-contact.ts`, `client/src/lib/constant-contact.ts`, `server/index.ts`
+- **Verify:** `pnpm verify:constant-contact` and `pnpm verify:klaviyo`
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-383 — Constant Contact must not send the series Klaviyo owns
+- **Status:** fixed
+- **Area:** contact
+- **Symptom:** Constant Contact checkout, abandon, order, and browse helpers could still join the same lists Klaviyo emails. Resend and Stripe already send the order confirmation and the payment receipt.
+- **Do NOT:** Call Constant Contact from checkout, contact, or the mailer. Do not install the Constant Contact welcome, abandon, nurture, replenish, or win-back automations while Klaviyo owns them. Do not send those from Resend or from Successfully Paid.
+- **Do:** Klaviyo owns the five marketing messages. Stripe owns the payment receipt. Resend owns order confirmation, quote and support receipts, the staff alert, and the one-shot back-in-stock email. Constant Contact list joins for that series stay off. A Filter Clock save still does not subscribe.
+- **Files:** `shared/email-channels.ts`, `server/constant-contact/marketing.ts`, `server/stripe.ts`, `server/contact.ts`, `server/mailer.ts`
+- **Verify:** `pnpm verify:klaviyo` and `pnpm verify:constant-contact`
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-382 — Klaviyo shopper wiring was only partly restored
+- **Status:** fixed
+- **Area:** contact
+- **Symptom:** Routes and event helpers were back, but cart, quote, support, and Filter Clock no longer called identify. Admin Tracking and Settings no longer showed Klaviyo. `crm_contacts.klaviyo_profile_id` was still dropped. Smoke still expected the parked 404s.
+- **Do NOT:** Remove `/api/identify`, `/api/track`, or `/api/klaviyo/*`. Do not drop `klaviyo_profile_id`. Do not send welcome, abandon, replenish, or win-back from Resend or Constant Contact. Do not put the Klaviyo charge/invoice webhook on the sandbox key.
+- **Do:** Klaviyo owns those five messages, onsite identify/track, the catalog feed, Started Checkout, Placed Order, and Checkout Expired. Site id `VnVNmQ`, list `RiTKiS`. Cart email still uses `fh_cart_email` and also identifies. Constant Contact stays an admin connect and does not repeat the series.
+- **Files:** `client/src/components/CartDrawer.tsx`, `client/src/components/ContactForm.tsx`, `client/src/components/CustomQuoteForm.tsx`, `client/src/components/FilterPower.tsx`, `client/src/pages/admin/Settings.tsx`, `client/src/pages/admin/Tracking.tsx`, `server/crm/contacts.ts`, `server/crm/schema.ts`, `supabase/migrations/0008_restore_klaviyo_profile_id.sql`, `scripts/smoke-site.ts`
+- **Verify:** `pnpm verify:klaviyo` · `pnpm verify:crm` · `pnpm verify:admin`
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-381 — Klaviyo keys were missing on Railway and the FILTER HERO webhook was disabled
+- **Status:** mitigated
+- **Area:** contact
+- **Symptom:** Railway had no `KLAVIYO_*` variables. The FILTER HERO charge/invoice endpoint `we_1UGgz8QEENEs0QmwgI31tz6f` was disabled, so Klaviyo was not receiving Stripe events. Production `/api/klaviyo/config` was 404 because that deploy does not include the restored shop routes.
+- **Do NOT:** Put the Klaviyo webhook on the sandbox `acct_1U9bqs790NnFGDLv`. Do not copy the local `sk_test_` key onto Railway. Do not set `KLAVIYO_DISABLE`. Do not put the private key in a `VITE_` variable.
+- **Do:** Railway service FILTER-HERO has `KLAVIYO_PUBLIC_API_KEY=VnVNmQ`, `KLAVIYO_LIST_ID=RiTKiS`, and the private key. The FILTER HERO test-mode webhook is enabled for charge and invoice events only. Live `sk_live_` is still FH-305. Shop Placed Order stays on `https://filterhero.net/api/stripe/webhook`.
+- **Files:** Railway service variables, Stripe webhook `we_1UGgz8QEENEs0QmwgI31tz6f`
+- **Verify:** `pnpm exec tsx scripts/check-klaviyo-stripe.ts`
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-380 — Klaviyo is the marketing sender again; Constant Contact does not repeat it
+- **Status:** fixed
+- **Area:** contact
+- **Symptom:** Welcome, abandon, post-purchase, replenish, and win-back had no event graph after Klaviyo was parked. Constant Contact lists cannot wait an hour, chain D0/D1/D3, or record onsite metrics.
+- **Do NOT:** Send that series from Constant Contact, Resend, or Successfully Paid. Do not subscribe Filter Clock. Do not put the Klaviyo charge/invoice webhook on the sandbox key. Do not add a Klaviyo order-confirmation flow.
+- **Do:** Klaviyo owns those five messages, onsite identify/track, the catalog feed, Started Checkout, Placed Order, and Checkout Expired. Constant Contact stays connected for integrations Klaviyo does not run (its Stripe contact sync, SMS, QuickBooks). Checkout and orders do not join Constant Contact lists.
+- **Files:** `server/klaviyo.ts`, `server/klaviyo-stripe.ts`, `client/src/lib/klaviyo.ts`, `shared/email-channels.ts`, `server/stripe.ts`, `server/contact.ts`, `server/index.ts`, `shared/security-headers.ts`
+- **Verify:** `pnpm verify:klaviyo`
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-379 — Browse notes and the rest of the Klaviyo series are on Constant Contact
+- **Status:** fixed
+- **Area:** contact
+- **Symptom:** Viewed size, viewed product, MERV choice, and add to cart had stopped when Klaviyo was parked. Quote and clock profiles did not store house type, interval, filter size, or cart summary. The later emails in each series were not drafted.
+- **Do NOT:** Restore `/api/identify`, `/api/track`, or `/api/klaviyo/*`. Do not load `klaviyo.js`. Do not subscribe a browse note or a Filter Clock save. Do not send a receipt from Constant Contact. Do not create the Klaviyo Stripe webhook.
+- **Do:** `POST /api/constant-contact/activity` updates an existing contact only. Checkout, paid order, expired checkout, and contact opt-in stay on the server. `pnpm setup:constant-contact` creates the seven triggers plus the twelve branded drafts. Successfully Paid stays off this path.
+- **Files:** `server/constant-contact/marketing.ts`, `server/index.ts`, `server/contact.ts`, `client/src/lib/constant-contact.ts`, `client/src/pages/SizeDetail.tsx`, `client/src/contexts/CartContext.tsx`
+- **Verify:** `pnpm verify:constant-contact`
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-378 — Admin console still described the old sheet and an incomplete mail map
+- **Status:** fixed
+- **Area:** other
+- **Symptom:** Overview and Settings called the cart “Sellable sheet.” Tracking listed only Resend, Stripe, and CRM. The sidebar said Resend owns receipts. Maintenance hid the live stock file and the back-in-stock waitlist.
+- **Do NOT:** Put the contractor sheet or Klaviyo back on these pages. Do not say Resend sends the payment receipt or the marketing series.
+- **Do:** Catalog mode is “Live Filter King stock.” Checkout sells that stock; the finder archive is quote-only. Stripe sends the payment receipt. Resend sends order, quote, support, staff alerts, and back-in-stock. Constant Contact sends welcome, abandon, post-purchase, replenish, and win-back on an explicit opt-in. Overview health includes QuickBooks and Constant Contact keys.
+- **Files:** `client/src/pages/admin/Overview.tsx`, `client/src/pages/admin/Settings.tsx`, `client/src/pages/admin/Catalog.tsx`, `client/src/pages/admin/AdminShell.tsx`, `client/src/pages/admin/DealDetail.tsx`, `client/src/lib/admin-api.ts`, `server/admin/data.ts`, `server/admin/routes.ts`
+- **Verify:** Staff `/admin`, `/admin/settings`, `/admin/catalog`, `/admin/tracking`, `/admin/maintenance`. Catalog mode reads Live Filter King stock. Tracking names all four channels.
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-377 — Constant Contact marketing writes could drop the opt-in or the list change
+- **Status:** fixed
+- **Area:** contact
+- **Symptom:** A custom field on the sign-up call could reject the whole opt-in. List add and remove are async, so a paid order could add the customer list and then remove it. A subscription renewal did not move `last_order_at`, so win-back could still fire while auto-delivery was active.
+- **Do NOT:** Put `custom_fields` on `POST /contacts/sign_up_form`. Do not write `next_change_date` for auto-delivery or for a Filter Clock save. Do not send the receipt from Constant Contact.
+- **Do:** Sign up first, then `PUT` the contact with `email_address` and custom fields. Wait for each list activity before the next add or remove. A renewal updates `last_order_at` on an existing contact and does not start replenish.
+- **Files:** `server/constant-contact/contacts.ts`, `server/constant-contact/marketing.ts`, `server/stripe.ts`, `scripts/verify-constant-contact.ts`
+- **Verify:** `pnpm verify:constant-contact`
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
+
+---
+
+### FH-376 — Constant Contact runs the marketing series Klaviyo used to send
+- **Status:** fixed
+- **Area:** contact
+- **Symptom:** After Klaviyo was parked, welcome, abandoned checkout, the post-purchase install note, replenish, and win-back had no sender. Constant Contact only stored an opt-in on the Filter Hero list.
+- **Do NOT:** Send those messages from Resend or from Stripe Successfully Paid. Do not send an order confirmation or a quote receipt from Constant Contact. Do not subscribe a Filter Clock save, and do not write `next_change_date` from the clock. Do not set `next_change_date` on an auto-delivery order. Do not import `archive/klaviyo` or recreate the Klaviyo Stripe webhook.
+- **Do:** Constant Contact owns welcome (Filter Hero list), abandon (FH Abandoned checkout, joined when a consented checkout expires), post-purchase (FH Customers on a paid order), replenish (`next_change_date`, one-time orders only), and win-back (`last_order_at` plus 120 days). Stripe still sends the payment receipt. Resend still sends order, quote, support, staff, and back-in-stock mail. `pnpm setup:constant-contact` creates the lists, date fields, and automation triggers on the connected account.
+- **Files:** `shared/email-channels.ts`, `server/constant-contact/marketing.ts`, `server/constant-contact/contacts.ts`, `server/contact.ts`, `server/stripe.ts`, `scripts/setup-constant-contact.ts`
+- **Verify:** `pnpm verify:constant-contact`. `pnpm verify:resend`. `pnpm setup:constant-contact` on a connected account.
+- **Added:** 2026-09-24
+- **Fixed:** 2026-09-24
 
 ---
 

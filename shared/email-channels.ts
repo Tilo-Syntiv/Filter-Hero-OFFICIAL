@@ -2,17 +2,19 @@
  * One shopper message, one sender.
  *
  * Resend = transactional (we already have the relationship).
+ * Klaviyo = marketing events and flows.
  * Stripe = payment receipt only.
  * CRM    = staff pipeline in Postgres. Never mail.
  *
- * Welcome, abandon, nurture, replenish, and win-back have no sender (FH-369).
- * The previous Klaviyo mapping is in `archive/klaviyo/`. Do not send those
- * from `server/mailer.ts`. Do not import the mailer from `server/crm/`.
+ * Welcome, abandon, nurture, replenish, and win-back are Klaviyo (FH-380).
+ * Constant Contact stays connected for integrations Klaviyo does not run.
+ * It must not send those five series. Do not send them from `server/mailer.ts`.
+ * Do not import the mailer from `server/crm/`.
  */
 
 export type ContactIntent = "quote" | "support" | "reminder";
 
-export type EmailChannel = "resend" | "stripe" | "none";
+export type EmailChannel = "resend" | "klaviyo" | "stripe" | "constant_contact" | "none";
 
 export type ShopperMessage =
   | "staff_lead_alert"
@@ -37,14 +39,21 @@ export const EMAIL_OWNER: Record<ShopperMessage, EmailChannel> = {
   clock_cadence: "none",
   order_confirmation: "resend",
   stripe_receipt: "stripe",
-  welcome: "none",
-  abandoned_checkout: "none",
-  post_purchase_nurture: "none",
-  replenish: "none",
-  winback: "none",
+  welcome: "klaviyo",
+  abandoned_checkout: "klaviyo",
+  post_purchase_nurture: "klaviyo",
+  replenish: "klaviyo",
+  winback: "klaviyo",
   /** Shopper asked to be told when a specific size × MERV returns — Resend only. */
   back_in_stock: "resend",
 };
+
+/**
+ * Replenish automations read this date. Written only on a one-time paid order.
+ * Filter Clock stores its calculator date as `CLOCK_NEXT_CHANGE_PROPERTY`.
+ */
+export const REPLENISH_DATE_PROPERTY = "next_change_date";
+export const CLOCK_NEXT_CHANGE_PROPERTY = "clock_next_change_date";
 
 /** CRM records work. It is never a sender — a third mailbox re-opens FH-171. */
 export const CRM_SENDS_MAIL = false;
@@ -55,14 +64,18 @@ export function resendSendsShopperReceipt(intent: ContactIntent): boolean {
 }
 
 /**
- * Constant Contact stores an explicit opt-in. It does not send the receipt.
- * Stripe still sends the payment receipt. Resend still sends quote, support,
- * and order mail. Clock saves never join the list.
+ * Marketing list join. Clock never subscribes — replenish starts on Placed Order.
  */
-export function constantContactMayRecord(input: {
+export function klaviyoMaySubscribe(input: {
+  intent: ContactIntent;
   marketingConsent?: boolean;
-  intent?: ContactIntent;
 }): boolean {
   if (input.intent === "reminder") return false;
   return input.marketingConsent === true;
+}
+
+export function klaviyoMetricForIntent(intent: ContactIntent): string {
+  if (intent === "reminder") return "Signed Up Reminder";
+  if (intent === "support") return "Requested Support";
+  return "Requested Quote";
 }

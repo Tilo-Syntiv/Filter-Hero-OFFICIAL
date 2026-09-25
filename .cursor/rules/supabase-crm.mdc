@@ -11,6 +11,8 @@ RLS on, zero policies, FORCE RLS, grants revoked from `anon` / `authenticated` /
 
 Staff: magic link + OTP, `STAFF_EMAILS`. Shopper: email + password. Guest checkout still works.
 
-Quote → deal in `new`. Support → note, no deal. Reminder → nothing. Paid checkout → won.
+Quote → deal in `new`. Support → note, no deal. Reminder → nothing in CRM (clock goes to `non_customers` or an existing `customer_profiles` row). Paid checkout → won.
 
-Contact saves `leads.json` first, then fail-soft CRM. CRM never emails. `CRM_DISABLE` must not kill accounts.
+Contact saves `leads.json` first, then fail-soft CRM / person capture. CRM never emails. `CRM_DISABLE` must not kill accounts or `non_customers`.
+
+Full name + address + email + phone must land in Supabase (`customer_profiles` or `non_customers` with `status = not_an_actual_customer`).

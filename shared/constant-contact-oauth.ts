@@ -9,8 +9,11 @@ export const CC_TOKEN_ENDPOINT =
   "https://authz.constantcontact.com/oauth2/default/v1/token";
 export const CC_API_BASE = "https://api.cc.email/v3";
 
-/** Space-delimited on the authorize request. offline_access is required for a refresh token. */
-export const CC_SCOPES = ["account_read", "contact_data", "campaign_data", "offline_access"] as const;
+/**
+ * Account read only. Contact and campaign scopes are Klaviyo's jobs.
+ * offline_access is required for a refresh token.
+ */
+export const CC_SCOPES = ["account_read", "offline_access"] as const;
 
 export const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 /** Docs: an unused refresh token expires after 180 days. Each rotation starts a new one. */

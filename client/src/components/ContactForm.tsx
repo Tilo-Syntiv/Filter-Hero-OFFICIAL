@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import MarketingOptIn from "@/components/MarketingOptIn";
+import { identifyShopper } from "@/lib/klaviyo";
 import {
   Select,
   SelectContent,
@@ -86,6 +87,7 @@ export default function ContactForm({
       return;
     }
     try {
+      identifyShopper({ email: values.email, firstName: values.name.split(/\s+/)[0] });
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   disconnectConstantContact,
   disconnectIntuit,
+  connectKlaviyoStripe,
   getAdminSettings,
   startConstantContactConnect,
   startIntuitConnect,
@@ -67,6 +68,7 @@ function SettingsBody() {
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState("");
   const [copiedUri, setCopiedUri] = useState(false);
+  const [klaviyoNote, setKlaviyoNote] = useState("");
 
   if (loading) return <AdminLoading />;
   if (error) return <AdminError>{error}</AdminError>;
@@ -85,12 +87,37 @@ function SettingsBody() {
     ["Stripe secret", data.integrations.stripe],
     ["Stripe publishable", data.integrations.stripePublishable],
     ["Stripe webhook", data.integrations.stripeWebhook],
+    ["Klaviyo private", data.integrations.klaviyoPrivate],
+    ["Klaviyo public", data.integrations.klaviyoPublic],
+    ["Klaviyo list", data.integrations.klaviyoList],
     ["Resend", data.integrations.resend],
     ["Supabase", data.integrations.supabase],
     ["Turnstile", data.integrations.turnstile],
     ["QuickBooks keys", data.integrations.intuit],
     ["Constant Contact keys", data.integrations.constantContact],
   ] as const;
+
+  const connectKlaviyo = async () => {
+    setBusy(true);
+    setActionError("");
+    setKlaviyoNote("");
+    try {
+      const next = await connectKlaviyoStripe();
+      await reload();
+      setKlaviyoNote(
+        next.secret
+          ? `Paste this Stripe signing secret into Klaviyo: ${next.secret}`
+          : next.created && next.secretLast4
+            ? `Stripe webhook ${next.id} created (secret last4 ${next.secretLast4}). Finish Connect in Klaviyo and paste that signing secret.`
+            : "Stripe already posts charge and invoice events to Klaviyo. Finish Connect in Klaviyo if the app is not installed.",
+      );
+      window.open(next.connectUrl, "_blank", "noopener,noreferrer");
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Could not connect Klaviyo to Stripe.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const connect = async () => {
     setBusy(true);
@@ -176,7 +203,7 @@ function SettingsBody() {
           <Row label="Client URL" value={data.clientUrl} />
           <Row
             label="Catalog"
-            value={data.catalog.sellableOnly ? "Sellable sheet only" : "Full archive"}
+            value={data.catalog.sellableOnly ? "Live Filter King stock" : "Full archive"}
           />
           <Row label="CRM kill switch" value={data.flags.crmDisable ? "CRM_DISABLE=1" : "Off"} />
           <Row
@@ -185,9 +212,65 @@ function SettingsBody() {
           />
         </dl>
         <p className="mt-4 text-xs text-muted-foreground">
-          Env flags are read-only here. Change them in Railway / .env and restart.
-          Homepage copy and featured sizes are under Content.
+          Checkout sells live Filter King stock. Off-stock sizes stay on the custom quote form.
+          The finder keeps the size archive. Env flags are read-only here. Change them in Railway
+          and restart. Homepage copy and featured sizes are under Content.
         </p>
+      </AdminPanel>
+
+      {klaviyoNote ? (
+        <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-navy">
+          {klaviyoNote}
+        </p>
+      ) : null}
+
+      <AdminPanel
+        title="Klaviyo + Stripe"
+        action={
+          <Button
+            size="sm"
+            className="text-white"
+            disabled={busy || !data.klaviyoStripe.configured}
+            onClick={() => void connectKlaviyo()}
+          >
+            {data.klaviyoStripe.nativeWebhook ? "Open Klaviyo" : "Connect"}
+          </Button>
+        }
+      >
+        <div className="space-y-2 text-sm">
+          <StatusDot ok={data.klaviyoStripe.shopEvents} label="Shop events (Placed Order via Filter Hero webhook)" />
+          <StatusDot ok={data.klaviyoStripe.nativeWebhook} label="Native charge and invoice webhook" />
+          <StatusDot
+            ok={data.klaviyoStripe.oauthAccountMatch}
+            label="Stripe key is FILTER HERO (Klaviyo OAuth), not sandbox"
+          />
+          <StatusDot
+            ok={!data.klaviyoStripe.fulfillmentConflict}
+            label="This key does not post Checkout to filterhero.net unless it is FILTER HERO live"
+          />
+          <StatusDot
+            ok={!data.klaviyoStripe.nativeConflict}
+            label="This key does not host a leftover Klaviyo webhook on sandbox"
+          />
+          {data.klaviyoStripe.url ? (
+            <p className="break-all text-muted-foreground">{data.klaviyoStripe.url}</p>
+          ) : (
+            <p className="text-muted-foreground">
+              Set Stripe and Klaviyo keys, then Connect. Refunds and failed payments use Klaviyo’s Stripe app.
+            </p>
+          )}
+          {data.klaviyoStripe.stripeAccountName || data.klaviyoStripe.stripeAccountId ? (
+            <p className="text-xs text-muted-foreground">
+              This key is {data.klaviyoStripe.stripeAccountName || "Stripe"}
+              {data.klaviyoStripe.webhookId ? ` · ${data.klaviyoStripe.webhookId}` : ""}. Klaviyo Connect to Stripe must
+              pick FILTER HERO (created Aug 28), not FILTER HERO sandbox.
+            </p>
+          ) : null}
+          <p className="text-xs text-muted-foreground">
+            Do not add an order-confirmation or replenish flow on Successfully Paid. Resend + Stripe already send the
+            receipt. Replenish stays on Placed Order.
+          </p>
+        </div>
       </AdminPanel>
 
       <AdminPanel title="Stripe Tax">
@@ -257,8 +340,9 @@ function SettingsBody() {
             </p>
           )}
           <p className="text-muted-foreground">
-            Checkout, quote, and support opt-ins are saved on the Filter Hero list. Stripe sends
-            the payment receipt. Resend sends the order, quote, and support mail.
+            Connected for Constant Contact integrations only. Klaviyo sends welcome, abandoned
+            checkout, the post-purchase note, replenish, and win-back. Stripe sends the payment
+            receipt. Resend sends the order, quote, support, and back-in-stock mail.
           </p>
           {data.constantContact.needsReauthorize ? (
             <p className="font-semibold text-destructive">
@@ -393,6 +477,11 @@ function SettingsBody() {
             </a>
           </li>
           <li>
+            <a className="font-semibold text-primary" href={data.links.klaviyo} target="_blank" rel="noreferrer">
+              Klaviyo
+            </a>
+          </li>
+          <li>
             <a
               className="font-semibold text-primary"
               href={data.links.constantContact}
@@ -400,6 +489,16 @@ function SettingsBody() {
               rel="noreferrer"
             >
               Constant Contact
+            </a>
+          </li>
+          <li>
+            <a
+              className="font-semibold text-primary"
+              href={data.links.quickBooks}
+              target="_blank"
+              rel="noreferrer"
+            >
+              QuickBooks Online
             </a>
           </li>
         </ul>

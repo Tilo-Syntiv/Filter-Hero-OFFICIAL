@@ -7,6 +7,6 @@ description: Runs Filter Hero verify scripts instead of inventing new checks. Us
 
 Run the matching script:
 
-`pnpm verify:store` · `verify:crm` · `verify:account` · `verify:supabase` · `verify:security` · `verify:env` · `verify:resend` · `verify:stripe-books` · `verify:intuit-oauth` · `pnpm smoke`
+`pnpm verify:store` · `verify:crm` · `verify:account` · `verify:supabase` · `verify:security` · `verify:env` · `verify:klaviyo` · `verify:resend` · `verify:stripe-books` · `verify:intuit-oauth` · `pnpm smoke`
 
 Storefront checks use Playwright (`pnpm browse` / smoke). Click the flow; do not stop at a screenshot.

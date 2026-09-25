@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 import {
   classifyStripeWebhookUrl,
+  isFilterHeroAccount,
   shopFulfillmentWebhookAllowed,
   stripeWebhookHealth,
 } from "../shared/stripe-accounts";
@@ -23,9 +24,9 @@ export async function stripeAccountContext(stripe: Stripe): Promise<{
 }
 
 /**
- * Drop shop fulfillment endpoints that do not belong on this Stripe key, and
- * drop every Klaviyo charge/invoice endpoint. Sandbox keys must not post to
- * filterhero.net.
+ * Drop shop fulfillment and Klaviyo native endpoints that do not belong on
+ * this Stripe key. Sandbox keys must not post to filterhero.net or keep a
+ * Klaviyo charge/invoice URL. Live FILTER HERO may keep that URL.
  */
 export async function scrubConflictingStripeWebhooks(stripe: Stripe): Promise<{
   accountId: string;
@@ -39,7 +40,7 @@ export async function scrubConflictingStripeWebhooks(stripe: Stripe): Promise<{
     const kind = classifyStripeWebhookUrl(hook.url);
     const dropShop =
       kind === "shop" && !shopFulfillmentWebhookAllowed({ accountId, livemode });
-    const dropKlaviyo = kind === "klaviyo";
+    const dropKlaviyo = kind === "klaviyo" && !isFilterHeroAccount(accountId);
     if (!dropShop && !dropKlaviyo) continue;
     await stripe.webhookEndpoints.del(hook.id);
     deleted.push(hook.id);

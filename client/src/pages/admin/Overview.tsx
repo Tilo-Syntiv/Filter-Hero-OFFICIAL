@@ -85,13 +85,13 @@ function OverviewBody() {
 
         <AdminPanel title="Catalog">
           <dl className="space-y-2 text-sm">
-            <Row label="Sellable SKUs" value={String(data.catalog.skus)} />
-            <Row label="Sizes on sale" value={String(data.catalog.sellableSizes)} />
-            <Row label="Archive sizes" value={String(data.catalog.archivedSizes)} />
+            <Row label="Stock SKUs" value={String(data.catalog.skus)} />
+            <Row label="In-stock sizes" value={String(data.catalog.sellableSizes)} />
+            <Row label="Finder archive" value={String(data.catalog.archivedSizes)} />
             <Row label="HVAC brands" value={String(data.catalog.brands)} />
             <Row
               label="Catalog mode"
-              value={data.catalog.sellableOnly ? "Sellable sheet" : "Full archive"}
+              value={data.catalog.sellableOnly ? "Live Filter King stock" : "Full archive"}
             />
           </dl>
         </AdminPanel>
@@ -113,6 +113,9 @@ function OverviewBody() {
               />
               <StatusDot ok={status.stripe.configured} label="Stripe" />
               <StatusDot ok={status.resend.configured} label="Resend" />
+              <StatusDot ok={status.klaviyo.enabled} label="Klaviyo" />
+              <StatusDot ok={status.constantContact.configured} label="Constant Contact" />
+              <StatusDot ok={status.intuit.configured} label="QuickBooks" />
             </div>
           ) : health.error ? (
             <p className="text-sm text-destructive">{health.error}</p>

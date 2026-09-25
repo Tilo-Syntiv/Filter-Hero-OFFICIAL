@@ -62,11 +62,11 @@ assert(EMAIL_OWNER.support_receipt === "resend", "support_receipt is Resend");
 assert(EMAIL_OWNER.clock_cadence === "none", "clock_cadence sends nothing");
 assert(EMAIL_OWNER.order_confirmation === "resend", "order_confirmation is Resend");
 assert(EMAIL_OWNER.stripe_receipt === "stripe", "stripe_receipt is Stripe");
-assert(EMAIL_OWNER.welcome === "none", "welcome has no sender");
-assert(EMAIL_OWNER.abandoned_checkout === "none", "abandoned_checkout has no sender");
-assert(EMAIL_OWNER.post_purchase_nurture === "none", "post_purchase_nurture has no sender");
-assert(EMAIL_OWNER.replenish === "none", "replenish has no sender");
-assert(EMAIL_OWNER.winback === "none", "winback has no sender");
+assert(EMAIL_OWNER.welcome === "klaviyo", "welcome is Klaviyo");
+assert(EMAIL_OWNER.abandoned_checkout === "klaviyo", "abandoned_checkout is Klaviyo");
+assert(EMAIL_OWNER.post_purchase_nurture === "klaviyo", "post_purchase_nurture is Klaviyo");
+assert(EMAIL_OWNER.replenish === "klaviyo", "replenish is Klaviyo");
+assert(EMAIL_OWNER.winback === "klaviyo", "winback is Klaviyo");
 assert(resendSendsShopperReceipt("quote"), "quote gets a shopper receipt");
 assert(resendSendsShopperReceipt("support"), "support gets a shopper receipt");
 assert(!resendSendsShopperReceipt("reminder"), "clock does not get a shopper receipt");
@@ -91,7 +91,7 @@ assert(!/from\s+["']resend["']/.test(contactSource), "contact must not import Re
 const stripeSource = fs.readFileSync("server/stripe.ts", "utf-8");
 assert(stripeSource.includes("sendOrderConfirmation"), "stripe webhook sends the confirmation");
 assert(stripeSource.includes("confirmationSentAt"), "stripe persists confirmationSentAt");
-assert(stripeSource.includes("if (!stored.confirmationSentAt)"), "stripe retries until the stamp lands");
+assert(/if\s*\(\s*!\w+\.confirmationSentAt\s*\)/.test(stripeSource), "stripe retries until the stamp lands");
 
 const branded = renderBrandedEmail({
   title: "Probe",

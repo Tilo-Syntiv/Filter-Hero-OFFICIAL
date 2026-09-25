@@ -51,8 +51,9 @@ function inDays(days: number): string {
  * Intent decides the shape:
  *   quote    → contact + deal in `new` with a next action one day out
  *   support  → contact + note, no deal (nothing to sell)
- *   reminder → nothing at all. A Filter Clock cadence save is not an
- *              opportunity, and creating a deal for it would re-open FH-131.
+ *   reminder → nothing at all in CRM. A Filter Clock cadence save is not an
+ *              opportunity (FH-131). Person storage goes to non_customers /
+ *              customer_profiles via storeFilterClockCapture, not crm_contacts.
  */
 export async function recordLeadInCrm(
   lead: IntakeLead,

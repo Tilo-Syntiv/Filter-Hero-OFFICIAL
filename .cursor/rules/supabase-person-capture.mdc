@@ -1,0 +1,30 @@
+---
+description: Name, address, email, and phone must land in Supabase. Filter Clock guests go in non_customers.
+alwaysApply: true
+---
+
+# Supabase person capture
+
+Any app path that collects **full name + address + email + phone** must write that person to hosted Supabase (service-role Express only). Never leave that bundle only in a JSON file, Stripe, or Klaviyo.
+
+| Who they are | Table | `status` / note |
+|---|---|---|
+| Has a shopper account (`customer_profiles` by email) | `customer_profiles` | Real customer. Fill blank name / phone / address; merge cadence into `properties`. |
+| Guest, no account, or no prior row | `non_customers` | `status = not_an_actual_customer` |
+
+## Filter Clock
+
+`intent=reminder` still appends `leads.json` first and still must **not** create a CRM contact or deal (FH-131 / FH-387).
+
+After the file save, call `storeFilterClockCapture`:
+
+- Account email → attach cadence on `customer_profiles`.
+- Otherwise → upsert `non_customers` with `source = filter_clock` and `status = not_an_actual_customer`.
+
+Do not subscribe Filter Clock to the marketing list. Do not put clock rows in `crm_contacts`.
+
+## Do / Do NOT
+
+- **Do:** Fail-soft after the disk write. Use `getAccountDb()` so `CRM_DISABLE` does not block person storage.
+- **Do:** Keep RLS on, zero policies, FORCE RLS, grants revoked from `anon` / `authenticated` / `public`.
+- **Do NOT:** Invent a second people table. **Do NOT** promote a non-customer into `crm_contacts` just because they saved a clock. **Do NOT** put `SUPABASE_SERVICE_ROLE_KEY` in a `VITE_` var.

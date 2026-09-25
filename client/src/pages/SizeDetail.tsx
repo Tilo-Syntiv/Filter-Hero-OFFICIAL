@@ -60,6 +60,7 @@ import ProductOverduePanel from "@/components/ProductOverduePanel";
 import BrandLogo from "@/components/BrandLogo";
 import { LIFE } from "@/data/life-photos";
 import { MERV_GUIDE } from "@/lib/merv-guide";
+import { trackSelectedMerv, trackViewedProduct, trackViewedSize } from "@/lib/klaviyo";
 import {
   getPreferredMerv,
   getPowerPackQty,
@@ -110,6 +111,7 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
   const pickMerv = (key: PreferredMerv) => {
     setMervKey(key);
     setPreferredMerv(key);
+    trackSelectedMerv(key);
   };
 
   const selectedType =
@@ -131,6 +133,13 @@ export default function SizeDetailPage({ sizeSlug }: SizeDetailPageProps) {
     selectedType.merv,
     selectedType.isCarbon,
   );
+  useEffect(() => {
+    trackViewedSize(decoded);
+  }, [decoded]);
+
+  useEffect(() => {
+    if (variant) trackViewedProduct(variant);
+  }, [variant]);
 
   const listUnit = variant ? unitPriceForQty(variant.price, qty, variant) : 0;
   const unitPrice = variant

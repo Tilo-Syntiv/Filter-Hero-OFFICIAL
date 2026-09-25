@@ -246,8 +246,8 @@ async function main() {
 
   assert(CRM_SENDS_MAIL === false, "CRM is not a sender");
   assert(EMAIL_OWNER.order_confirmation === "resend", "Resend owns the receipt");
-  assert(EMAIL_OWNER.welcome === "none", "marketing welcome has no sender");
-  assert(EMAIL_OWNER.replenish === "none", "replenish has no sender");
+  assert(EMAIL_OWNER.welcome === "klaviyo", "welcome is Klaviyo");
+  assert(EMAIL_OWNER.replenish === "klaviyo", "replenish is Klaviyo");
   assert(EMAIL_OWNER.clock_cadence === "none", "clock save is not a CRM or mailer event");
   for (const file of [
     "server/crm/routes.ts",

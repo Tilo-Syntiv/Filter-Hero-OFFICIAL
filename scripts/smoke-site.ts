@@ -139,8 +139,26 @@ assert(products.res.ok, `products ${products.res.status}`);
 const meta = products.json as { sizeCount?: number };
 assert(meta.sizeCount === FILTER_SIZES.length, `API sizeCount ${meta.sizeCount} != ${FILTER_SIZES.length}`);
 
-const parkedKlaviyo = await get(`${API}/api/klaviyo/config`);
-assert(parkedKlaviyo.res.status === 404, `klaviyo config should be gone, got ${parkedKlaviyo.res.status}`);
+const klaviyoConfig = await get(`${API}/api/klaviyo/config`);
+assert(klaviyoConfig.res.ok, `klaviyo config ${klaviyoConfig.res.status}`);
+assert(
+  typeof (klaviyoConfig.json as { publicKey?: unknown })?.publicKey === "string",
+  "klaviyo config must be JSON with publicKey",
+);
+
+const klaviyoCatalog = await get(`${API}/api/klaviyo/catalog.json`);
+assert(klaviyoCatalog.res.ok, `klaviyo catalog ${klaviyoCatalog.res.status}`);
+const feed = klaviyoCatalog.json as { items?: unknown[] };
+assert(Array.isArray(feed.items) && feed.items.length > 0, "klaviyo catalog.json must list items");
+if (!/^https:\/\/filterhero\.net/i.test(API)) {
+  const sellable = JSON.parse(
+    fs.readFileSync(path.join(ROOT, "shared", "sellable-skus.json"), "utf8"),
+  ) as { count: number };
+  assert(
+    feed.items.length === sellable.count,
+    `local catalog.json must match sellable-skus.json (${sellable.count}), got ${feed.items.length}`,
+  );
+}
 
 const sizeSsr = await get(`${API}/sizes/20x25x1`);
 assert(sizeSsr.res.ok, `size SSR ${sizeSsr.res.status}`);
@@ -242,18 +260,20 @@ assert(
 const detailGate = await get(`${API}/api/health/detail`);
 assert(detailGate.res.status === 401, `health detail must require staff, got ${detailGate.res.status}`);
 
-const removedIdentify = await post(`${API}/api/identify`, { email: "nope" });
-assert(removedIdentify.res.status === 404, `identify should be gone, got ${removedIdentify.res.status}`);
+const badIdentify = await post(`${API}/api/identify`, { email: "nope" });
+assert(badIdentify.res.status === 400, `invalid identify should 400, got ${badIdentify.res.status}`);
 assert(
-  (removedIdentify.json as { code?: string })?.code === "not_found",
-  "removed identify must name not_found",
+  (badIdentify.json as { code?: string })?.code === "identify_failed",
+  "identify errors must use a fixed code",
 );
+assert(!/expected|invalid_type|Zod/i.test(badIdentify.text), "identify must not leak Zod");
 
-const removedTrack = await post(`${API}/api/track`, {});
-assert(removedTrack.res.status === 404, `track should be gone, got ${removedTrack.res.status}`);
-assert((removedTrack.json as { code?: string })?.code === "not_found", "removed track must name not_found");
+const badTrack = await post(`${API}/api/track`, {});
+assert(badTrack.res.status === 400, `invalid track should 400, got ${badTrack.res.status}`);
+assert((badTrack.json as { code?: string })?.code === "track_failed", "track errors must use a fixed code");
+assert(!/expected|invalid_type|Zod/i.test(badTrack.text), "track must not leak Zod");
 
-const badJson = await fetch(`${API}/api/contact`, {
+const badJson = await fetch(`${API}/api/identify`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: "{not-json",

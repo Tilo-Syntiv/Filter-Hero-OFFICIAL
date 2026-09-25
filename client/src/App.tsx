@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -34,6 +35,7 @@ import { CartProvider } from "./contexts/CartContext";
 import { SiteConfigProvider } from "./contexts/SiteConfigContext";
 import { StockProvider } from "./contexts/StockContext";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
+import { bootKlaviyo } from "@/lib/klaviyo";
 
 function ThicknessRoute() {
   const [, params] = useRoute("/filters/:thickness");
@@ -111,6 +113,9 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    void bootKlaviyo();
+  }, []);
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">

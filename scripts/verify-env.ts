@@ -176,14 +176,16 @@ async function main() {
       } else {
         add("STRIPE_WEBHOOK", "ok", "https://filterhero.net/api/stripe/webhook enabled");
       }
-      if (listed.health.klaviyo.present || listed.health.klaviyo.conflict) {
+      if (listed.health.klaviyo.conflict) {
         add(
           "STRIPE_KLAVIYO",
           "fail",
-          `${listed.accountId} still hosts a Klaviyo webhook — delete https://a.klaviyo.com endpoints`,
+          `${listed.accountId} must not host a Klaviyo webhook — live FILTER HERO only`,
         );
+      } else if (listed.health.klaviyo.present) {
+        add("STRIPE_KLAVIYO", "ok", "charge/invoice webhook is on live FILTER HERO");
       } else {
-        add("STRIPE_KLAVIYO", "ok", "no Klaviyo webhook on this key");
+        add("STRIPE_KLAVIYO", "ok", "Klaviyo charge/invoice webhook is not connected yet");
       }
     } catch (err) {
       add("STRIPE_LIVE", "fail", err instanceof Error ? err.message : "Stripe API failed");

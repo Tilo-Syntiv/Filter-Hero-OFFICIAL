@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import MarketingOptIn from "@/components/MarketingOptIn";
+import { identifyShopper } from "@/lib/klaviyo";
 import { stashCheckoutContinuation } from "@/lib/checkout-queue";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSiteConfig } from "@/contexts/SiteConfigContext";
@@ -97,6 +98,7 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
       return;
     }
     rememberEmail(trimmed);
+    identifyShopper({ email: trimmed });
     setCheckingOut(true);
     try {
       const res = await fetch("/api/checkout", {
@@ -281,6 +283,7 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
                 const trimmed = email.trim();
                 if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
                   rememberEmail(trimmed);
+                  identifyShopper({ email: trimmed });
                 }
               }}
               placeholder="you@email.com"

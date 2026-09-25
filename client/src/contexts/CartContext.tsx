@@ -18,6 +18,7 @@ import {
   type Product,
 } from "@shared/products";
 import { useStock } from "@/contexts/StockContext";
+import { trackAddedToCart } from "@/lib/klaviyo";
 
 export type CartItem = {
   /** productId + delivery — same SKU can be once and on a schedule */
@@ -202,6 +203,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const next = existing
           ? prev.map((i) => (i.lineKey === key ? line : i))
           : [...prev, line];
+        trackAddedToCart(product, qty, next);
         return next;
       });
       setIsOpen(true);

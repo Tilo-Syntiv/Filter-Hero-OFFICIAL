@@ -15,7 +15,8 @@ alwaysApply: true
 | Mail | Google Workspace. MX `smtp.google.com`. SPF must keep `include:_spf.google.com`. |
 | Host | One Railway Express process. Volume `/data`. Not Hostinger. |
 | Stripe | Live FILTER HERO `acct_1U9bqlQEENEs0Qmw` |
+| Klaviyo | `VnVNmQ`. List `RiTKiS`. |
 | Resend | `Filter Hero <info@filterhero.net>` on `send.filterhero.net`. Logo `https://filterhero.net/logo.png`. |
 | Brand | Navy `#203868`. Burgundy `#7F2328`. |
 
-`send.filterhero.net` is Resend. `klv.filterhero.net` is the parked Klaviyo domain — leave the DNS, do not send from it. Do not enable Resend receiving on `@`.
+`send.filterhero.net` is Resend. `klv.filterhero.net` is Klaviyo. Do not swap them. Do not enable Resend receiving on `@`.

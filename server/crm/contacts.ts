@@ -2,6 +2,7 @@ import { getDb } from "../db";
 import { recordAudit } from "./audit";
 import {
   crmFailure,
+  SYSTEM_ACTOR,
   type ContactInput,
   type CrmActor,
   type CrmContactRow,
@@ -9,7 +10,7 @@ import {
 } from "./schema";
 
 const COLUMNS =
-  "id, email, first_name, last_name, phone, company_id, stripe_customer_id, properties, created_at, updated_at";
+  "id, email, first_name, last_name, phone, company_id, klaviyo_profile_id, stripe_customer_id, properties, created_at, updated_at";
 
 export async function findContactByEmail(
   email: string,
@@ -56,6 +57,9 @@ export async function upsertContact(
     assignIfNew("last_name", input.lastName, row.last_name);
     assignIfNew("phone", input.phone, row.phone);
     assignIfNew("company_id", input.companyId, row.company_id);
+    // Identity links are the exception: a newer id from Klaviyo or Stripe is
+    // more correct than a stale one.
+    if (input.klaviyoProfileId) patch.klaviyo_profile_id = input.klaviyoProfileId;
     if (input.stripeCustomerId) patch.stripe_customer_id = input.stripeCustomerId;
     if (input.properties && Object.keys(input.properties).length > 0) {
       patch.properties = { ...row.properties, ...input.properties };
@@ -89,6 +93,7 @@ export async function upsertContact(
       last_name: input.lastName ?? null,
       phone: input.phone ?? null,
       company_id: input.companyId ?? null,
+      klaviyo_profile_id: input.klaviyoProfileId ?? null,
       stripe_customer_id: input.stripeCustomerId ?? null,
       properties: input.properties ?? {},
     })
@@ -113,6 +118,23 @@ export async function upsertContact(
     after: data,
   });
   return { ok: true, data: data as CrmContactRow };
+}
+
+/**
+ * Stamp a Klaviyo profile id onto a contact that already exists.
+ * Identify, checkout, and Filter Clock must not create a CRM row just to hold the id.
+ */
+export async function attachKlaviyoProfileId(email: string, profileId: string): Promise<void> {
+  const trimmed = profileId.trim();
+  if (!trimmed) return;
+  const existing = await findContactByEmail(email);
+  if (!existing.ok || !existing.data) return;
+  if (existing.data.klaviyo_profile_id === trimmed) return;
+  const updated = await upsertContact(
+    { email, klaviyoProfileId: trimmed },
+    SYSTEM_ACTOR,
+  );
+  if (!updated.ok) console.error("[crm] klaviyo profile link", updated.error);
 }
 
 export async function getContact(id: string): Promise<CrmResult<CrmContactRow | null>> {

@@ -101,7 +101,7 @@ async function main() {
       !line.includes("favicon") &&
       !line.includes("Download the React DevTools") &&
       !line.includes("font-size:0;color:transparent") &&
-      // Leftover onsite SDK noise from an old browser session. The shop no longer loads it.
+      // Onsite JS on HTTP localhost posts to http://a.klaviyo.com, which 301s to HTTPS and CORS-fails. Dual-write /api/identify still works.
       !line.includes("a.klaviyo.com"),
   );
 

@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { createClient } from "@supabase/supabase-js";
+import { attachKlaviyoProfileId } from "../server/crm/contacts.ts";
 import { recordLeadInCrm, closeDealsOnPurchase } from "../server/crm/intake.ts";
 import {
   accountDisabledReason,
@@ -8,6 +9,11 @@ import {
   crmHealth,
   resetDbClient,
 } from "../server/db.ts";
+import {
+  hasIdentityBundle,
+  storeFilterClockCapture,
+  storeIdentityBundle,
+} from "../server/non-customers.ts";
 import { sellableSheetProducts } from "../shared/products.ts";
 
 const PROJECT_REF = "mayxuwlygchatgeqyhyt";
@@ -23,6 +29,7 @@ const TABLES = [
   "crm_audit_log",
   "customer_profiles",
   "customer_saved_filters",
+  "non_customers",
   "catalog_skus",
 ];
 const FORBIDDEN_CATALOG_COLUMNS = ["cost_dollars", "list_price", "wholesale_sku", "unit_price"];
@@ -156,6 +163,23 @@ async function main() {
   assert(!dealError && deal?.stage_id === "new", `intake deal is not in New: ${dealError?.message}`);
   const closed = await closeDealsOnPurchase({ email: leadEmail, amount: 19.99 });
   assert(closed.ok && (closed.closed ?? 0) >= 1, `purchase close failed: ${closed.error}`);
+  await attachKlaviyoProfileId(leadEmail, "01VERIFYKLAVIYO");
+  const { data: linked, error: linkError } = await admin
+    .from("crm_contacts")
+    .select("klaviyo_profile_id")
+    .eq("email", leadEmail)
+    .single();
+  assert(
+    !linkError && linked?.klaviyo_profile_id === "01VERIFYKLAVIYO",
+    `klaviyo profile id was not stored: ${linkError?.message || linked?.klaviyo_profile_id}`,
+  );
+  await attachKlaviyoProfileId("missing-klaviyo-link@filterhero.net", "01SHOULDNOTINSERT");
+  const { data: ghost } = await admin
+    .from("crm_contacts")
+    .select("id")
+    .eq("email", "missing-klaviyo-link@filterhero.net")
+    .maybeSingle();
+  assert(!ghost, "identify must not create a CRM contact just to store a Klaviyo id");
   const { data: won, error: wonError } = await admin
     .from("crm_deals")
     .select("stage_id, closed_at")
@@ -171,14 +195,72 @@ async function main() {
     await admin.from("crm_contacts").delete().eq("email", leadEmail);
   }
 
+  assert(
+    !hasIdentityBundle({ email: "a@b.co", fullName: "A", phone: "", addressLine1: "1 Main" }),
+    "identity bundle requires phone",
+  );
+  assert(
+    hasIdentityBundle({
+      email: "a@b.co",
+      fullName: "A B",
+      phone: "555",
+      addressLine1: "1 Main",
+    }),
+    "identity bundle accepts all four fields",
+  );
+
+  const clockEmail = `clock-verify-${Date.now()}@filterhero.net`;
+  const clock = await storeFilterClockCapture({
+    email: clockEmail,
+    leadId: `clock-${Date.now()}`,
+    cadence: { change_interval_days: 90, house_type: "quiet" },
+  });
+  assert(clock.ok && clock.kind === "non_customer", `clock guest save failed: ${"error" in clock ? clock.error : "no id"}`);
+  const { data: clockRow, error: clockRead } = await admin
+    .from("non_customers")
+    .select("id, status, source, cadence")
+    .eq("email", clockEmail)
+    .single();
+  assert(!clockRead && clockRow?.status === "not_an_actual_customer", "clock must be not_an_actual_customer");
+  assert(clockRow?.source === "filter_clock", "clock source must be filter_clock");
+  const { data: clockCrm } = await admin
+    .from("crm_contacts")
+    .select("id")
+    .eq("email", clockEmail)
+    .maybeSingle();
+  assert(!clockCrm, "Filter Clock must not create a CRM contact");
+  await admin.from("non_customers").delete().eq("email", clockEmail);
+
+  const guestEmail = `guest-verify-${Date.now()}@filterhero.net`;
+  const guest = await storeIdentityBundle({
+    email: guestEmail,
+    fullName: "Guest Person",
+    phone: "555-0100",
+    addressLine1: "1 Main St",
+    city: "Miami",
+    region: "FL",
+    postalCode: "33101",
+    country: "US",
+    source: "checkout",
+  });
+  assert(guest.ok && guest.kind === "non_customer", `guest identity save failed: ${"error" in guest ? guest.error : "no id"}`);
+  await admin.from("non_customers").delete().eq("email", guestEmail);
+
+  const { error: anonNonCustomer } = await browser.from("non_customers").insert({
+    email: "anon-non-customer@filterhero.net",
+    source: "other",
+  });
+  assert(anonNonCustomer, "anon insert into non_customers must fail under RLS");
+
   console.log("verify:supabase ok");
   console.log(`  project  ${PROJECT_REF}`);
   console.log(`  crm      ${crm.stages} stages reachable`);
   console.log("  account  customer_profiles reachable");
+  console.log("  guests   non_customers reachable (clock + identity)");
   console.log(`  catalog  ${skuCount} identity SKUs (no cost / list_price)`);
   console.log("  rls      seeded tables hidden from anon; anon writes denied");
   console.log("  write    service-role insert/delete ok");
-  console.log("  intake   quote → New → Won on pay, then cleaned up");
+  console.log("  intake   quote → New → Won on pay, Klaviyo id stamped, then cleaned up");
   console.log("  auth     admin API ok");
 }
 

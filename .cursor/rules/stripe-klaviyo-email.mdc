@@ -1,5 +1,5 @@
 ---
-description: One shopper message, one sender. Klaviyo is parked.
+description: One shopper message, one sender. Klaviyo owns marketing flows.
 alwaysApply: true
 ---
 
@@ -12,13 +12,15 @@ One shopper message, one sender. Code: `shared/email-channels.ts`.
 | Message | Owner |
 |---|---|
 | Payment receipt | Stripe |
-| Order confirmation, quote/support receipt, staff lead alert | Resend `Filter Hero <info@filterhero.net>` on `send.filterhero.net` |
-| Welcome, abandon, post-purchase, replenish, win-back, campaigns | None. Parked in `archive/klaviyo` (FH-369) |
+| Order confirmation, quote/support receipt, staff lead alert, back-in-stock one-shot | Resend `Filter Hero <info@filterhero.net>` on `send.filterhero.net` |
+| Welcome, abandon, post-purchase, replenish, win-back | Klaviyo. Constant Contact does not send these (FH-380) |
 | Filter Clock cadence save | None (staff inbox only) |
 | CRM notes / stage changes | None. `CRM_SENDS_MAIL = false` |
 
-Do not send welcome, abandon, replenish, or a second receipt from Resend or from Successfully Paid. Do not import the mailer from `server/crm/`. Do not wire Klaviyo back without restoring `archive/klaviyo`. Do not subscribe Filter Clock `intent=reminder` to a marketing list.
+Do not send welcome, abandon, replenish, or a second receipt from Resend, Constant Contact, or Successfully Paid. Do not import the mailer from `server/crm/`. Do not subscribe Filter Clock `intent=reminder` to a marketing list.
 
-A Klaviyo charge/invoice URL must not exist on any Stripe key. `scrubConflictingStripeWebhooks` deletes it. Shop Placed Order stays on `https://filterhero.net/api/stripe/webhook`.
+Native Klaviyo Stripe webhook is charge/invoice only, live FILTER HERO only: `https://a.klaviyo.com/api/webhook/integration/stripe?c=VnVNmQ`. `scrubConflictingStripeWebhooks` deletes that URL on any other Stripe key. Shop Placed Order stays on `https://filterhero.net/api/stripe/webhook`.
+
+Constant Contact stays connected for integrations Klaviyo does not run (its Stripe contact sync, SMS, QuickBooks). The shop token asks only `account_read` and `offline_access`. It has no checkout, abandon, replenish, browse, list, or automation wiring.
 
 Hosted Checkout only. US shipping + phone. Webhook: `checkout.session.completed` + `checkout.session.expired` → `orders.json`. Brand navy `#203868` / burgundy `#7F2328` on Stripe and `shared/email-brand.ts`.

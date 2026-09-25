@@ -1,11 +1,13 @@
 import fs from "node:fs";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { attachKlaviyoProfileId } from "./crm/contacts";
 import { recordLeadInCrm } from "./crm/intake";
 import { dataFile } from "./data-store";
 import { sendContactReceipt, sendLeadAlert } from "./mailer";
 import { resendSendsShopperReceipt } from "../shared/email-channels";
-import { recordConstantContactOptIn } from "./constant-contact/contacts";
+import { syncContactToKlaviyo } from "./klaviyo";
+import { storeFilterClockCapture } from "./non-customers";
 import { isHoneypotTripped, shouldEnforceTurnstile, verifyTurnstile } from "./security";
 
 function leadsPath() {
@@ -79,18 +81,26 @@ export async function submitContact(raw: unknown, ip?: string) {
   } catch (err) {
     console.error("[contact] crm failed after save", err);
   }
-  if (lead.marketingConsent) {
+  if (lead.intent === "reminder") {
     try {
-      await recordConstantContactOptIn({
+      const clock = await storeFilterClockCapture({
         email: lead.email,
-        name: lead.name,
-        phone: lead.phone,
-        marketingConsent: true,
-        intent: lead.intent,
+        leadId: lead.id,
+        cadence: lead.cadence,
+        message: lead.message,
       });
+      if (!clock.ok && !clock.skipped) {
+        console.error("[contact] non_customers clock save failed", clock.error);
+      }
     } catch (err) {
-      console.error("[constant-contact] lead opt-in failed", err);
+      console.error("[contact] non_customers clock save failed", err);
     }
+  }
+  try {
+    const synced = await syncContactToKlaviyo(lead);
+    if (synced.profileId) await attachKlaviyoProfileId(lead.email, synced.profileId);
+  } catch (err) {
+    console.error("[contact] klaviyo failed after save", err);
   }
   try {
     const staff = await sendLeadAlert(lead);

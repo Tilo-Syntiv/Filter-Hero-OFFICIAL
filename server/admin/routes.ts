@@ -2,12 +2,14 @@ import { Router, type Response } from "express";
 import { z } from "zod";
 import { requireStaff } from "../auth";
 import { accountHealth, crmHealth } from "../db";
+import { klaviyoHealth } from "../klaviyo";
+import { ensureKlaviyoStripeWebhook, klaviyoStripeStatus } from "../klaviyo-stripe";
 import { getStripe } from "../stripe";
 import { readStripeTaxReadiness } from "../../shared/stripe-tax";
 import { adminLimiter, publicError } from "../security";
 import { loadSiteConfig, saveSiteConfig } from "./config";
 import { intuitOAuth } from "../intuit/oauth";
-import { constantContactLiveCheck, recordConstantContactOptIn } from "../constant-contact/contacts";
+import { constantContactLiveCheck } from "../constant-contact/contacts";
 import { constantContactOAuth } from "../constant-contact/oauth";
 import { STATE_COOKIE as CC_STATE_COOKIE } from "../constant-contact/routes";
 import {
@@ -32,7 +34,8 @@ import {
  * Admin console API. Every route sits behind requireStaff.
  *
  * This module reads orders.json, leads.json, site-config.json, and Postgres.
- * It does not send email. Resend stays in server/mailer.ts.
+ * It does not send email and does not write Klaviyo events — Resend and Klaviyo stay
+ * in their own files.
  * See shared/email-channels.ts.
  */
 
@@ -184,12 +187,36 @@ export function adminRouter(): Router {
 
   router.get("/health", async (_req, res) => {
     try {
-      const [crm, account] = await Promise.all([crmHealth(), accountHealth()]);
+      const [crm, account, klaviyo] = await Promise.all([
+        crmHealth(),
+        accountHealth(),
+        klaviyoHealth().catch((err) => {
+          console.error("[admin] klaviyo health", err);
+          return {
+            enabled: false,
+            publicKey: Boolean(process.env.KLAVIYO_PUBLIC_API_KEY?.trim()),
+            listConfigured: Boolean(process.env.KLAVIYO_LIST_ID?.trim()),
+            error: "unavailable",
+          };
+        }),
+      ]);
       sendData(res, {
         crm,
         account,
+        klaviyo,
         stripe: { configured: Boolean(getStripe()) },
         resend: { configured: Boolean(process.env.RESEND_API_KEY?.trim()) },
+        constantContact: {
+          configured: Boolean(
+            process.env.CONSTANT_CONTACT_CLIENT_ID?.trim() &&
+              process.env.CONSTANT_CONTACT_CLIENT_SECRET?.trim(),
+          ),
+        },
+        intuit: {
+          configured: Boolean(
+            process.env.INTUIT_CLIENT_ID?.trim() && process.env.INTUIT_CLIENT_SECRET?.trim(),
+          ),
+        },
       });
     } catch (err) {
       const { status, body } = publicError(
@@ -223,6 +250,7 @@ export function adminRouter(): Router {
     try {
       sendData(res, {
         ...settingsSnapshot(),
+        klaviyoStripe: await klaviyoStripeStatus(),
         stripeTax: await readStripeTaxReadiness(getStripe()),
       });
     } catch (err) {
@@ -230,6 +258,19 @@ export function adminRouter(): Router {
         err,
         { code: "settings_failed", message: "Could not load settings." },
         "[admin] settings",
+      );
+      res.status(status).json({ ok: false, ...body });
+    }
+  });
+
+  router.post("/klaviyo-stripe/connect", async (_req, res) => {
+    try {
+      sendData(res, await ensureKlaviyoStripeWebhook());
+    } catch (err) {
+      const { status, body } = publicError(
+        err,
+        { code: "klaviyo_stripe_connect_failed", message: "Could not connect Klaviyo to Stripe." },
+        "[admin] klaviyo-stripe",
       );
       res.status(status).json({ ok: false, ...body });
     }
@@ -289,36 +330,6 @@ export function adminRouter(): Router {
         err,
         { code: "constant_contact_health_failed", message: "Could not reach Constant Contact." },
         "[constant-contact] health",
-      );
-      res.status(status).json({ ok: false, ...body });
-    }
-  });
-
-  router.post("/constant-contact/opt-in", async (req, res) => {
-    const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
-    const staffEmail = req.staff?.email?.toLowerCase() || "";
-    if (!email || email !== staffEmail) {
-      res.status(400).json({
-        ok: false,
-        error: "That check can only save the signed-in staff address.",
-        code: "constant_contact_opt_in_scope",
-      });
-      return;
-    }
-    try {
-      sendData(
-        res,
-        await recordConstantContactOptIn({
-          email,
-          name: typeof req.body?.name === "string" ? req.body.name : undefined,
-          marketingConsent: true,
-        }),
-      );
-    } catch (err) {
-      const { status, body } = publicError(
-        err,
-        { code: "constant_contact_opt_in_failed", message: "Could not save that address." },
-        "[constant-contact] opt-in",
       );
       res.status(status).json({ ok: false, ...body });
     }

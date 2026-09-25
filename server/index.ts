@@ -19,6 +19,7 @@ import {
 import { submitContact } from "./contact";
 import { accountRouter } from "./account-routes";
 import { requireStaff } from "./auth";
+import { attachKlaviyoProfileId } from "./crm/contacts";
 import { crmRouter } from "./crm/routes";
 import { accountHealth, crmHealth, logCrmBoot } from "./db";
 import {
@@ -26,11 +27,23 @@ import {
   applySecurityHeaders,
   checkoutLimiter,
   contactLimiter,
+  identifyLimiter,
   isApiPath,
   jsonBodyError,
   publicError,
+  sanitizeEventProperties,
+  sanitizeIdentifyProperties,
+  trackLimiter,
   unexpectedError,
 } from "./security";
+import {
+  buildKlaviyoCatalog,
+  isClientMetric,
+  klaviyoHealth,
+  klaviyoPublicConfig,
+  trackKlaviyoEvent,
+  upsertKlaviyoProfile,
+} from "./klaviyo";
 import { createCheckoutSession, getCheckoutSessionStatus, handleStripeWebhook } from "./stripe";
 import { adminRouter } from "./admin/routes";
 import { isCheckoutPaused, publicSiteConfig } from "./admin/config";
@@ -58,6 +71,26 @@ const checkoutBodySchema = z.object({
     .max(50),
   email: z.string().trim().email().max(200).optional().or(z.literal("")),
   marketingConsent: z.boolean().optional(),
+});
+
+const identifyBodySchema = z.object({
+  email: z.string().trim().email().max(200),
+  phone: z.string().trim().max(40).optional(),
+  firstName: z.string().trim().max(80).optional(),
+  lastName: z.string().trim().max(80).optional(),
+  anonymousId: z.string().trim().max(80).optional(),
+  properties: z.unknown().optional(),
+});
+
+const trackBodySchema = z.object({
+  metric: z.string().trim().min(1).max(80),
+  email: z.string().trim().email().max(200),
+  phone: z.string().trim().max(40).optional(),
+  firstName: z.string().trim().max(80).optional(),
+  lastName: z.string().trim().max(80).optional(),
+  anonymousId: z.string().trim().max(80).optional(),
+  properties: z.unknown().optional(),
+  value: z.number().optional(),
 });
 
 async function startServer() {
@@ -205,6 +238,7 @@ Sitemap: ${absoluteUrl(siteUrl, "/sitemap.xml")}
       brand: "Filter Hero",
       crm: await crmHealth(),
       account: await accountHealth(),
+      klaviyo: await klaviyoHealth(),
     });
   });
 
@@ -274,6 +308,65 @@ Sitemap: ${absoluteUrl(siteUrl, "/sitemap.xml")}
         err,
         { code: "checkout_failed", message: "Checkout could not start." },
         "[checkout]",
+      );
+      res.status(status).json(body);
+    }
+  });
+
+  app.get("/api/klaviyo/config", (_req, res) => {
+    res.json(klaviyoPublicConfig());
+  });
+
+  app.get("/api/klaviyo/health", requireStaff, async (_req, res) => {
+    res.json(await klaviyoHealth());
+  });
+
+  app.get("/api/klaviyo/catalog.json", (_req, res) => {
+    res.json(buildKlaviyoCatalog(siteUrl));
+  });
+
+  app.post("/api/identify", identifyLimiter, async (req, res) => {
+    try {
+      const body = identifyBodySchema.parse(req.body);
+      const result = await upsertKlaviyoProfile({
+        ...body,
+        properties: sanitizeIdentifyProperties(body.properties),
+      });
+      if (result.profileId) await attachKlaviyoProfileId(body.email, result.profileId);
+      res.json({ ok: result.ok, error: result.error });
+    } catch (err) {
+      const { status, body } = publicError(
+        err,
+        { code: "identify_failed", message: "Could not save that." },
+        "[identify]",
+      );
+      res.status(status).json(body);
+    }
+  });
+
+  app.post("/api/track", trackLimiter, async (req, res) => {
+    try {
+      const body = trackBodySchema.parse(req.body);
+      if (!isClientMetric(body.metric)) {
+        res.status(400).json({ error: "Unknown metric", code: "unknown_metric" });
+        return;
+      }
+      const result = await trackKlaviyoEvent({
+        metric: body.metric,
+        email: body.email,
+        phone: body.phone,
+        firstName: body.firstName,
+        lastName: body.lastName,
+        anonymousId: body.anonymousId,
+        properties: sanitizeEventProperties(body.properties),
+        value: body.value,
+      });
+      res.json({ ok: result.ok, error: result.error });
+    } catch (err) {
+      const { status, body } = publicError(
+        err,
+        { code: "track_failed", message: "Could not record that." },
+        "[track]",
       );
       res.status(status).json(body);
     }

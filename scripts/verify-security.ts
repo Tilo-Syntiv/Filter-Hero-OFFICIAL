@@ -61,12 +61,12 @@ async function main() {
     "dev CSP does not upgrade localhost",
   );
   assert(
-    !prodHeaders["Content-Security-Policy"].includes("klaviyo.com"),
-    "production CSP does not allow Klaviyo",
+    prodHeaders["Content-Security-Policy"].includes("https://static.klaviyo.com"),
+    "production CSP allows the Klaviyo onsite script",
   );
   assert(
-    !devHeaders["Content-Security-Policy"].includes("klaviyo.com"),
-    "dev CSP does not allow Klaviyo",
+    devHeaders["Content-Security-Policy"].includes("http://a.klaviyo.com"),
+    "dev CSP allows the Klaviyo onsite host",
   );
 
   const headed = express();

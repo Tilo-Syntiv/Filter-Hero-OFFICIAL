@@ -302,6 +302,11 @@ export function catalogStripeProductId(productId: number): string {
   return `prod_fh_${productId}`;
 }
 
+/** Klaviyo custom-catalog external_id. Same as the shop product id. */
+export function catalogExternalId(productId: number): string {
+  return String(productId);
+}
+
 const SELLABLE_ROWS = SELLABLE_FILE.skus as SellableSkuRow[];
 const WHOLESALE_SKU_BY_KEY = new Map(
   SELLABLE_ROWS.map((row) => [

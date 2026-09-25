@@ -470,6 +470,8 @@ Deal `source`: `cart_quote` if `cartSummary` is set, `custom_quote` if no filter
 
 `upsertContact` looks up by lowercased email. Existing row: only fill empty columns. Exception: `klaviyo_profile_id` and `stripe_customer_id` overwrite, because a newer id is more correct than a stale one. Insert race on unique email (`23505`) re-reads instead of failing.
 
+Klaviyo does not import the CRM, and the CRM does not call Klaviyo. After a profile import, `server/contact.ts`, `server/stripe.ts`, and `POST /api/identify` call `attachKlaviyoProfileId`. That updates an existing contact only. Filter Clock and a cart identify with no CRM row do not insert one.
+
 ### 9.4 Deal patch and close
 
 Moving into `won` or `lost` stamps `closed_at`, clears `next_action_at` (otherwise the board shows it overdue forever), clears `lost_reason` on won. Moving back out clears `closed_at` and lost reason. Stage change writes a `stage_change` activity.

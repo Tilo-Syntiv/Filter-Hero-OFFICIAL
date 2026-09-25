@@ -23,10 +23,12 @@ import {
   SHIPPING_TAX_CODE,
 } from "../shared/stripe-tax";
 import { recordPurchaseOnAccount } from "./account";
+import { attachKlaviyoProfileId } from "./crm/contacts";
 import { closeDealsOnPurchase } from "./crm/intake";
 import { dataFile } from "./data-store";
 import { sendOrderConfirmation } from "./mailer";
-import { recordConstantContactOptIn } from "./constant-contact/contacts";
+import { parseCheckoutItems, syncCheckoutExpired, syncPlacedOrder, syncStartedCheckout } from "./klaviyo";
+import { storeIdentityBundle } from "./non-customers";
 import { stripeCheckoutBrandingSettings } from "../shared/stripe-checkout-brand";
 
 const SESSION_ID = /^cs_(test|live)_[A-Za-z0-9]+$/;
@@ -408,6 +410,21 @@ export async function createCheckoutSession(
 
   if (!session.url) throw new Error("No checkout URL returned");
 
+  if (email) {
+    try {
+      const synced = await syncStartedCheckout({
+        email,
+        sessionId: session.id,
+        checkoutUrl: session.url,
+        items: current,
+        marketingConsent: shopper?.marketingConsent,
+      });
+      if (synced.profileId) await attachKlaviyoProfileId(email, synced.profileId);
+    } catch (err) {
+      console.error("[checkout] klaviyo Started Checkout failed", err);
+    }
+  }
+
   return {
     url: session.url,
     sessionId: session.id,
@@ -447,6 +464,28 @@ async function persistPaidOrder(stored: StoredOrder): Promise<void> {
     await recordPurchaseOnAccount(row);
   } catch (err) {
     console.error("[stripe webhook] account attach failed", err);
+  }
+  try {
+    const shipping = row.shipping?.address;
+    const fullName = row.shipping?.name?.trim() || "";
+    await storeIdentityBundle({
+      email: row.customerEmail || "",
+      fullName,
+      phone: row.phone || undefined,
+      addressLine1: shipping?.line1 || undefined,
+      addressLine2: shipping?.line2 || undefined,
+      city: shipping?.city || undefined,
+      region: shipping?.state || undefined,
+      postalCode: shipping?.postal_code || undefined,
+      country: shipping?.country || undefined,
+      source: "checkout",
+      properties: {
+        stripe_customer_id: row.customerId,
+        last_session_id: row.sessionId,
+      },
+    });
+  } catch (err) {
+    console.error("[stripe webhook] non_customers identity save failed", err);
   }
   if (row.customerEmail) {
     try {
@@ -588,17 +627,13 @@ export async function handleStripeWebhook(
       ...orderFromCheckoutSession(session),
     };
     await persistPaidOrder(stored);
-    if (session.metadata?.marketingConsent === "1" && stored.customerEmail) {
-      try {
-        await recordConstantContactOptIn({
-          email: stored.customerEmail,
-          name: session.customer_details?.name,
-          phone: stored.phone,
-          marketingConsent: true,
-        });
-      } catch (err) {
-        console.error("[constant-contact] checkout opt-in failed", err);
+    try {
+      const synced = await syncPlacedOrder(stored);
+      if (synced.profileId && stored.customerEmail) {
+        await attachKlaviyoProfileId(stored.customerEmail, synced.profileId);
       }
+    } catch (err) {
+      console.error("[stripe webhook] klaviyo Placed Order failed", err);
     }
   }
 
@@ -610,7 +645,9 @@ export async function handleStripeWebhook(
     }
     try {
       const stored = await orderFromSubscriptionInvoice(stripe, invoice);
-      if (stored) await persistPaidOrder(stored);
+      if (stored) {
+        await persistPaidOrder(stored);
+      }
     } catch (err) {
       console.error("[stripe webhook] subscription renewal order failed", err);
     }
@@ -622,6 +659,17 @@ export async function handleStripeWebhook(
   }
 
   if (event.type === "checkout.session.expired") {
+    const expired = event.data.object as Stripe.Checkout.Session;
+    const email = expired.customer_email || expired.customer_details?.email || expired.metadata?.email;
+    try {
+      await syncCheckoutExpired({
+        email: email ?? null,
+        sessionId: expired.id,
+        items: parseCheckoutItems(expired.metadata?.items),
+      });
+    } catch (err) {
+      console.error("[stripe webhook] klaviyo Checkout Expired failed", err);
+    }
     return { received: true };
   }
 

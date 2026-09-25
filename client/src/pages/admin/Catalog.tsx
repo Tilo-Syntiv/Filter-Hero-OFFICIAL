@@ -35,7 +35,7 @@ function CatalogBody() {
           value={data.stockCount ?? data.skuCount}
           hint={data.stockSyncedAt ? `Synced ${data.stockSyncedAt}` : "Bootstrap catalog"}
         />
-        <StatCard label="Archive sizes" value={data.archivedSizeCount} />
+        <StatCard label="Finder archive" value={data.archivedSizeCount} />
       </div>
 
       <AdminPanel
@@ -52,6 +52,10 @@ function CatalogBody() {
       </AdminPanel>
 
       <AdminPanel title="Live stock catalog">
+        <p className="mb-4 text-sm text-muted-foreground">
+          Checkout sells live Filter King stock. Off-stock sizes stay on the custom quote form.
+          The finder keeps the size archive.
+        </p>
         <div className="mb-4">
           <AdminSearch
             value={query}
