@@ -203,7 +203,7 @@ function SettingsBody() {
           <Row label="Client URL" value={data.clientUrl} />
           <Row
             label="Catalog"
-            value={data.catalog.sellableOnly ? "Live Filter King stock" : "Full archive"}
+            value={data.catalog.sellableOnly ? "Live in-stock catalog" : "Full archive"}
           />
           <Row label="CRM kill switch" value={data.flags.crmDisable ? "CRM_DISABLE=1" : "Off"} />
           <Row
@@ -212,7 +212,7 @@ function SettingsBody() {
           />
         </dl>
         <p className="mt-4 text-xs text-muted-foreground">
-          Checkout sells live Filter King stock. Off-stock sizes stay on the custom quote form.
+          Checkout sells live in-stock sizes. Off-stock sizes stay on the custom quote form.
           The finder keeps the size archive. Env flags are read-only here. Change them in Railway
           and restart. Homepage copy and featured sizes are under Content.
         </p>

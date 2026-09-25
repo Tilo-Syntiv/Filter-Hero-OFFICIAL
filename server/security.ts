@@ -279,3 +279,11 @@ export const checkoutLimiter = makeLimiter({
   code: "rate_limited_checkout",
   message: "Too many checkout attempts. Try again later.",
 });
+
+/** Cart freight previews. Debounced typing must not burn checkout attempts (FH-393). */
+export const shippingQuoteLimiter = makeLimiter({
+  windowMs: 60 * 1000,
+  max: 40,
+  code: "rate_limited_shipping_quote",
+  message: "Too many shipping quotes. Try again in a moment.",
+});

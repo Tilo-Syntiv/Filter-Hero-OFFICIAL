@@ -80,6 +80,7 @@ export default function CheckoutSuccess() {
                   items: pending.remainingItems,
                   email: pending.email,
                   marketingConsent: pending.marketingConsent,
+                  shipTo: pending.shipTo,
                 }),
               });
               const nextData = (await nextRes.json()) as {
@@ -95,6 +96,7 @@ export default function CheckoutSuccess() {
                 remainingItems: nextData.remainingItems ?? [],
                 email: pending.email,
                 marketingConsent: pending.marketingConsent,
+                shipTo: pending.shipTo,
               });
               toast.message(
                 nextData.groupLabel

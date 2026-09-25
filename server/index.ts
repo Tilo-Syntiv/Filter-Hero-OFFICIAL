@@ -33,6 +33,7 @@ import {
   publicError,
   sanitizeEventProperties,
   sanitizeIdentifyProperties,
+  shippingQuoteLimiter,
   trackLimiter,
   unexpectedError,
 } from "./security";
@@ -45,6 +46,7 @@ import {
   upsertKlaviyoProfile,
 } from "./klaviyo";
 import { createCheckoutSession, getCheckoutSessionStatus, handleStripeWebhook } from "./stripe";
+import { quoteCartShipping } from "./shipping-quote";
 import { adminRouter } from "./admin/routes";
 import { isCheckoutPaused, publicSiteConfig } from "./admin/config";
 import { intuitRouter } from "./intuit/routes";
@@ -71,6 +73,25 @@ const checkoutBodySchema = z.object({
     .max(50),
   email: z.string().trim().email().max(200).optional().or(z.literal("")),
   marketingConsent: z.boolean().optional(),
+  shipTo: z
+    .object({
+      line1: z.string().trim().min(1).max(200),
+      line2: z.string().trim().max(200).optional().or(z.literal("")),
+      city: z.string().trim().min(1).max(100),
+      state: z
+        .string()
+        .trim()
+        .length(2)
+        .regex(/^[A-Za-z]{2}$/),
+      postalCode: z.string().trim().min(5).max(20),
+      country: z.string().trim().length(2).optional(),
+    })
+    .optional(),
+});
+
+const shippingQuoteBodySchema = z.object({
+  items: checkoutBodySchema.shape.items,
+  shipTo: checkoutBodySchema.shape.shipTo.unwrap(),
 });
 
 const identifyBodySchema = z.object({
@@ -287,10 +308,20 @@ Sitemap: ${absoluteUrl(siteUrl, "/sitemap.xml")}
         });
         return;
       }
-      const { items, email, marketingConsent } = checkoutBodySchema.parse(req.body);
+      const { items, email, marketingConsent, shipTo } = checkoutBodySchema.parse(req.body);
       const session = await createCheckoutSession(items, clientUrl, {
         email: email || undefined,
         marketingConsent,
+        shipTo: shipTo
+          ? {
+              line1: shipTo.line1,
+              line2: shipTo.line2 || undefined,
+              city: shipTo.city,
+              state: shipTo.state,
+              postalCode: shipTo.postalCode,
+              country: shipTo.country || "US",
+            }
+          : undefined,
       });
       if (!session.url) {
         res.status(500).json({ error: "No checkout URL returned" });
@@ -308,6 +339,33 @@ Sitemap: ${absoluteUrl(siteUrl, "/sitemap.xml")}
         err,
         { code: "checkout_failed", message: "Checkout could not start." },
         "[checkout]",
+      );
+      res.status(status).json(body);
+    }
+  });
+
+  app.post("/api/shipping/quote", shippingQuoteLimiter, async (req, res) => {
+    try {
+      const { items, shipTo } = shippingQuoteBodySchema.parse(req.body);
+      const quote = await quoteCartShipping(items, {
+        line1: shipTo.line1,
+        line2: shipTo.line2 || undefined,
+        city: shipTo.city,
+        state: shipTo.state,
+        postalCode: shipTo.postalCode,
+        country: shipTo.country || "US",
+      });
+      res.json({
+        amount: quote.amount,
+        amountCents: quote.amountCents,
+        currency: quote.currency,
+        source: quote.source,
+      });
+    } catch (err) {
+      const { status, body } = publicError(
+        err,
+        { code: "shipping_quote_failed", message: "Could not estimate shipping." },
+        "[shipping quote]",
       );
       res.status(status).json(body);
     }

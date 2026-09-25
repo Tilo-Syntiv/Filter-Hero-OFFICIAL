@@ -79,3 +79,87 @@ export async function fetchAllParentModels(): Promise<FilterKingParentModel[]> {
   if (json.data && Array.isArray(json.data.sku_items)) return json.data.sku_items;
   return [];
 }
+
+export type FilterKingShipTo = {
+  address_line_1: string;
+  address_line_2?: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+};
+
+export type FilterKingQuoteItem = {
+  parent_model: string;
+  quantity: number;
+};
+
+export type FilterKingOrderQuote = {
+  estimatedShippingCost: number;
+  currency: string;
+};
+
+/**
+ * Dropship freight quote. Shopper tax stays on Stripe Tax — ignore FK tax here.
+ * Requires Idempotency-Key (FH API).
+ */
+export async function quoteOrderShipping(input: {
+  shipTo: FilterKingShipTo;
+  items: FilterKingQuoteItem[];
+  idempotencyKey: string;
+}): Promise<FilterKingOrderQuote> {
+  if (input.items.length === 0) {
+    throw new Error("Shipping quote needs at least one item");
+  }
+  const access = await token();
+  const res = await fetch(`${apiBase()}/api/v1/order/quotes`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${access}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "Idempotency-Key": input.idempotencyKey,
+    },
+    body: JSON.stringify({
+      shipping_method: "fedex",
+      ship_to: {
+        address_line_1: input.shipTo.address_line_1,
+        ...(input.shipTo.address_line_2
+          ? { address_line_2: input.shipTo.address_line_2 }
+          : {}),
+        city: input.shipTo.city,
+        state: input.shipTo.state,
+        zip: input.shipTo.zip,
+        country: input.shipTo.country,
+      },
+      items: input.items.map((item) => ({
+        parent_model: item.parent_model,
+        quantity: item.quantity,
+      })),
+    }),
+  });
+  const json = (await res.json()) as {
+    success?: boolean;
+    message?: string;
+    data?: {
+      total?: {
+        estimated_shipping_cost?: number | string;
+        currency?: string;
+      };
+    };
+  };
+  if (!res.ok || json.success === false) {
+    throw new Error(
+      `Filter King shipping quote failed (${res.status}${json.message ? `: ${json.message}` : ""})`,
+    );
+  }
+  const raw = json.data?.total?.estimated_shipping_cost;
+  const cost = typeof raw === "number" ? raw : Number(raw);
+  if (!Number.isFinite(cost) || cost < 0) {
+    throw new Error("Filter King shipping quote returned no freight amount");
+  }
+  return {
+    estimatedShippingCost: cost,
+    currency: (json.data?.total?.currency || "USD").toUpperCase(),
+  };
+}

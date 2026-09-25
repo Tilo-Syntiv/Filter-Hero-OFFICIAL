@@ -191,6 +191,15 @@ async function main() {
     started = await createCheckoutSession(
       [{ productId: product.id, quantity: 1 }],
       process.env.CLIENT_URL || "http://localhost:3000",
+      {
+        shipTo: {
+          line1: "123 Main St",
+          city: "Miami",
+          state: "FL",
+          postalCode: "33130",
+          country: "US",
+        },
+      },
     );
   } catch (err) {
     console.error("Checkout Session create failed:", err);
@@ -215,11 +224,20 @@ async function main() {
     "US shipping collected",
   );
   check(
-    session.shipping_options?.some(
-      (opt) => opt.shipping_amount === 0 && opt.shipping_rate,
-    ) === true,
+    session.shipping_options?.some((opt) => opt.shipping_rate) === true,
     "checkout includes a shipping option",
   );
+  const shippingAmount = session.shipping_options?.[0]?.shipping_amount ?? null;
+  check(
+    typeof shippingAmount === "number" && shippingAmount >= 0,
+    `shipping_amount=${shippingAmount}`,
+  );
+  if (process.env.FILTERKING_CLIENT_ID && process.env.FILTERKING_CLIENT_SECRET) {
+    check(
+      typeof shippingAmount === "number" && shippingAmount > 0,
+      `Filter King freight charged (cents=${shippingAmount})`,
+    );
+  }
   const shippingRateId =
     typeof session.shipping_options?.[0]?.shipping_rate === "string"
       ? session.shipping_options[0].shipping_rate
@@ -296,7 +314,16 @@ async function main() {
   const reuseStarted = await createCheckoutSession(
     [{ productId: product.id, quantity: 1 }],
     process.env.CLIENT_URL || "http://localhost:3000",
-    { email: reuseEmail },
+    {
+      email: reuseEmail,
+      shipTo: {
+        line1: "123 Main St",
+        city: "Miami",
+        state: "FL",
+        postalCode: "33130",
+        country: "US",
+      },
+    },
   );
   const reuseSession = await stripe.checkout.sessions.retrieve(reuseStarted.sessionId);
   const reuseCustomerId =

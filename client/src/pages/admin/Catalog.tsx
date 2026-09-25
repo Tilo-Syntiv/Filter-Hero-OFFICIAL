@@ -53,7 +53,7 @@ function CatalogBody() {
 
       <AdminPanel title="Live stock catalog">
         <p className="mb-4 text-sm text-muted-foreground">
-          Checkout sells live Filter King stock. Off-stock sizes stay on the custom quote form.
+          Checkout sells live in-stock sizes. Off-stock sizes stay on the custom quote form.
           The finder keeps the size archive.
         </p>
         <div className="mb-4">

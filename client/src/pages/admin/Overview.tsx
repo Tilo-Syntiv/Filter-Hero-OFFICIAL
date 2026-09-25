@@ -91,7 +91,7 @@ function OverviewBody() {
             <Row label="HVAC brands" value={String(data.catalog.brands)} />
             <Row
               label="Catalog mode"
-              value={data.catalog.sellableOnly ? "Live Filter King stock" : "Full archive"}
+              value={data.catalog.sellableOnly ? "Live in-stock catalog" : "Full archive"}
             />
           </dl>
         </AdminPanel>

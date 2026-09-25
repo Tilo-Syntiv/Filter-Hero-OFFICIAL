@@ -14,7 +14,59 @@ Append here when you find or fix a bug. Chat is not the log. Never reuse ids.
 - **Added:** YYYY-MM-DD
 ```
 
-Next id: **FH-390**
+Next id: **FH-394**
+
+---
+
+### FH-393 — Cart shipping quotes burned the checkout rate limit
+- **Status:** fixed
+- **Area:** cart
+- **Symptom:** After FH-392, typing a ship-to address debounced `POST /api/shipping/quote` on the same `checkoutLimiter` (10 / 15 min). Smoke + probes + cart typing returned `429 rate_limited_checkout`, so the cart showed Shipping Unavailable even though Filter King quotes worked.
+- **Do NOT:** Put freight previews back on `checkoutLimiter`. Do not raise checkout to unlimited.
+- **Do:** `shippingQuoteLimiter` is 40 / minute with code `rate_limited_shipping_quote`. Checkout stays 10 / 15 min. Cart labels a shipping 429 as Retry shortly.
+- **Files:** `server/security.ts`, `server/index.ts`, `client/src/components/CartDrawer.tsx`
+- **Verify:** Fill cart ship-to — dollar estimate appears. Rapid address edits do not 429 checkout. `pnpm smoke`.
+- **Added:** 2026-09-25
+- **Fixed:** 2026-09-25
+
+---
+
+### FH-392 — Checkout shipping stayed $0 after Filter King API was live
+- **Status:** fixed
+- **Area:** cart
+- **Symptom:** Hosted Checkout used a fixed `$0` shipping rate (FH-254). Filter King’s `POST /api/v1/order/quotes` returns `estimated_shipping_cost` for a `ship_to` address, but the shop never called it.
+- **Do NOT:** Invent a flat freight fee. Do not put Filter King tax on the shopper (Stripe Tax stays). Do not promise free shipping. Do not name Filter King on the cart. Do not switch off Hosted Checkout for dynamic shipping UI.
+- **Do:** Cart collects US ship-to. `POST /api/shipping/quote` and checkout call Filter King order quotes with `shipping_method=fedex`. Payment-mode Checkout gets that amount as `shipping_options` (label Shipping, `txcd_92010001`, 2–3 business day estimate). Subscription mode adds a one-time Shipping line item (Stripe has no `shipping_options` there). Fail closed when credentials are set and address/quote is missing.
+- **Files:** `server/filterking.ts`, `server/shipping-quote.ts`, `server/stripe.ts`, `server/index.ts`, `client/src/components/CartDrawer.tsx`, `client/src/lib/checkout-queue.ts`, `client/src/pages/CheckoutSuccess.tsx`, `shared/us-states.ts`, `scripts/smoke-site.ts`, `scripts/debug-stripe-checkout.ts`
+- **Verify:** Cart with address shows a dollar shipping estimate. `pnpm smoke`. `pnpm debug:stripe-checkout` — session `shipping_amount` > 0 when Filter King keys are set.
+- **Added:** 2026-09-25
+- **Fixed:** 2026-09-25
+
+---
+
+### FH-391 — Smoke compared Klaviyo catalog to the wholesale sheet count
+- **Status:** fixed
+- **Area:** catalog
+- **Symptom:** `pnpm smoke` failed: catalog feed had 294 items and `sellable-skus.json` said 293. Cart and the Klaviyo feed are live Filter King stock, not the Model Pricing sheet.
+- **Do NOT:** Assert the Klaviyo catalog against `sellable-skus.json` count. Do not put wholesale cost into the catalog feed.
+- **Do:** Local smoke compares the feed to `sellableSheetProducts()` (live stock). The sheet stays cost-only.
+- **Files:** `scripts/smoke-site.ts`
+- **Verify:** `pnpm smoke`
+- **Added:** 2026-09-25
+- **Fixed:** 2026-09-25
+
+---
+
+### FH-390 — Admin catalog copy named Filter King
+- **Status:** fixed
+- **Area:** catalog
+- **Symptom:** `pnpm verify:store` failed because admin Catalog, Settings, and Overview said "Filter King stock". Shopper and admin client copy must not name the supplier.
+- **Do NOT:** Put "Filter King" or filterking.com in `client/src`.
+- **Do:** Say live in-stock catalog. Server and shared stock code may still name the API.
+- **Files:** `client/src/pages/admin/Catalog.tsx`, `client/src/pages/admin/Settings.tsx`, `client/src/pages/admin/Overview.tsx`
+- **Verify:** `pnpm verify:store`
+- **Added:** 2026-09-25
+- **Fixed:** 2026-09-25
 
 ---
 
@@ -1797,14 +1849,15 @@ Next id: **FH-390**
 ---
 
 ### FH-254 — Stripe Checkout still prints Free next to a $0 shipping option
-- **Status:** open
+- **Status:** fixed
 - **Area:** cart
 - **Symptom:** Shop copy no longer says free shipping (FH-253). Hosted Checkout still shows the rate as **Shipping** with price **Free**, because `shipping_options` is a `$0` fixed amount. Stripe labels a zero-dollar shipping rate Free.
 - **Do NOT:** Put “Free shipping” back in `display_name`. Do not invent a freight charge. Do not drop `shipping_options` while `shipping_address_collection` is on — Checkout requires a rate.
-- **Do:** Keep the option labeled Shipping. To stop Stripe from printing Free, set a paid `fixed_amount` once freight is known.
-- **Files:** `server/stripe.ts`, `scripts/debug-stripe-checkout.ts`, `scripts/click-ui.ts`
-- **Verify:** Start checkout from the cart. Order summary: Shipping / Free. Cart drawer: Shipping At checkout. `pnpm check`. `pnpm browse`.
+- **Do:** Keep the option labeled Shipping. Charge Filter King `estimated_shipping_cost` from order quotes (FH-392). Stripe no longer prints Free when freight is > $0.
+- **Files:** `server/stripe.ts`, `server/shipping-quote.ts`, `server/filterking.ts`, `client/src/components/CartDrawer.tsx`, `scripts/debug-stripe-checkout.ts`
+- **Verify:** Start checkout from the cart with a US address. Order summary: Shipping / paid amount. `pnpm debug:stripe-checkout`.
 - **Added:** 2026-09-18
+- **Fixed:** 2026-09-25
 
 ---
 

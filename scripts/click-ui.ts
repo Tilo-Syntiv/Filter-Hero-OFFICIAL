@@ -76,6 +76,32 @@ async function main() {
     await cartBtn.click();
     await page.waitForTimeout(400);
   }
+
+  const cartCopy = (await page.locator(".cart-drawer").innerText()).toLowerCase();
+  if (cartCopy.includes("filter king") || cartCopy.includes("free shipping")) {
+    throw new Error("Cart must not name Filter King or promise free shipping");
+  }
+  if (!cartCopy.includes("ship to") && !cartCopy.includes("enter address")) {
+    throw new Error("Cart must collect ship-to for freight");
+  }
+
+  await page.locator("#cart-line1").fill("123 Main St");
+  await page.locator("#cart-city").fill("Miami");
+  await page.locator("#cart-state").selectOption("FL");
+  await page.locator("#cart-zip").fill("33130");
+  await page.locator("#cart-email").fill("browse-shipping@filterhero.net");
+
+  await page.waitForFunction(() => {
+    const foot = document.querySelector(".cart-drawer-foot");
+    const text = foot?.textContent || "";
+    return /\$\d+\.\d{2}/.test(text) && !/enter address|unavailable|calculating/i.test(text);
+  }, { timeout: 15000 });
+
+  const checkout = page.getByRole("button", { name: /checkout with stripe/i });
+  await checkout.waitFor({ state: "visible" });
+  if (await checkout.isDisabled()) {
+    throw new Error("Checkout must enable after a complete ship-to address");
+  }
   await record("cart");
 
   await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });

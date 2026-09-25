@@ -29,6 +29,8 @@ import { dataFile } from "./data-store";
 import { sendOrderConfirmation } from "./mailer";
 import { parseCheckoutItems, syncCheckoutExpired, syncPlacedOrder, syncStartedCheckout } from "./klaviyo";
 import { storeIdentityBundle } from "./non-customers";
+import { filterKingConfigured } from "./filterking";
+import { quoteCartShipping, type ShopperShipTo } from "./shipping-quote";
 import { stripeCheckoutBrandingSettings } from "../shared/stripe-checkout-brand";
 
 const SESSION_ID = /^cs_(test|live)_[A-Za-z0-9]+$/;
@@ -247,15 +249,21 @@ export function splitCheckoutGroups(items: CheckoutItem[]): {
   throw new Error("Cart is empty");
 }
 
-function shippingOptions(): Stripe.Checkout.SessionCreateParams.ShippingOption[] {
+function shippingOptions(
+  amountCents: number,
+): Stripe.Checkout.SessionCreateParams.ShippingOption[] {
   return [
     {
       shipping_rate_data: {
         type: "fixed_amount",
-        fixed_amount: { amount: 0, currency: "usd" },
+        fixed_amount: { amount: Math.max(0, Math.round(amountCents)), currency: "usd" },
         display_name: "Shipping",
         tax_behavior: "exclusive",
         tax_code: SHIPPING_TAX_CODE,
+        delivery_estimate: {
+          minimum: { unit: "business_day", value: 2 },
+          maximum: { unit: "business_day", value: 3 },
+        },
       },
     },
   ];
@@ -331,7 +339,11 @@ export type CheckoutStartResult = {
 export async function createCheckoutSession(
   items: CheckoutItem[],
   clientUrl: string,
-  shopper?: { email?: string; marketingConsent?: boolean },
+  shopper?: {
+    email?: string;
+    marketingConsent?: boolean;
+    shipTo?: ShopperShipTo;
+  },
 ): Promise<CheckoutStartResult> {
   const stripe = getStripe();
   if (!stripe) {
@@ -357,6 +369,33 @@ export async function createCheckoutSession(
     remaining.some((item) => parseDeliveryMode(item.delivery) === d),
   ).length;
 
+  let shippingCents = 0;
+  if (filterKingConfigured() && !shopper?.shipTo) {
+    throw new Error("Enter a US shipping address so we can calculate freight.");
+  }
+  if (shopper?.shipTo) {
+    const freight = await quoteCartShipping(current, shopper.shipTo);
+    shippingCents = freight.amountCents;
+  }
+
+  // Subscription Checkout does not support shipping_options — one-time line instead.
+  if (mode === "subscription" && shippingCents > 0) {
+    line_items.push({
+      quantity: 1,
+      price_data: {
+        currency: "usd",
+        unit_amount: shippingCents,
+        tax_behavior: "exclusive",
+        product_data: {
+          name: "Shipping",
+          description: "2–3 business day delivery",
+          tax_code: SHIPPING_TAX_CODE,
+          metadata: { kind: "shipping" },
+        },
+      },
+    });
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode,
     line_items,
@@ -364,7 +403,9 @@ export async function createCheckoutSession(
     cancel_url: `${clientUrl}/checkout/cancel`,
     branding_settings: stripeCheckoutBrandingSettings(),
     shipping_address_collection: { allowed_countries: ["US"] },
-    shipping_options: shippingOptions(),
+    ...(mode === "payment" || shippingCents === 0
+      ? { shipping_options: shippingOptions(mode === "payment" ? shippingCents : 0) }
+      : {}),
     phone_number_collection: { enabled: true },
     automatic_tax: { enabled: tax.automaticTax },
     ...(customerId
@@ -383,6 +424,7 @@ export async function createCheckoutSession(
     metadata: {
       items: itemsMeta,
       delivery: String(delivery),
+      shippingCents: String(shippingCents),
       ...(autoDelivery ? { autoDelivery: "1" } : {}),
       ...(email ? { email } : {}),
       ...(shopper?.marketingConsent ? { marketingConsent: "1" } : {}),
@@ -394,6 +436,7 @@ export async function createCheckoutSession(
             metadata: {
               items: itemsMeta,
               delivery: String(delivery),
+              shippingCents: String(shippingCents),
             },
           },
         }
@@ -403,6 +446,7 @@ export async function createCheckoutSession(
               items: itemsMeta,
               delivery: String(delivery),
               autoDelivery: "1",
+              shippingCents: String(shippingCents),
             },
           },
         }),

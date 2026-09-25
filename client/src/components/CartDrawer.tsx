@@ -6,7 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import MarketingOptIn from "@/components/MarketingOptIn";
 import { identifyShopper } from "@/lib/klaviyo";
-import { stashCheckoutContinuation } from "@/lib/checkout-queue";
+import {
+  stashCheckoutContinuation,
+  type CheckoutShipTo,
+} from "@/lib/checkout-queue";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSiteConfig } from "@/contexts/SiteConfigContext";
 import {
@@ -26,11 +29,13 @@ import {
   packShotSrc,
   type DeliveryMode,
 } from "@shared/products";
+import { US_STATE_OPTIONS } from "@shared/us-states";
 import { useCart } from "@/contexts/CartContext";
 import { stashQuoteHandoff } from "@/lib/quote-handoff";
 
 const CART_EMAIL_KEY = "fh_cart_email";
 const LEGACY_CART_EMAIL_KEY = "fh_klaviyo_email";
+const CART_SHIP_KEY = "fh_cart_ship_to";
 
 function rememberedEmail(): string {
   try {
@@ -52,6 +57,41 @@ function rememberEmail(email: string) {
   } catch {
     /* private mode */
   }
+}
+
+function rememberedShipTo(): CheckoutShipTo {
+  try {
+    const raw = localStorage.getItem(CART_SHIP_KEY);
+    if (!raw) return { line1: "", city: "", state: "", postalCode: "" };
+    const parsed = JSON.parse(raw) as CheckoutShipTo;
+    return {
+      line1: parsed.line1 || "",
+      line2: parsed.line2 || "",
+      city: parsed.city || "",
+      state: (parsed.state || "").toUpperCase(),
+      postalCode: parsed.postalCode || "",
+      country: "US",
+    };
+  } catch {
+    return { line1: "", city: "", state: "", postalCode: "" };
+  }
+}
+
+function rememberShipTo(shipTo: CheckoutShipTo) {
+  try {
+    localStorage.setItem(CART_SHIP_KEY, JSON.stringify(shipTo));
+  } catch {
+    /* private mode */
+  }
+}
+
+function shipToReady(shipTo: CheckoutShipTo): boolean {
+  return Boolean(
+    shipTo.line1.trim() &&
+      shipTo.city.trim() &&
+      /^[A-Za-z]{2}$/.test(shipTo.state.trim()) &&
+      shipTo.postalCode.trim().length >= 5,
+  );
 }
 
 type CartDrawerProps = {
@@ -77,6 +117,9 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
   const [checkingOut, setCheckingOut] = useState(false);
   const [email, setEmail] = useState(() => rememberedEmail());
   const [marketingConsent, setMarketingConsent] = useState(false);
+  const [shipTo, setShipTo] = useState<CheckoutShipTo>(() => rememberedShipTo());
+  const [shippingLabel, setShippingLabel] = useState("Enter address");
+  const [quoting, setQuoting] = useState(false);
 
   useEffect(() => {
     if (accountEmail) setEmail(accountEmail);
@@ -90,6 +133,75 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
     return () => window.clearTimeout(id);
   }, [isOpen]);
 
+  useEffect(() => {
+    rememberShipTo(shipTo);
+  }, [shipTo]);
+
+  useEffect(() => {
+    if (items.length === 0 || !shipToReady(shipTo)) {
+      setShippingLabel(items.length === 0 ? "—" : "Enter address");
+      setQuoting(false);
+      return;
+    }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setQuoting(true);
+      try {
+        const res = await fetch("/api/shipping/quote", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            items: items.map((i) => ({
+              productId: i.productId,
+              quantity: i.qty,
+              delivery: i.delivery,
+            })),
+            shipTo: {
+              line1: shipTo.line1.trim(),
+              line2: shipTo.line2?.trim() || undefined,
+              city: shipTo.city.trim(),
+              state: shipTo.state.trim().toUpperCase(),
+              postalCode: shipTo.postalCode.trim(),
+              country: "US",
+            },
+          }),
+        });
+        const data = (await res.json()) as {
+          amount?: number;
+          error?: string;
+          code?: string;
+        };
+        if (!res.ok) {
+          setShippingLabel(
+            data.code === "rate_limited_shipping_quote" || data.code === "rate_limited_checkout"
+              ? "Retry shortly"
+              : "Unavailable",
+          );
+          return;
+        }
+        const amount = typeof data.amount === "number" ? data.amount : 0;
+        setShippingLabel(
+          amount === 0
+            ? "$0.00"
+            : new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+              }).format(amount),
+        );
+      } catch (err) {
+        if ((err as { name?: string })?.name === "AbortError") return;
+        setShippingLabel("Unavailable");
+      } finally {
+        setQuoting(false);
+      }
+    }, 450);
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [items, shipTo]);
+
   const handleCheckout = async () => {
     if (items.length === 0) return;
     const trimmed = email.trim();
@@ -97,7 +209,20 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
       toast.error("Enter your email so we can save the cart if checkout is left open.");
       return;
     }
+    if (!shipToReady(shipTo)) {
+      toast.error("Enter your US shipping address so we can calculate freight.");
+      return;
+    }
+    const nextShipTo: CheckoutShipTo = {
+      line1: shipTo.line1.trim(),
+      line2: shipTo.line2?.trim() || undefined,
+      city: shipTo.city.trim(),
+      state: shipTo.state.trim().toUpperCase(),
+      postalCode: shipTo.postalCode.trim(),
+      country: "US",
+    };
     rememberEmail(trimmed);
+    rememberShipTo(nextShipTo);
     identifyShopper({ email: trimmed });
     setCheckingOut(true);
     try {
@@ -112,6 +237,7 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
           })),
           email: trimmed,
           marketingConsent,
+          shipTo: nextShipTo,
         }),
       });
       const data = (await res.json()) as {
@@ -132,6 +258,7 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
         remainingItems: data.remainingItems ?? [],
         email: trimmed,
         marketingConsent,
+        shipTo: nextShipTo,
       });
       if ((data.groupsRemaining ?? 0) > 0) {
         toast.message(
@@ -266,7 +393,65 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
             </div>
             <div className="pb-0.5 text-right">
               <p className="cart-kicker">Shipping</p>
-              <p className="text-xs font-bold text-navy">At checkout</p>
+              <p className="text-xs font-bold text-navy">
+                {quoting ? "Calculating…" : shippingLabel}
+              </p>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <p className="cart-field-label">Ship to</p>
+            <Input
+              id="cart-line1"
+              autoComplete="shipping address-line1"
+              value={shipTo.line1}
+              onChange={(event) => setShipTo((prev) => ({ ...prev, line1: event.target.value }))}
+              placeholder="Street address"
+              className="h-9 rounded-lg border-border bg-white text-sm"
+            />
+            <Input
+              id="cart-line2"
+              autoComplete="shipping address-line2"
+              value={shipTo.line2 || ""}
+              onChange={(event) => setShipTo((prev) => ({ ...prev, line2: event.target.value }))}
+              placeholder="Apt, suite (optional)"
+              className="h-9 rounded-lg border-border bg-white text-sm"
+            />
+            <div className="grid grid-cols-[1fr_4.5rem_5.5rem] gap-1.5">
+              <Input
+                id="cart-city"
+                autoComplete="shipping address-level2"
+                value={shipTo.city}
+                onChange={(event) => setShipTo((prev) => ({ ...prev, city: event.target.value }))}
+                placeholder="City"
+                className="h-9 rounded-lg border-border bg-white text-sm"
+              />
+              <select
+                id="cart-state"
+                aria-label="State"
+                autoComplete="shipping address-level1"
+                value={shipTo.state}
+                onChange={(event) =>
+                  setShipTo((prev) => ({ ...prev, state: event.target.value.toUpperCase() }))
+                }
+                className="h-9 rounded-lg border border-border bg-white px-1 text-sm font-semibold text-navy"
+              >
+                <option value="">ST</option>
+                {US_STATE_OPTIONS.map((state) => (
+                  <option key={state.code} value={state.code}>
+                    {state.code}
+                  </option>
+                ))}
+              </select>
+              <Input
+                id="cart-zip"
+                autoComplete="shipping postal-code"
+                value={shipTo.postalCode}
+                onChange={(event) =>
+                  setShipTo((prev) => ({ ...prev, postalCode: event.target.value }))
+                }
+                placeholder="ZIP"
+                className="h-9 rounded-lg border-border bg-white text-sm"
+              />
             </div>
           </div>
           <div className="space-y-1">
@@ -301,7 +486,12 @@ export default function CartDrawer({ onRequestQuote }: CartDrawerProps) {
           <Button
             size="lg"
             className="hero-shop-btn hero-shop-btn-glow w-full text-white"
-            disabled={items.length === 0 || checkingOut || maintenanceMode}
+            disabled={
+              items.length === 0 ||
+              checkingOut ||
+              maintenanceMode ||
+              !shipToReady(shipTo)
+            }
             onClick={handleCheckout}
           >
             {checkingOut ? "Redirecting…" : "Checkout with Stripe"}

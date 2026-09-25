@@ -12,6 +12,7 @@ import {
   packShotSrc,
   popularSizeSlugs,
   productGalleryFor,
+  sellableSheetProducts,
 } from "../shared/products.ts";
 import { sitemapPaths } from "../shared/seo.ts";
 
@@ -151,12 +152,10 @@ assert(klaviyoCatalog.res.ok, `klaviyo catalog ${klaviyoCatalog.res.status}`);
 const feed = klaviyoCatalog.json as { items?: unknown[] };
 assert(Array.isArray(feed.items) && feed.items.length > 0, "klaviyo catalog.json must list items");
 if (!/^https:\/\/filterhero\.net/i.test(API)) {
-  const sellable = JSON.parse(
-    fs.readFileSync(path.join(ROOT, "shared", "sellable-skus.json"), "utf8"),
-  ) as { count: number };
+  const live = sellableSheetProducts().length;
   assert(
-    feed.items.length === sellable.count,
-    `local catalog.json must match sellable-skus.json (${sellable.count}), got ${feed.items.length}`,
+    feed.items.length === live,
+    `local catalog.json must match live stock (${live}), got ${feed.items.length}`,
   );
 }
 
@@ -290,8 +289,17 @@ assert(!/stripe-signature|whsec_/i.test(webhook.text), "webhook must not leak si
 
 const variant = findProductVariant("20x25x1", 8);
 assert(variant, "20x25x1 MERV 8");
+const SAMPLE_SHIP_TO = {
+  line1: "123 Main St",
+  city: "Miami",
+  state: "FL",
+  postalCode: "33130",
+  country: "US",
+};
+
 const checkout = await post(`${API}/api/checkout`, {
   items: [{ productId: variant.id, quantity: 1 }],
+  shipTo: SAMPLE_SHIP_TO,
 });
 if (checkout.res.status === 503) {
   console.warn("Checkout skipped — Stripe is not configured.");
@@ -302,6 +310,22 @@ if (checkout.res.status === 503) {
   assert(checkout.res.ok, `checkout failed ${checkout.res.status} ${checkout.text}`);
   const url = (checkout.json as { url?: string }).url || "";
   assert(url.includes("checkout.stripe.com") || url.includes("stripe.com"), `unexpected checkout url: ${url}`);
+}
+
+const shippingQuote = await post(`${API}/api/shipping/quote`, {
+  items: [{ productId: variant.id, quantity: 1 }],
+  shipTo: SAMPLE_SHIP_TO,
+});
+if (shippingQuote.res.status === 429) {
+  const code = (shippingQuote.json as { code?: string })?.code;
+  assert(
+    code === "rate_limited_shipping_quote" || code === "rate_limited_checkout",
+    `shipping quote 429 should name the shipping limiter, got ${shippingQuote.text}`,
+  );
+} else {
+  assert(shippingQuote.res.ok, `shipping quote failed ${shippingQuote.res.status} ${shippingQuote.text}`);
+  const amount = (shippingQuote.json as { amountCents?: number }).amountCents;
+  assert(typeof amount === "number" && amount >= 0, `shipping quote amountCents missing: ${shippingQuote.text}`);
 }
 
 const badCheckout = await post(`${API}/api/checkout`, { items: [] });
